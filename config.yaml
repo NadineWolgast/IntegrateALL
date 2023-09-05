@@ -1,5 +1,9 @@
-samples:
-    A: data/samples/A.fastq
-    B: data/samples/B.fastq
-    C: data/samples/C.fastq
+counts: data/counts/UKSH_counts.tsv
+
+left_samples: /reads_1.fastq.gz
+right_samples: /reads_2.fastq.gz
+
+ctat_mount_dir: /home/nadine/PycharmProjects/Blast-o-Matic-Fusioninator/data/samples
+ctat_output_dir: /home/nadine/PycharmProjects/Blast-o-Matic-Fusioninator/ctat_output_directory
+genome_lib: /media/nadine/HOME/nadine/ctat-mutations_test/ctat_genome_lib_build_dir
 

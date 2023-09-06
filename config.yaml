@@ -1,4 +1,5 @@
 counts: data/counts/UKSH_counts.tsv
+count_directory: data/counts/
 
 left_samples: /reads_1.fastq.gz
 right_samples: /reads_2.fastq.gz

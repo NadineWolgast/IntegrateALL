@@ -1,9 +1,16 @@
 counts: data/counts/UKSH_counts.tsv
 count_directory: data/counts/
 
+fastq_directory: /media/nadine/HOME/nadine/fastq
+
+reads_per_gene_directory: data/counts/reads_per_gene
+
 left_samples: /reads_1.fastq.gz
 right_samples: /reads_2.fastq.gz
+#left_samples: /I29838-L1_S69_L002_R1_001.fastq.gz
+#right_samples: /I29838-L1_S69_L002_R1_001.fastq.gz
 
+#ctat_mount_dir: /media/nadine/INTENSO/fastq
 ctat_mount_dir: /home/nadine/PycharmProjects/Blast-o-Matic-Fusioninator/data/samples
 ctat_output_dir: /home/nadine/PycharmProjects/Blast-o-Matic-Fusioninator/ctat_output_directory
 genome_lib: /media/nadine/HOME/nadine/ctat-mutations_test/ctat_genome_lib_build_dir

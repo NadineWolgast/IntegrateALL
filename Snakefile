@@ -4,7 +4,7 @@ configfile: "config.yaml"
 rule all:
     input:
         "allcatch_output/predictions.tsv",
-        "ctat_output_directory/test007.cancer.vcf",
+        "ctat_output_directory/test003.cancer.vcf",
         "data/config.txt",
         "data/meta.txt"
 
@@ -65,8 +65,8 @@ rule run_ctat_mutations:
         #TODO: How can I pass here the input left and right samples?
 
     params:
-        sample_id = "test007", # TODO Replace with the actual sample ID
-        output_dir = config["ctat_output_dir"],  # Replace with the desired output directory name
+        sample_id = "test003", # TODO Replace with the actual sample ID
+        output_dir = config["ctat_output_dir"],
         genome_lib = config["genome_lib"],
         left = config["left_samples"],
         right = config["right_samples"]
@@ -75,26 +75,22 @@ rule run_ctat_mutations:
         "ctat_output_directory/{sample_id}.cancer.vcf"
 
     shell:
-         """
-         singularity exec -e -B {input.mount_dir}:/data \
-         -B {params.genome_lib}:/ctat_genome_lib_dir \
-         ctat_mutations.v3.2.0.simg \
-         /usr/local/src/ctat-mutations/ctat_mutations \
-         --left {input.mount_dir}{params.left} \
-         --right {input.mount_dir}{params.right} \
-         --sample_id {params.sample_id} \
-         --output {params.output_dir}  \
-         --cpu 10 \
-         --genome_lib_dir /ctat_genome_lib_dir \
-         --boosting_method none \
-         --no_cravat
-         """
+        """
+        singularity exec -e -B {input.mount_dir}:/data \
+        -B {params.genome_lib}:/ctat_genome_lib_dir \
+        ctat_mutations.v3.2.0.simg \
+        /usr/local/src/ctat-mutations/ctat_mutations \
+        --left {input.mount_dir}{params.left} \
+        --right {input.mount_dir}{params.right} \
+        --sample_id {params.sample_id} \
+        --output {params.output_dir}  \
+        --cpu 10 \
+        --genome_lib_dir /ctat_genome_lib_dir \
+        --boosting_method none \
+        --no_cravat
+        """
 
-
-rule install_rnaseq_cnv:
-    shell:
-        "Rscript -e 'devtools::install_github(\"honzee/RNAseqCNV\")'"
-
+# TODO: Test with boosting method none & ctat_mutations_latest.sif
 
 rule write_rnaseq_cnv_config_file:
     input:
@@ -128,16 +124,19 @@ rule write_rnaseq_cnv_meta_file:
         "mv meta.txt {output}"
 
 
+rule install_rnaseq_cnv:
+    shell:
+        "Rscript -e 'devtools::install_github(\"honzee/RNAseqCNV\")'"
+
 #rule run_rnaseq_cnv:
 #    input:
 #        r_script = "scripts/run_rnaseq_cnv.R",
 #        config_file = "data/config.txt",
-#        metadata_file = config["meta"]
+#        metadata_file = "data/config.txt"
 #    output:
 #        "rnaseq_cnv_output_directory/"
-
+#
 #    shell:
 #        "Rscript {input.r_script} {input.config_file} {input.metadata_file}  {output};"
 #        "mv predictions.tsv {output}"
-
 

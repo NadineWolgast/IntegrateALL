@@ -4,9 +4,13 @@ configfile: "config.yaml"
 rule all:
     input:
         "allcatch_output/predictions.tsv",
-        "ctat_output_directory/test003.cancer.vcf",
         "data/config.txt",
-        "data/meta.txt"
+        "data/meta.txt",
+        "rnaseq_cnv_output_directory/",
+        #"data/vcf_files/21Ord12062.vcf",
+        "data/vcf_files/21Ord12062.tsv",
+        "rnaseq_cnv_output_directory/21Ord12062",
+        "data/single_counts/21Ord12062.txt"
 
 
 #rule star_pe_multi:
@@ -60,8 +64,6 @@ rule pull_ctat_mutations_singularity_image:
 rule run_ctat_mutations:
     input:
         mount_dir = config["ctat_mount_dir"]
-        # left="/home/nadine/PycharmProjects/Blast-o-Matic-Fusioninator/data/samples/reads_1.fastq.gz",  # Update with the correct path
-        # right="/home/nadine/PycharmProjects/Blast-o-Matic-Fusioninator/data/samples/reads_2.fastq.gz"  # Update with the correct path
         #TODO: How can I pass here the input left and right samples?
 
     params:
@@ -89,14 +91,13 @@ rule run_ctat_mutations:
         --boosting_method none \
         --no_cravat
         """
-
 # TODO: Test with boosting method none & ctat_mutations_latest.sif
 
 rule write_rnaseq_cnv_config_file:
     input:
         r_script = "scripts/write_rnaseq_cnv_config.R",
-        count_dir = config["counts"],
-        snv_dir = "ctat_output_directory/",
+        count_dir = config["single_counts_directory"],
+        snv_dir = "data/vcf_files",
         out_dir= "rnaseq_cnv_output_directory"
 
     output:
@@ -110,11 +111,11 @@ rule write_rnaseq_cnv_config_file:
 rule write_rnaseq_cnv_meta_file:
     input:
         r_script = "scripts/write_rnaseq_cnv_meta.R",
-        count_dir = config["count_directory"],
-        vcf_dir = "ctat_output_directory/"
+        count_dir = config["single_counts_directory"],
+        vcf_dir = "data/vcf_files"
 
     params:
-        sample_id = "test006" # TODO: Change to sample id of config
+        sample_id = config["sample_id"] # TODO: Change to sample id of config
 
     output:
         "data/meta.txt"
@@ -128,15 +129,59 @@ rule install_rnaseq_cnv:
     shell:
         "Rscript -e 'devtools::install_github(\"honzee/RNAseqCNV\")'"
 
-#rule run_rnaseq_cnv:
-#    input:
-#        r_script = "scripts/run_rnaseq_cnv.R",
-#        config_file = "data/config.txt",
-#        metadata_file = "data/config.txt"
-#    output:
-#        "rnaseq_cnv_output_directory/"
-#
-#    shell:
-#        "Rscript {input.r_script} {input.config_file} {input.metadata_file}  {output};"
-#        "mv predictions.tsv {output}"
+
+rule prepare_count_files:
+    input:
+        reads_dir = config["reads_per_gene_directory"],
+        r_script = "scripts/prepare_count_files.R"
+
+#21Ord12062
+    params:
+        sample_id=config["sample_id"],  # TODO: Change to sample id of config
+        count_directory= config["single_counts_directory"]
+
+    output:
+        "{count_directory}{sample_id}.txt"
+
+    shell:
+        "Rscript {input.r_script} {params.sample_id} {input.reads_dir} {output};"
+        "mv {params.sample_id}.txt {output}"
+
+
+
+rule prepare_vcf_files:
+    input:
+        vcf_dir = config["ctat_output_dir"],
+        r_script = "scripts/prepare_vcf_files.R"
+
+    params:
+        sample_id = config["sample_id"],
+        vcf_identifier = "-S1-L1_S69_L003_R1"
+
+    output:
+        "data/vcf_files/{sample_id}.tsv"
+
+    shell:
+        "Rscript {input.r_script} {params.sample_id} {params.vcf_identifier} {input.vcf_dir} {output};"
+        "mv {input.vcf_dir}/{params.sample_id}.tsv {output}"
+
+
+rule run_rnaseq_cnv:
+    input:
+        r_script = "scripts/run_rnaseq_cnv.R",
+        config_file = "data/config.txt",
+        metadata_file = "data/meta.txt"
+    params:
+        sample_id = config["sample_id"]
+    output:
+        directory("rnaseq_cnv_output_directory/{sample_id}")
+
+    shell:
+        "Rscript {input.r_script} {input.config_file} {input.metadata_file} {output};"
+        "sleep 0.10;"
+        "mv rnaseq_cnv_output_directory/estimation_table.tsv {output};"
+        "mv rnaseq_cnv_output_directory/manual_an_table.tsv {output};"
+        "mv rnaseq_cnv_output_directory/log2_fold_change_per_arm.tsv {output};"
+        "mv rnaseq_cnv_output_directory/alteration_matrix.tsv {output};"
+
 

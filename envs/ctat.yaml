@@ -1,0 +1,8 @@
+name: ctat_mutations_env
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - ctat-mutations
+
+

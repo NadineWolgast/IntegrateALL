@@ -3,21 +3,20 @@ configfile: "config.yaml"
 
 rule all:
     input:
-        "allcatch_output/predictions.tsv",
-        "data/config.txt",
-        "data/meta.txt",
-        "rnaseq_cnv_output_directory/",
+        #"allcatch_output/predictions.tsv",
+        #"data/config.txt",
+        #"data/meta.txt",
+        #"rnaseq_cnv_output_directory/",
         #"data/vcf_files/21Ord12062.vcf",
-        "data/vcf_files/21Ord12062.tsv",
-        "rnaseq_cnv_output_directory/21Ord12062",
-        "data/single_counts/21Ord12062.txt"
+        #"data/vcf_files/21Ord12062.tsv",
+        #"rnaseq_cnv_output_directory/21Ord12062",
+        #"data/single_counts/21Ord12062.txt"
+        #'Star_output/'
+        '/media/nadine/INTENSO/STAR/hg38_index'
 
 
 #rule star_pe_multi:
 #    input:
-#        # use a list for multiple fastq files for one sample
-#        # usually technical replicates across lanes/flowcells
-#        fq1=["data/samples/{sample}_1.fastq", "data/samples/{sample}_2.fastq"],
 #        # paired end reads needs to be ordered so each item in the two lists match
 #        #fq2=["data/samples/{sample}_R2.1.fastq", "data/samples/{sample}_R2.2.fastq"],  #optional
 #        # path to STAR reference genome index
@@ -36,6 +35,63 @@ rule all:
 #    threads: 8
 #    wrapper:
 #        "v2.6.0/bio/star/align"
+
+
+#rule bam_wta_index:
+#    input:
+#        "star/Line{index}/WTA_Aligned.sortedByCoord.out.bam"
+#    output:
+#        "star/Line{index}/WTA_Aligned.sortedByCoord.out.bam.bai"
+#    shell:
+#        "samtools index {input}"
+
+# TODO: rule index not tested yet
+rule index:
+        input:
+            fa = config['star_ref'], # provide your reference FASTA file
+            gtf = config['star_gtf'] # provide your GTF file
+        output:
+            directory('/media/nadine/INTENSO/STAR/hg38_index') # you can rename the index folder
+        threads: 20 # set the maximum number of available cores
+        shell:
+            'mkdir {output} && '
+            'STAR --runThreadN {threads} '
+            '--runMode genomeGenerate '
+            '--genomeDir {output} '
+            '--genomeFastaFiles {input.fa} '
+            '--sjdbGTFfile {input.gtf} '
+            '--sjdbOverhang 100'
+
+
+rule run_star_aligner:
+    input:
+        fastq1= config["STAR_left_samples"],
+        fastq2= config["STAR_right_samples"],
+
+    output:
+        directory('data/Star_output')
+
+    resources:
+        threads=config['threads'],
+        mem=config['star_mem']
+    shell:
+        'mkdir {output} && '
+        'STAR --runThreadN {config[threads]} '
+        '--runMode alignReads '
+        '--genomeDir {config[genome_index]} '
+        '--readFilesIn {input.fastq1} {input.fastq2} '
+        '--outFileNamePrefix {output}/{input.fastq1} '
+        '--quantMode GeneCounts '
+        '--sjdbOverhang 100 '
+        '--twopassMode Basic '
+        '--outSAMtype BAM SortedByCoordinate '
+        '--genomeLoad NoSharedMemory '
+        '--outFilterMultimapNmax 10 '
+        '--outTmpDir {config[star_tmp_directory]}'
+        '--chimOutType WithinBAM '
+        '--chimSegmentMin 10 '
+        '--readFilesCommand zcat'
+
 
 
 rule install_allcatchr:

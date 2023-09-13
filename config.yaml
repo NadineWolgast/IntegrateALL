@@ -4,23 +4,25 @@ single_counts_directory: data/single_counts/
 sample_id: 21Ord12062
 
 
-STAR: /home/sukmb610/Softwares/STAR_2.7.10b/Linux_x86_64_static/STAR
-star_ref: /home/sukmb610/References/star/GR38_Gencode42/STAR_2.7.10b/Overhang_61/ROCK_ROI/GR38_BCRABL1
-star_gtf: /home/sukmb610/References/star/GR38_Gencode42/gencode.v42.BCRABL1.gtf
+
+star_ref: /media/nadine/HOME/nadine/STAR_indexfiles/GRCh38.primary_assembly.genome.fa
+star_gtf: /media/nadine/HOME/nadine/STAR_indexfiles/gencode.v32.annotation.gtf
 star_mem: 80000
 threads: 20
+genome_index: /media/nadine/INTENSO/STAR/hg38_index
+star_tmp_directory: /media/nadine/INTENSO/STAR_tmp
 
 
 fastq_directory: /media/nadine/HOME/nadine/fastq
-
 reads_per_gene_directory: data/reads_per_gene
 
 left_samples: /reads_1.fastq.gz
 right_samples: /reads_2.fastq.gz
-#left_samples: /I29799-L1_S33_L001_R1_001.fastq.gz
-#right_samples: /I29799-L1_S33_L001_R2_001.fastq.gz
 
-#ctat_mount_dir: /media/nadine/INTENSO/fastq
+STAR_left_samples: data/samples/reads_1.fastq.gz
+STAR_right_samples: data/samples/reads_2.fastq.gz
+
+#ctat_mount_dir: /media/nadine/INTENSO/fastq # doesn't work yet
 ctat_mount_dir: /home/nadine/PycharmProjects/Blast-o-Matic-Fusioninator/data/samples
 ctat_output_dir: /home/nadine/PycharmProjects/Blast-o-Matic-Fusioninator/ctat_output_directory
 genome_lib: /media/nadine/HOME/nadine/ctat-mutations_test/ctat_genome_lib_build_dir

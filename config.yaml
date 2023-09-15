@@ -4,12 +4,11 @@ single_counts_directory: data/single_counts/
 sample_id: 21Ord12062
 
 
-
 star_ref: /media/nadine/HOME/nadine/STAR_indexfiles/GRCh38.primary_assembly.genome.fa
 star_gtf: /media/nadine/HOME/nadine/STAR_indexfiles/gencode.v32.annotation.gtf
 star_mem: 80000
 threads: 20
-genome_index: /media/nadine/INTENSO/STAR/hg38_index
+genome_index: /media/nadine/HOME/nadine/STAR/ensembl_94_100
 star_tmp_directory: /media/nadine/INTENSO/STAR_tmp
 
 
@@ -19,8 +18,8 @@ reads_per_gene_directory: data/reads_per_gene
 left_samples: /reads_1.fastq.gz
 right_samples: /reads_2.fastq.gz
 
-STAR_left_samples: data/samples/reads_1.fastq.gz
-STAR_right_samples: data/samples/reads_2.fastq.gz
+STAR_left_samples: data/samples/I29799-L1_S33_L001_R1_001.fastq.gz
+STAR_right_samples: data/samples/I29799-L1_S33_L001_R1_001.fastq.gz
 
 #ctat_mount_dir: /media/nadine/INTENSO/fastq # doesn't work yet
 ctat_mount_dir: /home/nadine/PycharmProjects/Blast-o-Matic-Fusioninator/data/samples

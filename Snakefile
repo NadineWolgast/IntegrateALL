@@ -11,39 +11,51 @@ rule all:
         #"data/vcf_files/21Ord12062.tsv",
         #"rnaseq_cnv_output_directory/21Ord12062",
         #"data/single_counts/21Ord12062.txt"
-        #'Star_output/'
-        '/media/nadine/INTENSO/STAR/hg38_index'
+        'STAR_output/'
+        #'fusioncatcher_output/'
+        #"multiqc/multiqc_report_old.html",
+        #"fusions/reads.tsv",
+        #'/media/nadine/INTENSO/STAR/hg38_index'
 
 
-#rule star_pe_multi:
-#    input:
-#        # paired end reads needs to be ordered so each item in the two lists match
-#        #fq2=["data/samples/{sample}_R2.1.fastq", "data/samples/{sample}_R2.2.fastq"],  #optional
-#        # path to STAR reference genome index
-#        idx="index",
-#    output:
-#        # see STAR manual for additional output files
-#        aln="star/pe/{sample}/pe_aligned.sam",
-#        log="logs/pe/{sample}/Log.out",
-#        sj="star/pe/{sample}/SJ.out.tab",
-#        unmapped=["star/pe/{sample}/unmapped.1.fastq.gz","star/pe/{sample}/unmapped.2.fastq.gz"],
-#    log:
- #       "logs/pe/{sample}.log",
-#    params:
-#        # optional parameters
-#        extra="",
-#    threads: 8
-#    wrapper:
-#        "v2.6.0/bio/star/align"
+rule fastqc:
+    input:
+        "data/samples/I29799-L1_S33_L001_R2_001.fastq.gz"
+    output:
+        html="fastqc/I29799-L1_S33_L001_R2_001.html",
+        zip="fastqc/I29799-L1_S33_L001_R2_001.zip"
+    log:
+        "logs/fastqc/fastqc.log"
+    wrapper:
+        "0.31.1/bio/fastqc"
+
+rule multiqc_dir:
+    input:
+        "fastqc/"
+        #expand("fastqc/{sample}.html", sample=["I29799-L1_S33_L001_R1_001", "I29799-L1_S33_L001_R2_001"])
+    output:
+        "multiqc/multiqc_report.html"
+    log:
+        "logs/multiqc/multiqc.log",
+    wrapper:
+        "v2.6.0/bio/multiqc"
 
 
-#rule bam_wta_index:
-#    input:
-#        "star/Line{index}/WTA_Aligned.sortedByCoord.out.bam"
-#    output:
-#        "star/Line{index}/WTA_Aligned.sortedByCoord.out.bam.bai"
-#    shell:
-#        "samtools index {input}"
+rule multiqc_file:
+    input:
+        expand("fastqc/{sample}", sample=["I29799-L1_S33_L001_R1_001"])
+    output:
+        "multiqc/multiqc_I29799.html"
+    params:
+        extra="",  # Optional: extra parameters for multiqc.
+        use_input_files_only=True, # Optional, use only a .txt and don't search folder for files
+    log:
+        "logs/multiqc/multiqc.log"
+    wrapper:
+        "v2.6.0/bio/multiqc"
+
+
+#conda install star=2.7.1a
 
 # TODO: rule index not tested yet
 rule index:
@@ -51,10 +63,9 @@ rule index:
             fa = config['star_ref'], # provide your reference FASTA file
             gtf = config['star_gtf'] # provide your GTF file
         output:
-            directory('/media/nadine/INTENSO/STAR/hg38_index') # you can rename the index folder
+            directory('/media/nadine/HOME/nadine/STAR/ensembl_94_100') # TODO: Change to config for genome index
         threads: 20 # set the maximum number of available cores
         shell:
-            'mkdir {output} && '
             'STAR --runThreadN {threads} '
             '--runMode genomeGenerate '
             '--genomeDir {output} '
@@ -65,32 +76,92 @@ rule index:
 
 rule run_star_aligner:
     input:
-        fastq1= config["STAR_left_samples"],
-        fastq2= config["STAR_right_samples"],
+        fastq1= config["left_samples"],
+        fastq2= config["right_samples"]
+    params:
+
 
     output:
-        directory('data/Star_output')
+        directory('STAR_output/')
 
     resources:
         threads=config['threads'],
         mem=config['star_mem']
     shell:
         'mkdir {output} && '
+        'cd {output} &&'
         'STAR --runThreadN {config[threads]} '
         '--runMode alignReads '
         '--genomeDir {config[genome_index]} '
-        '--readFilesIn {input.fastq1} {input.fastq2} '
-        '--outFileNamePrefix {output}/{input.fastq1} '
+        '--readFilesIn ../{input.fastq1} ../{input.fastq2} '
+        '--outFileNamePrefix {output} '
         '--quantMode GeneCounts '
         '--sjdbOverhang 100 '
         '--twopassMode Basic '
         '--outSAMtype BAM SortedByCoordinate '
         '--genomeLoad NoSharedMemory '
         '--outFilterMultimapNmax 10 '
-        '--outTmpDir {config[star_tmp_directory]}'
+        #'--outTmpDir {config[star_tmp_directory]}'
         '--chimOutType WithinBAM '
         '--chimSegmentMin 10 '
         '--readFilesCommand zcat'
+
+
+rule arriba:
+    input:
+        # STAR bam containing chimeric alignments
+        bam="STAR_output/STAR_outputAligned.sortedByCoord.out.bam",
+        # path to reference genome
+        genome=config["star_ref"],
+        # path to annotation gtf
+        annotation=config["star_gtf"],
+        # optional arriba blacklist file
+        custom_blacklist=[],
+    output:
+        # approved gene fusions
+        #fusions="fusions/{sample}.tsv",
+        fusions="fusions/reads.tsv",
+        # discarded gene fusions
+        #discarded="fusions/{sample}.discarded.tsv",  # optional
+        discarded="fusions/reads.discarded.tsv",  # optional
+    log:
+        #"logs/arriba/{sample}.log",
+        "logs/arriba/reads.log",
+    params:
+        # required when blacklist or known_fusions is set
+        genome_build="GRCh38",
+        # strongly recommended, see https://arriba.readthedocs.io/en/latest/input-files/#blacklist
+        # only set blacklist input-file or blacklist-param
+        default_blacklist=False,  # optional
+        default_known_fusions=True,  # optional
+        # file containing information from structural variant analysis
+        sv_file="",  # optional
+        # optional parameters
+        extra="-i 1,2",
+    threads: 1
+    wrapper:
+        "v2.6.0/bio/arriba"
+
+
+
+
+# conda install -c bioconda fusioncatcher
+# Or use docker image?
+
+rule run_fusioncatcher:
+    input:
+        fastq_directory = "data/samples",
+        data_directory = "/media/nadine/INTENSO/fusioncatcher/data/"
+    output:
+        directory("fusioncatcher_output/")
+
+    shell:
+        '''mkdir {output} &&
+        fusioncatcher \
+        -d {input.fastq_directory} \
+        -i {input.fastq_directory} \
+        -o {output}'''
+
 
 
 
@@ -159,8 +230,11 @@ rule write_rnaseq_cnv_config_file:
     output:
         "data/config.txt"
 
+    log:
+        "logs/write_config_file/meta.log"
+
     shell:
-        "Rscript {input.r_script} {input.out_dir} {input.count_dir} {input.snv_dir} {output};"
+        "Rscript {input.r_script} {input.out_dir} {input.count_dir} {input.snv_dir} {output} > {log};"
         "mv config.txt {output}"
 
 
@@ -175,9 +249,11 @@ rule write_rnaseq_cnv_meta_file:
 
     output:
         "data/meta.txt"
+    log:
+        "logs/write_meta_file/meta.log"
 
     shell:
-        "Rscript {input.r_script} {params.sample_id} {input.count_dir} {input.vcf_dir} {output};"
+        "Rscript {input.r_script} {params.sample_id} {input.count_dir} {input.vcf_dir} {output} > {log};"
         "mv meta.txt {output}"
 
 
@@ -191,7 +267,6 @@ rule prepare_count_files:
         reads_dir = config["reads_per_gene_directory"],
         r_script = "scripts/prepare_count_files.R"
 
-#21Ord12062
     params:
         sample_id=config["sample_id"],  # TODO: Change to sample id of config
         count_directory= config["single_counts_directory"]
@@ -239,5 +314,8 @@ rule run_rnaseq_cnv:
         "mv rnaseq_cnv_output_directory/manual_an_table.tsv {output};"
         "mv rnaseq_cnv_output_directory/log2_fold_change_per_arm.tsv {output};"
         "mv rnaseq_cnv_output_directory/alteration_matrix.tsv {output};"
+
+
+
 
 

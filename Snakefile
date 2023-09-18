@@ -1,6 +1,7 @@
 configfile: "config.yaml"
 
 
+
 rule all:
     input:
         #"allcatch_output/predictions.tsv",
@@ -11,23 +12,35 @@ rule all:
         #"data/vcf_files/21Ord12062.tsv",
         #"rnaseq_cnv_output_directory/21Ord12062",
         #"data/single_counts/21Ord12062.txt"
-        'STAR_output/'
+        #'STAR_output/'
+        "fusioncatcher_output/"
         #'fusioncatcher_output/'
         #"multiqc/multiqc_report_old.html",
         #"fusions/reads.tsv",
         #'/media/nadine/INTENSO/STAR/hg38_index'
+        'fastqc/'
 
+def get_input_fastqs(wildcards):
+    return config["samples"][wildcards.sample]
 
 rule fastqc:
     input:
-        "data/samples/I29799-L1_S33_L001_R2_001.fastq.gz"
+        get_input_fastqs
     output:
-        html="fastqc/I29799-L1_S33_L001_R2_001.html",
-        zip="fastqc/I29799-L1_S33_L001_R2_001.zip"
+        html="fastqc/{sample}.html",
+        zip="fastqc/{sample}.zip"
     log:
-        "logs/fastqc/fastqc.log"
+        "logs/fastqc/{sample}/fastqc.log"
     wrapper:
         "0.31.1/bio/fastqc"
+
+rule unzip:
+    input:
+        "fastqc/{sample}.zip"
+    output:
+        "{sample}"
+    shell:
+        "tar -xf {input}"
 
 rule multiqc_dir:
     input:
@@ -78,8 +91,6 @@ rule run_star_aligner:
     input:
         fastq1= config["left_samples"],
         fastq2= config["right_samples"]
-    params:
-
 
     output:
         directory('STAR_output/')
@@ -111,6 +122,7 @@ rule arriba:
     input:
         # STAR bam containing chimeric alignments
         bam="STAR_output/STAR_outputAligned.sortedByCoord.out.bam",
+        #bam = "/media/nadine/HOME/nadine/BAM/I29799-L1Aligned.sortedByCoord.out.bam",
         # path to reference genome
         genome=config["star_ref"],
         # path to annotation gtf
@@ -135,7 +147,7 @@ rule arriba:
         default_blacklist=False,  # optional
         default_known_fusions=True,  # optional
         # file containing information from structural variant analysis
-        sv_file="",  # optional
+        sv_file="",
         # optional parameters
         extra="-i 1,2",
     threads: 1
@@ -143,26 +155,26 @@ rule arriba:
         "v2.6.0/bio/arriba"
 
 
-
-
-# conda install -c bioconda fusioncatcher
-# Or use docker image?
-
 rule run_fusioncatcher:
     input:
-        fastq_directory = "data/samples",
-        data_directory = "/media/nadine/INTENSO/fusioncatcher/data/"
+        fastq_directory = "data/samples/",
+        data_directory = "/media/nadine/HOME/nadine/fusioncatcher/data/human_v102",
+        mount_dir= config["ctat_mount_dir"]
+
     output:
         directory("fusioncatcher_output/")
+
+    #singularity: "fusioncatcher-1.33.sif"
+
+    conda:
+        "envs/fusioncatcher.yaml"
 
     shell:
         '''mkdir {output} &&
         fusioncatcher \
-        -d {input.fastq_directory} \
+        -d {input.data_directory} \
         -i {input.fastq_directory} \
         -o {output}'''
-
-
 
 
 rule install_allcatchr:
@@ -314,8 +326,5 @@ rule run_rnaseq_cnv:
         "mv rnaseq_cnv_output_directory/manual_an_table.tsv {output};"
         "mv rnaseq_cnv_output_directory/log2_fold_change_per_arm.tsv {output};"
         "mv rnaseq_cnv_output_directory/alteration_matrix.tsv {output};"
-
-
-
 
 

@@ -1,9 +1,48 @@
+import pandas as pd
 configfile: "config.yaml"
+
+#star_samples = pd.read_csv("samples.csv").set_index("Sample_ID", drop=False)
+#inputdf = pd.read_csv(config["sample_file"], sep="\t")
+#print(inputdf)
+
+#wildcard_constraints:
+#    sample="[A-Za-z0-9]+"
+
+
+
+samples = {}
+with open(config["sample_file"], "r") as f:
+    next(f)
+    for line in f:
+        sample_id, left, right = line.strip().split(",")
+        samples[sample_id] = (left, right)
+
+
+def create_sample_dataframe(sample_sheet_path):
+    sample_df = pd.read_csv(sample_sheet_path)
+    result_data = []
+    for index, row in sample_df.iterrows():
+        sample_id = row['sample_id']
+        left_fastq = row['left']
+        right_fastq = row['right']
+        result_data.append({'sample_id': f"{sample_id}_left", 'FASTQ': left_fastq})
+        result_data.append({'sample_id': f"{sample_id}_right", 'FASTQ': right_fastq})
+    result_df = pd.DataFrame(result_data)
+    return result_df
+
+# Example usage:
+sample_sheet_path = config["sample_file"]
+fastq_dataframe = create_sample_dataframe(sample_sheet_path)
+print(fastq_dataframe)
 
 
 
 rule all:
     input:
+        expand("STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",sample_id=list(samples.keys())),
+        expand("fusions/{sample_id}.tsv",sample_id=list(samples.keys())),
+        expand("fastqc/{sample}", sample=fastq_dataframe['sample_id']),
+        "multiqc/multiqc_report.html"
         #"allcatch_output/predictions.tsv",
         #"data/config.txt",
         #"data/meta.txt",
@@ -12,16 +51,20 @@ rule all:
         #"data/vcf_files/21Ord12062.tsv",
         #"rnaseq_cnv_output_directory/21Ord12062",
         #"data/single_counts/21Ord12062.txt"
-        #'STAR_output/'
-        "fusioncatcher_output/"
-        #'fusioncatcher_output/'
-        #"multiqc/multiqc_report_old.html",
+        #"fusioncatcher_output/",
+        #"multiqc/multiqc_report.html"
         #"fusions/reads.tsv",
         #'/media/nadine/INTENSO/STAR/hg38_index'
-        'fastqc/'
+        #'fastqc/test-reads-A01_R1',
 
+
+
+# Function to get input FASTQ files based on sample_id
 def get_input_fastqs(wildcards):
-    return config["samples"][wildcards.sample]
+    sample_id = wildcards.sample
+    fastq_file = fastq_dataframe[fastq_dataframe['sample_id'] == sample_id]['FASTQ'].values[0]
+    return fastq_file
+
 
 rule fastqc:
     input:
@@ -31,42 +74,47 @@ rule fastqc:
         zip="fastqc/{sample}.zip"
     log:
         "logs/fastqc/{sample}/fastqc.log"
+
     wrapper:
         "0.31.1/bio/fastqc"
 
 rule unzip:
     input:
-        "fastqc/{sample}.zip"
+        sample="fastqc/{sample}.zip"
+        #expand("fastqc/{Sample}.zip",Sample=inputdf['Sample_ID'].unique())
     output:
-        "{sample}"
+        directory("fastqc/{sample}")
     shell:
-        "tar -xf {input}"
+        "unzip -q {input.sample} -d {output}"
+
 
 rule multiqc_dir:
     input:
         "fastqc/"
-        #expand("fastqc/{sample}.html", sample=["I29799-L1_S33_L001_R1_001", "I29799-L1_S33_L001_R2_001"])
     output:
         "multiqc/multiqc_report.html"
-    log:
-        "logs/multiqc/multiqc.log",
-    wrapper:
-        "v2.6.0/bio/multiqc"
+    params:
+        output_dir= "multiqc/"
+    shell:
+        "multiqc {input} -o {params.output_dir}"
 
-
+'''
 rule multiqc_file:
     input:
-        expand("fastqc/{sample}", sample=["I29799-L1_S33_L001_R1_001"])
+        expand("fastqc/{sample}", sample=config["samples"])
+
     output:
-        "multiqc/multiqc_I29799.html"
+        "multiqc/{sample}/multiqc_report.html"
+
     params:
-        extra="",  # Optional: extra parameters for multiqc.
-        use_input_files_only=True, # Optional, use only a .txt and don't search folder for files
+        extra = "-o multiqc/{sample}/",
+        use_input_files_only=True,
+
     log:
         "logs/multiqc/multiqc.log"
     wrapper:
         "v2.6.0/bio/multiqc"
-
+'''
 
 #conda install star=2.7.1a
 
@@ -86,73 +134,62 @@ rule index:
             '--sjdbGTFfile {input.gtf} '
             '--sjdbOverhang 100'
 
-
 rule run_star_aligner:
     input:
-        fastq1= config["left_samples"],
-        fastq2= config["right_samples"]
+        fastq1 = lambda wildcards: samples[wildcards.sample_id][0],  # Path to left FASTQ from sample sheet
+        fastq2 = lambda wildcards: samples[wildcards.sample_id][1],  # Path to right FASTQ from sample sheet
 
     output:
-        directory('STAR_output/')
+        directory = directory("STAR_output/{sample_id}"),
+        bam = "STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam"
 
     resources:
         threads=config['threads'],
         mem=config['star_mem']
     shell:
-        'mkdir {output} && '
-        'cd {output} &&'
+        'mkdir {output.directory} && '
+        'sleep .10;'
         'STAR --runThreadN {config[threads]} '
         '--runMode alignReads '
         '--genomeDir {config[genome_index]} '
-        '--readFilesIn ../{input.fastq1} ../{input.fastq2} '
-        '--outFileNamePrefix {output} '
+        '--readFilesIn {input.fastq1} {input.fastq2} '
+        '--outFileNamePrefix  {output.directory}/ '
         '--quantMode GeneCounts '
         '--sjdbOverhang 100 '
         '--twopassMode Basic '
         '--outSAMtype BAM SortedByCoordinate '
         '--genomeLoad NoSharedMemory '
         '--outFilterMultimapNmax 10 '
-        #'--outTmpDir {config[star_tmp_directory]}'
         '--chimOutType WithinBAM '
         '--chimSegmentMin 10 '
-        '--readFilesCommand zcat'
+        '--readFilesCommand zcat '
 
 
-rule arriba:
+
+rule run_arriba:
     input:
-        # STAR bam containing chimeric alignments
-        bam="STAR_output/STAR_outputAligned.sortedByCoord.out.bam",
-        #bam = "/media/nadine/HOME/nadine/BAM/I29799-L1Aligned.sortedByCoord.out.bam",
-        # path to reference genome
-        genome=config["star_ref"],
-        # path to annotation gtf
-        annotation=config["star_gtf"],
-        # optional arriba blacklist file
+        # STAR BAM containing chimeric alignments from 'run_star_aligner'
+        bam="STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",
+        genome=config["star_ref"],       # Path to reference genome
+        annotation=config["star_gtf"],   # Path to annotation GTF
         custom_blacklist=[],
     output:
-        # approved gene fusions
-        #fusions="fusions/{sample}.tsv",
-        fusions="fusions/reads.tsv",
-        # discarded gene fusions
-        #discarded="fusions/{sample}.discarded.tsv",  # optional
-        discarded="fusions/reads.discarded.tsv",  # optional
+        # Approved gene fusions
+        fusions="fusions/{sample_id}.tsv",
+        # Discarded gene fusions (optional)
+        discarded="fusions/{sample_id}.discarded.tsv",
     log:
-        #"logs/arriba/{sample}.log",
-        "logs/arriba/reads.log",
+        "logs/arriba/{sample_id}.log",
     params:
-        # required when blacklist or known_fusions is set
-        genome_build="GRCh38",
-        # strongly recommended, see https://arriba.readthedocs.io/en/latest/input-files/#blacklist
-        # only set blacklist input-file or blacklist-param
-        default_blacklist=False,  # optional
-        default_known_fusions=True,  # optional
-        # file containing information from structural variant analysis
-        sv_file="",
-        # optional parameters
-        extra="-i 1,2",
+        genome_build="GRCh38",           # Required when blacklist or known_fusions is set
+        default_blacklist=False,         # Optional
+        default_known_fusions=True,      # Optional
+        sv_file="",                      # File containing information from structural variant analysis
+        extra="-i 1,2",                  # Optional parameters
     threads: 1
     wrapper:
         "v2.6.0/bio/arriba"
+
 
 
 rule run_fusioncatcher:
@@ -216,7 +253,7 @@ rule run_ctat_mutations:
         "ctat_output_directory/{sample_id}.cancer.vcf"
 
     shell:
-        """
+        '''
         singularity exec -e -B {input.mount_dir}:/data \
         -B {params.genome_lib}:/ctat_genome_lib_dir \
         ctat_mutations.v3.2.0.simg \
@@ -229,7 +266,8 @@ rule run_ctat_mutations:
         --genome_lib_dir /ctat_genome_lib_dir \
         --boosting_method none \
         --no_cravat
-        """
+        '''
+
 # TODO: Test with boosting method none & ctat_mutations_latest.sif
 
 rule write_rnaseq_cnv_config_file:

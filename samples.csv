@@ -1,0 +1,4 @@
+sample_id,left,right
+reads,data/samples/reads_1.fq.gz,data/samples/reads_2.fq.gz
+testReads,data/samples/test-reads-A01_R1_001.fastq.gz,data/samples/test-reads-A01_R2_001.fastq.gz
+reads2,data/samples/reads_1.fq.gz,data/samples/reads_2.fq.gz

@@ -1,3 +1,5 @@
+import os
+
 import pandas as pd
 configfile: "config.yaml"
 
@@ -35,15 +37,26 @@ sample_sheet_path = config["sample_file"]
 fastq_dataframe = create_sample_dataframe(sample_sheet_path)
 print(fastq_dataframe)
 
+def get_unique_paths_without_extension(dataframe):
+    unique_paths = set()
 
+    for fastq_path in dataframe['FASTQ']:
+        # Extract the directory portion of the path and remove the file extension
+        path_without_extension = os.path.splitext(os.path.dirname(fastq_path))[0]
+        unique_paths.add(path_without_extension)
+
+    return list(unique_paths)
+
+fastq_directory = get_unique_paths_without_extension(fastq_dataframe)
+print(fastq_directory)
 
 rule all:
     input:
         expand("STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",sample_id=list(samples.keys())),
         expand("fusions/{sample_id}.tsv",sample_id=list(samples.keys())),
         expand("fastqc/{sample}", sample=fastq_dataframe['sample_id']),
-        "multiqc/multiqc_report.html"
-        #"allcatch_output/predictions.tsv",
+        "multiqc/multiqc_report.html",
+        "allcatch_output/predictions.tsv",
         #"data/config.txt",
         #"data/meta.txt",
         #"rnaseq_cnv_output_directory/",
@@ -51,7 +64,7 @@ rule all:
         #"data/vcf_files/21Ord12062.tsv",
         #"rnaseq_cnv_output_directory/21Ord12062",
         #"data/single_counts/21Ord12062.txt"
-        #"fusioncatcher_output/",
+        "fusioncatcher_output/",
         #"multiqc/multiqc_report.html"
         #"fusions/reads.tsv",
         #'/media/nadine/INTENSO/STAR/hg38_index'
@@ -194,7 +207,7 @@ rule run_arriba:
 
 rule run_fusioncatcher:
     input:
-        fastq_directory = "data/samples/",
+        fastq_directory = get_unique_paths_without_extension(fastq_dataframe),
         data_directory = "/media/nadine/HOME/nadine/fusioncatcher/data/human_v102",
         mount_dir= config["ctat_mount_dir"]
 
@@ -214,15 +227,62 @@ rule run_fusioncatcher:
         -o {output}'''
 
 
+#TODO: Should this code be stored as an python script and then executed in a rule?
+
+def merge_reads_per_gene_files(input_dir, output_file):
+    # Initialize an empty DataFrame to store the merged data
+    merged_df = pd.DataFrame()
+
+    # Iterate through subdirectories (each corresponds to a sample)
+    for sample_dir in os.listdir(input_dir):
+        sample_path = os.path.join(input_dir,sample_dir)
+
+        # Check if the path is a directory
+        if os.path.isdir(sample_path):
+            sample_name = os.path.basename(sample_path)
+            sample_file = os.path.join(sample_path,'ReadsPerGene.out.tab')
+
+            # Check if the ReadsPerGene.out.tab file exists
+            if os.path.exists(sample_file):
+                # Read the file, skip the first 4 rows, and select the first and fourth columns
+                data = pd.read_csv(sample_file,sep='\t',header=None,skiprows=4,usecols=[0, 1],names=['Gene',
+                                                                                                     sample_name])
+
+                # Set the gene name column as the index
+                data.set_index('Gene',inplace=True)
+
+                # If merged_df is empty, initialize it with the first data
+                if merged_df.empty:
+                    merged_df = data
+                else:
+                    # Merge data with the existing merged_df based on the index (gene names)
+                    merged_df = pd.merge(merged_df,data,left_index=True,right_index=True,how='outer')
+
+    # Reset the index to have the gene names as a separate column
+    merged_df.reset_index(inplace=True)
+
+    # Save the merged DataFrame to the output file
+    merged_df.to_csv(output_file,sep='\t',index=False)
+
+
+# Example usage:
+input_directory = 'STAR_output'
+output_file = 'merged_reads_per_gene.tsv'
+merge_reads_per_gene_files(input_directory,output_file)
+
+
 rule install_allcatchr:
     shell:
         "Rscript -e 'devtools::install_github(\"ThomasBeder/ALLCatchR\")'"
+
+# TODO: Check if rule should run for each individual ReadsPerGene.out.tab file of STAR or only for aggregated file
 
 # Rule to run ALLCatchR
 rule run_allcatchr:
     input:
         r_script = "scripts/run_ALLCatchR.R",
-        input_file = config["counts"],  # Update with the correct path
+        #input_file = config["counts"],  # Update with the correct path
+        input_file = 'merged_reads_per_gene.tsv'
     output:
         "allcatch_output/predictions.tsv"
 
@@ -311,14 +371,14 @@ rule install_rnaseq_cnv:
     shell:
         "Rscript -e 'devtools::install_github(\"honzee/RNAseqCNV\")'"
 
-
+#TODO: Change input of reads dir to take the STAR_output folder
 rule prepare_count_files:
     input:
         reads_dir = config["reads_per_gene_directory"],
         r_script = "scripts/prepare_count_files.R"
 
     params:
-        sample_id=config["sample_id"],  # TODO: Change to sample id of config
+        sample_id=config["sample_id"],
         count_directory= config["single_counts_directory"]
 
     output:

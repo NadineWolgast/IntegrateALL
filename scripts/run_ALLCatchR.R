@@ -4,5 +4,5 @@ library(ALLCatchR)
 args <- commandArgs(trailingOnly = TRUE)
 input_file <- args[1]
 
-allcatch(input_file, ID_class = "symbol", sep = "\t")
+allcatch(input_file, ID_class = "ensemble_ID", sep = "\t")
 

@@ -16,14 +16,14 @@ samples:
   reads_left: data/samples/reads_1.fq.gz
   reads_right: data/samples/reads_2.fq.gz
   testReads_left: data/samples/test-reads-A01_R1_001.fastq.gz
-  testReads_right: data/samples/test-reads-A01_R1_001.fastq.gz
+  testReads_right: data/samples/test-reads-A01_R2_001.fastq.gz
 
 #fastq_directory: /media/nadine/HOME/nadine/fastq
 reads_per_gene_directory: data/reads_per_gene
 
 #right_samples: [data/samples/reads_2.fq.gz,data/samples/test-reads-A01_R1_001.fastq.gz]
 #right_samples: [data/samples/reads_2.fq.gz,data/samples/test-reads-A01_R2_001.fastq.gz]
-right_samples: data/samples/reads_2.fq.gz
+right_samples: data/samples/reads_1.fq.gz
 left_samples: data/samples/reads_2.fq.gz
 
 test_sample: data/samples/reads_1.fq.gz data/samples/reads_2.fq.gz
@@ -33,10 +33,12 @@ test_sample: data/samples/reads_1.fq.gz data/samples/reads_2.fq.gz
   #test_reads: data/samples/test-reads-A01_R1_001.fastq.gz data/samples/test-reads-A01_R2_001.fastq.gz
 
 #STAR_left_samples: data/samples/I29799-L1_S33_L001_R1_001.fastq.gz
-#STAR_right_samples: data/samples/I29799-L1_S33_L001_R1_001.fastq.gz
+#STAR_right_samples: data/samples/I29799-L1_S33_L001_R2_001.fastq.gz
 
-#ctat_mount_dir: /media/nadine/INTENSO/fastq # doesn't work yet
+#ctat_mount_dir: /media/nadine/HOME/nadine/data/samples # doesn't work yet
 ctat_mount_dir: /home/nadine/PycharmProjects/Blast-o-Matic-Fusioninator/data/samples
+#ctat_mount_dir: /home/nadine/PycharmProjects/Blast-o-Matic-Fusioninator/
 ctat_output_dir: /home/nadine/PycharmProjects/Blast-o-Matic-Fusioninator/ctat_output_directory
 genome_lib: /media/nadine/HOME/nadine/ctat-mutations_test/ctat_genome_lib_build_dir
-
+ctat_right_samples: /reads_2.fq.gz
+ctat_left_samples: /reads_1.fq.gz

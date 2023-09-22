@@ -65,11 +65,33 @@ def get_unique_paths_without_extension(dataframe):
 
 
 # TODO: CTAT still uses the samples_test df, change to input sample sheet!
-# Define the samples dictionary with sample IDs and corresponding left/right files
-samples_test = {
-    "reads": {"left": "/reads_1.fq.gz", "right": "/reads_2.fq.gz"},
-    "testReads": {"left": "/test-reads-A01_R1_001.fastq.gz", "right": "/test-reads-A01_R2_001.fastq.gz"},
-}
+
+df = pd.read_csv(config['sample_file'],sep=',')
+
+# Initialize an empty dictionary to store the results
+samples_test = {}
+
+# Iterate over the rows of the DataFrame
+for index, row in df.iterrows():
+    sample_id = row['sample_id']
+    left = os.path.basename(row['left'])
+    right = os.path.basename(row['right'])
+
+    # Add a backslash in front of the filenames
+    left = '/' + left
+    right = '/' + right
+
+    # Create a nested dictionary for each sample
+    sample_info = {
+        "left": left,
+        "right": right
+    }
+
+    # Add the sample to the samples_test dictionary
+    samples_test[sample_id] = sample_info
+
+# Print the resulting dictionary
+print(samples_test)
 
 def extract_sample_ids_from_meta(meta_file):
     df = pd.read_csv(meta_file, sep='\t', header=None)  # Avoid header inference

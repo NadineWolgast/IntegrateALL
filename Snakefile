@@ -1,7 +1,7 @@
 import os
 import csv
 import pandas as pd
-import shutil
+
 
 configfile: "config.yaml"
 
@@ -27,29 +27,29 @@ def extract_filenames_from_csv(csv_file):
     return left_filenames, right_filenames
 
 # Usage example:
-csv_file = 'samples.csv'  # Replace with the actual path to your samples.csv file
-left_files, right_files = extract_filenames_from_csv(csv_file)
-print("Left Filenames:", left_files)
-print("Right Filenames:", right_files)
+sample_file = 'samples.csv'  # Replace with the actual path to your samples.csv file
+left_files, right_files = extract_filenames_from_csv(sample_file)
+#print("Left Filenames:", left_files)
+#print("Right Filenames:", right_files)
 
-sample_ids_list = ['reads', 'testReads', 'reads2']
+#sample_ids_list = ['reads', 'testReads', 'reads2']
 
-def create_sample_dataframe(sample_sheet_path):
-    sample_df = pd.read_csv(sample_sheet_path)
+def create_sample_dataframe(sample_sheet):
+    sample_df = pd.read_csv(sample_sheet)
     result_data = []
     for index, row in sample_df.iterrows():
-        sample_id = row['sample_id']
+        sample_identifier = row['sample_id']
         left_fastq = row['left']
         right_fastq = row['right']
-        result_data.append({'sample_id': f"{sample_id}_left", 'FASTQ': left_fastq})
-        result_data.append({'sample_id': f"{sample_id}_right", 'FASTQ': right_fastq})
+        result_data.append({'sample_id': f"{sample_identifier}_left", 'FASTQ': left_fastq})
+        result_data.append({'sample_id': f"{sample_identifier}_right", 'FASTQ': right_fastq})
     result_df = pd.DataFrame(result_data)
     return result_df
 
 # Example usage:
 sample_sheet_path = config["sample_file"]
 fastq_dataframe = create_sample_dataframe(sample_sheet_path)
-print(fastq_dataframe)
+
 
 def get_unique_paths_without_extension(dataframe):
     unique_paths = set()
@@ -61,16 +61,26 @@ def get_unique_paths_without_extension(dataframe):
 
     return list(unique_paths)
 
-fastq_directory = get_unique_paths_without_extension(fastq_dataframe)
-print(fastq_directory)
+#fastq_directory = get_unique_paths_without_extension(fastq_dataframe)
 
 
+# TODO: CTAT still uses the samples_test df, change to input sample sheet!
 # Define the samples dictionary with sample IDs and corresponding left/right files
 samples_test = {
     "reads": {"left": "/reads_1.fq.gz", "right": "/reads_2.fq.gz"},
     "testReads": {"left": "/test-reads-A01_R1_001.fastq.gz", "right": "/test-reads-A01_R2_001.fastq.gz"},
 }
 
+def extract_sample_ids_from_meta(meta_file):
+    df = pd.read_csv(meta_file, sep='\t', header=None)  # Avoid header inference
+
+    # Extract and return the values from the first column as a list
+    sample_ids = df.iloc[:, 0].tolist()
+
+    return sample_ids
+
+
+rnaseqcnv_sample_ids = extract_sample_ids_from_meta("data/meta.txt")
 
 
 rule all:
@@ -87,14 +97,10 @@ rule all:
         #expand("data/vcf_files/{sample_id}.tsv", sample_id=list(samples.keys())),
         #"data/config.txt",
         #"data/meta.txt",
-        #"rnaseq_cnv_output_directory/",
-        #"data/vcf_files/21Ord12062.vcf",
-        #"data/vcf_files/21Ord12062.tsv",
-        "rnaseq_cnv_output_directory/reads",
+        #expand("RNAseqCNV_output/{sample_id}", sample_id=rnaseqcnv_sample_ids),
         #"data/single_counts"
         #"fusioncatcher_output/",
-        #"multiqc/multiqc_report.html"
-        #"fusions/reads.tsv",
+        expand("fusioncatcher_output/{sample_id}",sample_id=rnaseqcnv_sample_ids)
         #'/media/nadine/INTENSO/STAR/hg38_index'
 
 
@@ -178,7 +184,7 @@ rule index:
 rule run_star_aligner:
     input:
         fastq1 = lambda wildcards: samples[wildcards.sample_id][0],  # Path to left FASTQ from sample sheet
-        fastq2 = lambda wildcards: samples[wildcards.sample_id][1],  # Path to right FASTQ from sample sheet
+        fastq2 = lambda wildcards: samples[wildcards.sample_id][1]  # Path to right FASTQ from sample sheet
 
     output:
         directory = directory("STAR_output/{sample_id}"),
@@ -214,26 +220,54 @@ rule run_arriba:
         bam="STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",
         genome=config["star_ref"],       # Path to reference genome
         annotation=config["star_gtf"],   # Path to annotation GTF
-        custom_blacklist=[],
+        custom_blacklist=[]
     output:
         # Approved gene fusions
         fusions="fusions/{sample_id}.tsv",
         # Discarded gene fusions (optional)
-        discarded="fusions/{sample_id}.discarded.tsv",
+        discarded="fusions/{sample_id}.discarded.tsv"
     log:
-        "logs/arriba/{sample_id}.log",
+        "logs/arriba/{sample_id}.log"
     params:
         genome_build="GRCh38",           # Required when blacklist or known_fusions is set
         default_blacklist=False,         # Optional
         default_known_fusions=True,      # Optional
         sv_file="",                      # File containing information from structural variant analysis
-        extra="-i 1,2",                  # Optional parameters
+        extra="-i 1,2"                  # Optional parameters
     threads: 1
     wrapper:
         "v2.6.0/bio/arriba"
 
 
 
+
+
+rule run_fusioncatcher:
+    input:
+        fastq_directory = get_unique_paths_without_extension(fastq_dataframe),
+        data_directory = "/media/nadine/HOME/nadine/fusioncatcher/data/human_v102",
+        mount_dir= config["ctat_mount_dir"]
+
+    output:
+        directory("fusioncatcher_output/{sample_id}")
+
+    #singularity: "fusioncatcher-1.33.sif"
+
+    conda:
+        "envs/fusioncatcher.yaml"
+
+    params:
+        sample_id=lambda wildcards: wildcards.sample_id  # Extract sample_id from wildcards
+
+    shell:
+        '''mkdir {output} &&
+        fusioncatcher \
+        -d {input.data_directory} \
+        -i {input.fastq_directory} \
+        -o {output}'''
+
+
+"""
 rule run_fusioncatcher:
     input:
         fastq_directory = get_unique_paths_without_extension(fastq_dataframe),
@@ -255,7 +289,7 @@ rule run_fusioncatcher:
         -i {input.fastq_directory} \
         -o {output}'''
 
-
+"""
 #TODO: Should this code be stored as an python script and then executed in a rule?
 def merge_reads_per_gene_files(input_dir, output_file):
     # Initialize an empty DataFrame to store the merged data
@@ -327,7 +361,7 @@ rule pull_ctat_mutations_singularity_image:
 # TODO: Test with boosting method none & ctat_mutations_latest.sif
 rule run_ctat_mutations:
     input:
-        mount_dir=config["ctat_mount_dir"],
+        mount_dir=config["ctat_mount_dir"]
 
     params:
         sample_id= lambda wildcards: wildcards.sample_id,
@@ -341,7 +375,7 @@ rule run_ctat_mutations:
 
     output:
         vcf ="ctat_output_directory/{sample_id}/{sample_id}.cancer.vcf",
-        directory= directory("ctat_output_directory/{sample_id}/"),
+        directory= directory("ctat_output_directory/{sample_id}/")
 
 
     shell:
@@ -428,14 +462,16 @@ rule run_rnaseq_cnv:
     params:
         sample_id = config["sample_id"]
     output:
-        directory("rnaseq_cnv_output_directory/{sample_id}")
+        directory("RNAseqCNV_output/{sample_id}/")
 
     shell:
         "Rscript {input.r_script} {input.config_file} {input.metadata_file} {output};"
         "sleep 0.10;"
-        "mv rnaseq_cnv_output_directory/estimation_table.tsv {output};"
-        "mv rnaseq_cnv_output_directory/manual_an_table.tsv {output};"
-        "mv rnaseq_cnv_output_directory/log2_fold_change_per_arm.tsv {output};"
-        "mv rnaseq_cnv_output_directory/alteration_matrix.tsv {output};"
+        "mkdir {output};"
+        "mv estimation_table.tsv {output};"
+        "mv manual_an_table.tsv {output};"
+        "mv log2_fold_change_per_arm.tsv {output};"
+        "mv alteration_matrix.tsv {output};"
+        "mv {params.sample_id}/{params.sample_id}_CNV_main_fig.png  {output}"
 
 

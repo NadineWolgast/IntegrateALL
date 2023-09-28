@@ -35,10 +35,17 @@ test_sample: data/samples/reads_1.fq.gz data/samples/reads_2.fq.gz
 #STAR_left_samples: data/samples/I29799-L1_S33_L001_R1_001.fastq.gz
 #STAR_right_samples: data/samples/I29799-L1_S33_L001_R2_001.fastq.gz
 
-#ctat_mount_dir: /media/nadine/HOME/nadine/data/samples # doesn't work yet
-ctat_mount_dir: /home/nadine/PycharmProjects/Blast-o-Matic-Fusioninator/data/samples
-#ctat_mount_dir: /home/nadine/PycharmProjects/Blast-o-Matic-Fusioninator/
-ctat_output_dir: /home/nadine/PycharmProjects/Blast-o-Matic-Fusioninator/ctat_output_directory
+
+ctat_mount_dir: /home/nadine/PycharmProjects/Blast-o-Matic-Fusioninator/data/samples  # works
+ctat_input_directory: /media/nadine/Alina/Blast-o-Matic-Fusioninator/data/samples
+ctat_output_dir: /home/nadine/PycharmProjects/Blast-o-Matic-Fusioninator #works
+#ctat_output_dir: /media/nadine/Alina/Blast-o-Matic-Fusioninator/ctat_output_directory #doesn't work yet
 genome_lib: /media/nadine/HOME/nadine/ctat-mutations_test/ctat_genome_lib_build_dir
 ctat_right_samples: /reads_2.fq.gz
 ctat_left_samples: /reads_1.fq.gz
+
+# singularity
+use-singularity: True
+#singularity-args: --bind /home/nadine/PycharmProjects/Blast-o-Matic-Fusioninator/data/samples
+
+latency-wait: 60

@@ -12,3 +12,4 @@ dependencies:
   - pysam =0.19
   - pygments
   - star =2.7.10b
+  - pysamstats =1.1.2

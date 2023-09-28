@@ -6,6 +6,13 @@ import pandas as pd
 configfile: "config.yaml"
 
 
+# Import your custom Python scripts
+from scripts.extract_filenames_from_csv import extract_filenames_from_csv
+from scripts.create_sample_dataframe import create_sample_dataframe
+from scripts.get_unique_paths_without_extension import get_unique_paths_without_extension
+from scripts.merge_reads_per_gene_files import merge_reads_per_gene_files
+
+
 samples = {}
 with open(config["sample_file"], "r") as f:
     next(f)
@@ -13,58 +20,16 @@ with open(config["sample_file"], "r") as f:
         sample_id, left, right = line.strip().split(",")
         samples[sample_id] = (left, right)
 
-
-def extract_filenames_from_csv(csv_file):
-    left_filenames = []
-    right_filenames = []
-
-    with open(csv_file, 'r') as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            left_filenames.append(row['left'].split('/')[-1])  # Extract only the filename
-            right_filenames.append(row['right'].split('/')[-1])  # Extract only the filename
-
-    return left_filenames, right_filenames
-
-# Usage example:
-sample_file = 'samples.csv'  # Replace with the actual path to your samples.csv file
+# Get data from input sample sheet for the rules:
+sample_file = config["sample_file"]
 left_files, right_files = extract_filenames_from_csv(sample_file)
-#print("Left Filenames:", left_files)
-#print("Right Filenames:", right_files)
-
-#sample_ids_list = ['reads', 'testReads', 'reads2']
-
-def create_sample_dataframe(sample_sheet):
-    sample_df = pd.read_csv(sample_sheet)
-    result_data = []
-    for index, row in sample_df.iterrows():
-        sample_identifier = row['sample_id']
-        left_fastq = row['left']
-        right_fastq = row['right']
-        result_data.append({'sample_id': f"{sample_identifier}_left", 'FASTQ': left_fastq})
-        result_data.append({'sample_id': f"{sample_identifier}_right", 'FASTQ': right_fastq})
-    result_df = pd.DataFrame(result_data)
-    return result_df
-
-# Example usage:
-sample_sheet_path = config["sample_file"]
-fastq_dataframe = create_sample_dataframe(sample_sheet_path)
+fastq_dataframe = create_sample_dataframe(sample_file)
+fastq_directory = get_unique_paths_without_extension(fastq_dataframe)
 
 
-def get_unique_paths_without_extension(dataframe):
-    unique_paths = set()
-
-    for fastq_path in dataframe['FASTQ']:
-        # Extract the directory portion of the path and remove the file extension
-        path_without_extension = os.path.splitext(os.path.dirname(fastq_path))[0]
-        unique_paths.add(path_without_extension)
-
-    return list(unique_paths)
-
-#fastq_directory = get_unique_paths_without_extension(fastq_dataframe)
-
-
-# TODO: CTAT still uses the samples_test df, change to input sample sheet!
+#sample_id,left,right
+#testReads,data/samples/test-reads-A01_R1_001.fastq.gz,data/samples/test-reads-A01_R2_001.fastq.gz
+#reads,data/samples/reads_1.fq.gz,data/samples/reads_2.fq.gz
 
 df = pd.read_csv(config['sample_file'],sep=',')
 
@@ -107,24 +72,26 @@ rnaseqcnv_sample_ids = extract_sample_ids_from_meta("data/meta.txt")
 
 rule all:
     input:
-        #expand("STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",sample_id=list(samples.keys())),
-        #expand("data/single_counts/{sample_id}.txt", sample_id=list(samples.keys())),
-        #expand("fusions/{sample_id}.tsv",sample_id=list(samples.keys())),
-        #expand("fastqc/{sample}", sample=fastq_dataframe['sample_id']),
-        #"multiqc/multiqc_report.html",
-        #"allcatch_output/predictions.tsv",
+        expand("STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",sample_id=list(samples.keys())),
+        expand("data/single_counts/{sample_id}.txt", sample_id=list(samples.keys())),
+        expand("fusions/{sample_id}.tsv",sample_id=list(samples.keys())),
+        expand("fastqc/{sample}", sample=fastq_dataframe['sample_id']),
+        "multiqc/multiqc_report.html",
+        "allcatch_output/predictions.tsv",
+        expand("ctat_output_directory/{sample_id}/{sample_id}.cancer.vcf",sample_id=samples_test.keys()), # Funktioniert
         #expand("ctat_output_directory/{sample_id}/{sample_id}.cancer.vcf",sample_id=samples_test.keys()),
-        #expand("fusions/{sample_id}.tsv",sample_id=samples_test.keys()),
-        #expand("data/single_counts/{sample_id}.txt", sample_id=samples.keys()),
-        #expand("data/vcf_files/{sample_id}.tsv", sample_id=list(samples.keys())),
-        #"data/config.txt",
-        #"data/meta.txt",
-        #expand("RNAseqCNV_output/{sample_id}", sample_id=rnaseqcnv_sample_ids),
-        #"data/single_counts"
+        expand("fusions/{sample_id}.tsv",sample_id=samples_test.keys()),
+        expand("data/single_counts/{sample_id}.txt", sample_id=samples.keys()),
+        expand("data/vcf_files/{sample_id}.tsv", sample_id=list(samples.keys())),
+        "data/config.txt",
+        "data/meta.txt",
+        expand("RNAseqCNV_output/{sample_id}", sample_id=rnaseqcnv_sample_ids),
+        "data/single_counts",
         #"fusioncatcher_output/",
-        expand("fusioncatcher_output/{sample_id}",sample_id=rnaseqcnv_sample_ids)
-        #'/media/nadine/INTENSO/STAR/hg38_index'
-
+        expand("fusioncatcher_output/{sample_id}",sample_id=rnaseqcnv_sample_ids),
+        #'/media/nadine/INTENSO/STAR/hg38_index',
+        expand("STAR_output/{sample}/Aligned.sortedByCoord.out.bam.bai",sample=list(samples.keys())),
+        expand("pysamstats_output_dir/{sample_id}.coverage.txt",sample_id=list(samples.keys()))
 
 
 
@@ -235,6 +202,30 @@ rule run_star_aligner:
         '--readFilesCommand zcat '
 
 
+rule samtools_index:
+    input:
+        "STAR_output/{sample}/Aligned.sortedByCoord.out.bam"
+    output:
+        "STAR_output/{sample}/Aligned.sortedByCoord.out.bam.bai",
+    log:
+        "logs/samtools_index/{sample}.log",
+    params:
+        extra="",  # optional params string
+    threads: 4  # This value - 1 will be sent to -@
+    wrapper:
+        "v2.6.0/bio/samtools/index"
+
+
+rule pysamstat:
+    input:
+        bam="STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam"
+
+    output:
+        "pysamstats_output_dir/{sample_id}.coverage.txt"
+
+    shell:
+        "pysamstats --type coverage {input.bam} > pysamstats_output_dir/{sample_id}.coverage.txt"
+
 
 rule run_arriba:
     input:
@@ -312,41 +303,7 @@ rule run_fusioncatcher:
         -o {output}'''
 
 """
-#TODO: Should this code be stored as an python script and then executed in a rule?
-def merge_reads_per_gene_files(input_dir, output_file):
-    # Initialize an empty DataFrame to store the merged data
-    merged_df = pd.DataFrame()
 
-    # Iterate through subdirectories (each corresponds to a sample)
-    for sample_dir in os.listdir(input_dir):
-        sample_path = os.path.join(input_dir,sample_dir)
-
-        # Check if the path is a directory
-        if os.path.isdir(sample_path):
-            sample_name = os.path.basename(sample_path)
-            sample_file = os.path.join(sample_path,'ReadsPerGene.out.tab')
-
-            # Check if the ReadsPerGene.out.tab file exists
-            if os.path.exists(sample_file):
-                # Read the file, skip the first 4 rows, and select the first and fourth columns
-                data = pd.read_csv(sample_file,sep='\t',header=None,skiprows=4,usecols=[0, 1],names=['Gene',
-                                                                                                     sample_name])
-
-                # Set the gene name column as the index
-                data.set_index('Gene',inplace=True)
-
-                # If merged_df is empty, initialize it with the first data
-                if merged_df.empty:
-                    merged_df = data
-                else:
-                    # Merge data with the existing merged_df based on the index (gene names)
-                    merged_df = pd.merge(merged_df,data,left_index=True,right_index=True,how='outer')
-
-    # Reset the index to have the gene names as a separate column
-    merged_df.reset_index(inplace=True)
-
-    # Save the merged DataFrame to the output file
-    merged_df.to_csv(output_file,sep='\t',index=False)
 input_directory = 'STAR_output'
 output_file = 'merged_reads_per_gene.tsv'
 merge_reads_per_gene_files(input_directory,output_file)
@@ -373,6 +330,7 @@ rule run_allcatchr:
         "mv predictions.tsv {output}"
 
 
+
 rule pull_ctat_mutations_singularity_image:
     shell:
         "singularity pull docker://trinityctat/ctat_mutations"
@@ -383,14 +341,17 @@ rule pull_ctat_mutations_singularity_image:
 # TODO: Test with boosting method none & ctat_mutations_latest.sif
 rule run_ctat_mutations:
     input:
-        mount_dir=config["ctat_mount_dir"]
+        mount_dir=config["ctat_mount_dir"],
+        fastq1= lambda wildcards: samples[wildcards.sample_id][0],  # Path to left FASTQ from sample shee
+        fastq2= lambda wildcards: samples[wildcards.sample_id][1],  # Path to right FASTQ from sample sheet
+        input_directory= config["ctat_input_directory"]
 
     params:
         sample_id= lambda wildcards: wildcards.sample_id,
-        #output_dir=config["ctat_output_dir"],
         genome_lib=config["genome_lib"],
         left= lambda wildcards: samples_test[wildcards.sample_id]['left'],
-        right= lambda wildcards: samples_test[wildcards.sample_id]['right']
+        right= lambda wildcards: samples_test[wildcards.sample_id]['right'],
+        #input_directory= config["ctat_input_directory"]
 
     wildcard_constraints:
         sample_id="|".join(samples_test.keys())
@@ -404,10 +365,11 @@ rule run_ctat_mutations:
         '''
         singularity exec -e -B {input.mount_dir}:/data \
         -B {params.genome_lib}:/ctat_genome_lib_dir \
+        -B {input.input_directory}:/ctat_input \
         ctat_mutations.v3.2.0.simg \
         /usr/local/src/ctat-mutations/ctat_mutations \
-        --left {input.mount_dir}{params.left} \
-        --right {input.mount_dir}{params.right} \
+        --left /ctat_input/{params.left} \
+        --right /ctat_input/{params.right} \
         --sample_id {params.sample_id} \
         --output {output.directory}  \
         --cpu 10 \
@@ -415,8 +377,6 @@ rule run_ctat_mutations:
         --boosting_method none \
         --no_cravat
         '''
-
-
 
 # Rule to process ReadsPerGene.out.tab files for RNASeq-CNV
 rule process_reads_per_gene:

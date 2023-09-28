@@ -72,26 +72,27 @@ rnaseqcnv_sample_ids = extract_sample_ids_from_meta("data/meta.txt")
 
 rule all:
     input:
-        expand("STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",sample_id=list(samples.keys())),
-        expand("data/single_counts/{sample_id}.txt", sample_id=list(samples.keys())),
-        expand("fusions/{sample_id}.tsv",sample_id=list(samples.keys())),
-        expand("fastqc/{sample}", sample=fastq_dataframe['sample_id']),
+        #expand("STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",sample_id=list(samples.keys())),
+        #expand("data/single_counts/{sample_id}.txt", sample_id=list(samples.keys())),
+        #expand("fusions/{sample_id}.tsv",sample_id=list(samples.keys())),
+        #expand("fastqc/{sample}", sample=fastq_dataframe['sample_id']),
+        expand("multiqc/{sample}/multiqc_report.html",sample=fastq_dataframe['sample_id']),
         "multiqc/multiqc_report.html",
-        "allcatch_output/predictions.tsv",
-        expand("ctat_output_directory/{sample_id}/{sample_id}.cancer.vcf",sample_id=samples_test.keys()), # Funktioniert
+        #"allcatch_output/predictions.tsv",
+        #expand("ctat_output_directory/{sample_id}/{sample_id}.cancer.vcf",sample_id=samples_test.keys()), # Funktioniert
         #expand("ctat_output_directory/{sample_id}/{sample_id}.cancer.vcf",sample_id=samples_test.keys()),
-        expand("fusions/{sample_id}.tsv",sample_id=samples_test.keys()),
-        expand("data/single_counts/{sample_id}.txt", sample_id=samples.keys()),
-        expand("data/vcf_files/{sample_id}.tsv", sample_id=list(samples.keys())),
-        "data/config.txt",
-        "data/meta.txt",
-        expand("RNAseqCNV_output/{sample_id}", sample_id=rnaseqcnv_sample_ids),
-        "data/single_counts",
+        #expand("fusions/{sample_id}.tsv",sample_id=samples_test.keys()),
+        #expand("data/single_counts/{sample_id}.txt", sample_id=samples.keys()),
+        #expand("data/vcf_files/{sample_id}.tsv", sample_id=list(samples.keys())),
+        #"data/config.txt",
+        #"data/meta.txt",
+        #expand("RNAseqCNV_output/{sample_id}", sample_id=rnaseqcnv_sample_ids),
+        #"data/single_counts",
         #"fusioncatcher_output/",
-        expand("fusioncatcher_output/{sample_id}",sample_id=rnaseqcnv_sample_ids),
-        #'/media/nadine/INTENSO/STAR/hg38_index',
-        expand("STAR_output/{sample}/Aligned.sortedByCoord.out.bam.bai",sample=list(samples.keys())),
-        expand("pysamstats_output_dir/{sample_id}.coverage.txt",sample_id=list(samples.keys()))
+        #expand("fusioncatcher_output/{sample_id}",sample_id=rnaseqcnv_sample_ids),
+        #'/media/nadine/HOME/nadine/STAR/ensembl_94_100'
+        #expand("STAR_output/{sample}/Aligned.sortedByCoord.out.bam.bai",sample=list(samples.keys())),
+        #expand("pysamstats_output_dir/{sample_id}.coverage.txt",sample_id=list(samples.keys()))
 
 
 
@@ -117,7 +118,6 @@ rule fastqc:
 rule unzip:
     input:
         sample="fastqc/{sample}.zip"
-        #expand("fastqc/{Sample}.zip",Sample=inputdf['Sample_ID'].unique())
     output:
         directory("fastqc/{sample}")
     shell:
@@ -134,23 +134,18 @@ rule multiqc_dir:
     shell:
         "multiqc {input} -o {params.output_dir}"
 
-'''
+
 rule multiqc_file:
     input:
-        expand("fastqc/{sample}", sample=config["samples"])
-
+        "fastqc/{sample}/"
     output:
         "multiqc/{sample}/multiqc_report.html"
-
     params:
-        extra = "-o multiqc/{sample}/",
-        use_input_files_only=True,
+        output_dir= "multiqc/{sample}/"
+    shell:
+        "multiqc {input} -o {params.output_dir}"
 
-    log:
-        "logs/multiqc/multiqc.log"
-    wrapper:
-        "v2.6.0/bio/multiqc"
-'''
+
 
 #conda install star=2.7.1a
 
@@ -160,7 +155,7 @@ rule index:
             fa = config['star_ref'], # provide your reference FASTA file
             gtf = config['star_gtf'] # provide your GTF file
         output:
-            directory('/media/nadine/HOME/nadine/STAR/ensembl_94_100') # TODO: Change to config for genome index
+            directory(config["genome_index"]) # TODO: Change to config for genome index
         threads: 20 # set the maximum number of available cores
         shell:
             'STAR --runThreadN {threads} '
@@ -264,8 +259,6 @@ rule run_fusioncatcher:
     output:
         directory("fusioncatcher_output/{sample_id}")
 
-    #singularity: "fusioncatcher-1.33.sif"
-
     conda:
         "envs/fusioncatcher.yaml"
 
@@ -305,7 +298,7 @@ rule run_fusioncatcher:
 """
 
 input_directory = 'STAR_output'
-output_file = 'merged_reads_per_gene.tsv'
+output_file = 'data/combined_counts/merged_reads_per_gene.tsv'
 merge_reads_per_gene_files(input_directory,output_file)
 
 
@@ -321,7 +314,7 @@ rule run_allcatchr:
     input:
         r_script = "scripts/run_ALLCatchR.R",
         #input_file = config["counts"],  # Update with the correct path
-        input_file = 'merged_reads_per_gene.tsv'
+        input_file = 'data/combined_counts/merged_reads_per_gene.tsv'
     output:
         "allcatch_output/predictions.tsv"
 

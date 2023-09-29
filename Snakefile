@@ -1,5 +1,5 @@
+import glob
 import os
-import csv
 import pandas as pd
 
 
@@ -25,7 +25,7 @@ sample_file = config["sample_file"]
 left_files, right_files = extract_filenames_from_csv(sample_file)
 fastq_dataframe = create_sample_dataframe(sample_file)
 fastq_directory = get_unique_paths_without_extension(fastq_dataframe)
-
+print("fastq dataframe: ", fastq_dataframe)
 
 #sample_id,left,right
 #testReads,data/samples/test-reads-A01_R1_001.fastq.gz,data/samples/test-reads-A01_R2_001.fastq.gz
@@ -56,7 +56,7 @@ for index, row in df.iterrows():
     samples_test[sample_id] = sample_info
 
 # Print the resulting dictionary
-print(samples_test)
+print("samples_test:",samples_test)
 
 def extract_sample_ids_from_meta(meta_file):
     df = pd.read_csv(meta_file, sep='\t', header=None)  # Avoid header inference
@@ -68,7 +68,7 @@ def extract_sample_ids_from_meta(meta_file):
 
 
 rnaseqcnv_sample_ids = extract_sample_ids_from_meta("data/meta.txt")
-
+print("sample_keys: ", list(samples.keys()))
 
 rule all:
     input:
@@ -76,9 +76,15 @@ rule all:
         #expand("data/single_counts/{sample_id}.txt", sample_id=list(samples.keys())),
         #expand("fusions/{sample_id}.tsv",sample_id=list(samples.keys())),
         #expand("fastqc/{sample}", sample=fastq_dataframe['sample_id']),
-        expand("multiqc/{sample}/multiqc_report.html",sample=fastq_dataframe['sample_id']),
-        "multiqc/multiqc_report.html",
+        #expand("multiqc/{sample}/multiqc_report.html",sample=fastq_dataframe['sample_id']),
+        #"multiqc/multiqc_report.html",
+        expand("QC/{sample}/multiqc_fastqc.txt",sample=list(samples.keys())),
+        expand("QC/{sample}/multiqc_general_stats.txt", sample=list(samples.keys())),
+        expand("QC/{sample}/fastqc_data.txt",sample=list(samples.keys())),
+        expand("QC/{sample}/summary.txt",sample=list(samples.keys())),
         #"allcatch_output/predictions.tsv",
+        #expand("data/counts/{sample_id}.tsv",sample_id= samples.keys()),
+        #expand("allcatch_output/{sample_id}/predictions.tsv",sample_id= samples.keys())
         #expand("ctat_output_directory/{sample_id}/{sample_id}.cancer.vcf",sample_id=samples_test.keys()), # Funktioniert
         #expand("ctat_output_directory/{sample_id}/{sample_id}.cancer.vcf",sample_id=samples_test.keys()),
         #expand("fusions/{sample_id}.tsv",sample_id=samples_test.keys()),
@@ -89,7 +95,9 @@ rule all:
         #expand("RNAseqCNV_output/{sample_id}", sample_id=rnaseqcnv_sample_ids),
         #"data/single_counts",
         #"fusioncatcher_output/",
-        #expand("fusioncatcher_output/{sample_id}",sample_id=rnaseqcnv_sample_ids),
+        #expand("fusioncatcher_output/{sample_id}",sample_id= samples.keys()),
+        #expand("data/total_mapped_reads/{sample_id}.txt", sample_id= samples.keys()), # doesn't work yet
+        #expand("data/tpm/{sample_id}.tsv",sample_id= samples.keys())  # doesn't work yet
         #'/media/nadine/HOME/nadine/STAR/ensembl_94_100'
         #expand("STAR_output/{sample}/Aligned.sortedByCoord.out.bam.bai",sample=list(samples.keys())),
         #expand("pysamstats_output_dir/{sample_id}.coverage.txt",sample_id=list(samples.keys()))
@@ -147,15 +155,44 @@ rule multiqc_file:
 
 
 
+# TODO: need to add file prefix left and right or it overwrites itself...
+rule extract_and_rename_QC_files:
+    input:
+        multiqc_dir="multiqc/",
+        fastqc_dir="fastqc/",
+
+    output:
+        directory("QC/{sample}"),
+        multiqc_fastqc="QC/{sample}/multiqc_fastqc.txt",
+        multiqc_general_stats="QC/{sample}/multiqc_general_stats.txt",
+        fastqc_data="QC/{sample}/fastqc_data.txt",
+        summary="QC/{sample}/summary.txt"
+
+
+    shell:
+        """
+            mkdir -p QC/{wildcards.sample}
+            echo Processing wildcards sample: {wildcards.sample}
+            # Copy the MultiQC files\n"
+            cp {input.multiqc_dir}/{wildcards.sample}_left/multiqc_data/multiqc_fastqc.txt {output.multiqc_fastqc}
+            cp {input.multiqc_dir}/{wildcards.sample}_right/multiqc_data/multiqc_fastqc.txt {output.multiqc_fastqc}
+            cp {input.multiqc_dir}/{wildcards.sample}_left/multiqc_data/multiqc_general_stats.txt {output.multiqc_general_stats}
+            cp {input.multiqc_dir}/{wildcards.sample}_right/multiqc_data/multiqc_general_stats.txt {output.multiqc_general_stats}
+            find {input.fastqc_dir}/{wildcards.sample}_left/ -type f -name 'fastqc_data.txt' -exec cp {} QC/{wildcards.sample}/ \ 
+            find {input.fastqc_dir}/{wildcards.sample}_right/ -type f -name 'fastqc_data.txt' -exec cp {} QC/{wildcards.sample}/ \; 
+        """
+#find fastqc/reads_left/ -type f -name 'fastqc_data.txt' -exec cp {} QC/reads/ \;
+
+
 #conda install star=2.7.1a
 
-# TODO: rule index not tested yet
+# TODO: rule index not tested yet, too large for my machine
 rule index:
         input:
             fa = config['star_ref'], # provide your reference FASTA file
             gtf = config['star_gtf'] # provide your GTF file
         output:
-            directory(config["genome_index"]) # TODO: Change to config for genome index
+            directory(config["genome_index"])
         threads: 20 # set the maximum number of available cores
         shell:
             'STAR --runThreadN {threads} '
@@ -201,11 +238,11 @@ rule samtools_index:
     input:
         "STAR_output/{sample}/Aligned.sortedByCoord.out.bam"
     output:
-        "STAR_output/{sample}/Aligned.sortedByCoord.out.bam.bai",
+        "STAR_output/{sample}/Aligned.sortedByCoord.out.bam.bai"
     log:
-        "logs/samtools_index/{sample}.log",
+        "logs/samtools_index/{sample}.log"
     params:
-        extra="",  # optional params string
+        extra=""  # optional params string
     threads: 4  # This value - 1 will be sent to -@
     wrapper:
         "v2.6.0/bio/samtools/index"
@@ -249,7 +286,6 @@ rule run_arriba:
 
 
 
-
 rule run_fusioncatcher:
     input:
         fastq_directory = get_unique_paths_without_extension(fastq_dataframe),
@@ -273,29 +309,6 @@ rule run_fusioncatcher:
         -o {output}'''
 
 
-"""
-rule run_fusioncatcher:
-    input:
-        fastq_directory = get_unique_paths_without_extension(fastq_dataframe),
-        data_directory = "/media/nadine/HOME/nadine/fusioncatcher/data/human_v102",
-        mount_dir= config["ctat_mount_dir"]
-
-    output:
-        directory("fusioncatcher_output/")
-
-    #singularity: "fusioncatcher-1.33.sif"
-
-    conda:
-        "envs/fusioncatcher.yaml"
-
-    shell:
-        '''mkdir {output} &&
-        fusioncatcher \
-        -d {input.data_directory} \
-        -i {input.fastq_directory} \
-        -o {output}'''
-
-"""
 
 input_directory = 'STAR_output'
 output_file = 'data/combined_counts/merged_reads_per_gene.tsv'
@@ -306,17 +319,43 @@ rule install_allcatchr:
     shell:
         "Rscript -e 'devtools::install_github(\"ThomasBeder/ALLCatchR\")'"
 
-# TODO: Check if rule should run for each individual ReadsPerGene.out.tab file of STAR or only for aggregated file
-# TODO: Run ALLCatchR for each individual ReadsPerGene.out.tab file, merge final outputs in one table.
-#  Need to rename the output files predictions.tsv from running the command for each individual file.
+
 # Rule to run ALLCatchR
 rule run_allcatchr:
     input:
         r_script = "scripts/run_ALLCatchR.R",
-        #input_file = config["counts"],  # Update with the correct path
         input_file = 'data/combined_counts/merged_reads_per_gene.tsv'
     output:
         "allcatch_output/predictions.tsv"
+
+    shell:
+        "Rscript {input.r_script} {input.input_file} {output};"
+        "mv predictions.tsv {output}"
+
+
+
+# Rule to process ReadsPerGene.out.tab files for ALLCatchR
+rule process_reads_per_gene_to_counts:
+    input:
+        reads_per_gene="STAR_output/{sample_id}/ReadsPerGene.out.tab"  # Input pattern for each sample
+    output:
+        counts="data/counts/{sample_id}.tsv"  # Output file for each sample
+    params:
+        skip_rows=4  # Number of rows to skip in the input file
+    shell:
+        """
+        echo -e "Gene\t{wildcards.sample_id}" > {output.counts}
+        awk 'NR > {params.skip_rows} {{print $1 "\t" $2}}' {input.reads_per_gene} >> {output.counts}
+        """
+
+
+
+rule run_allcatchr_on_single_count_files:
+    input:
+        r_script = "scripts/run_ALLCatchR.R",
+        input_file = 'data/counts/{sample}.tsv'
+    output:
+        "allcatch_output/{sample}/"
 
     shell:
         "Rscript {input.r_script} {input.input_file} {output};"
@@ -343,7 +382,7 @@ rule run_ctat_mutations:
         sample_id= lambda wildcards: wildcards.sample_id,
         genome_lib=config["genome_lib"],
         left= lambda wildcards: samples_test[wildcards.sample_id]['left'],
-        right= lambda wildcards: samples_test[wildcards.sample_id]['right'],
+        right= lambda wildcards: samples_test[wildcards.sample_id]['right']
         #input_directory= config["ctat_input_directory"]
 
     wildcard_constraints:
@@ -384,6 +423,29 @@ rule process_reads_per_gene:
         awk 'NR > {params.skip_rows} {{print $1 "\t" $2}}' {input.reads_per_gene} > {output.counts}
         """
 
+
+'''
+rule calculate_total_mapped_reads:
+    input:
+        bam="STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam"
+    output:
+        total_mapped_reads="data/total_mapped_reads/{sample_id}.txt"
+    script:
+        "scripts/calculate_total_mapped_reads.sh"
+
+
+
+rule calculate_tpm:
+    input:
+        reads_per_gene="STAR_output/{sample_id}/ReadsPerGene.out.tab",
+        total_mapped_reads="data/total_mapped_reads/{sample_id}.txt"
+    output:
+        tpm="data/tpm/{sample_id}.tsv"
+    params:
+        skip_rows=4
+    script:
+        "scripts/calculate_tpm.py"
+'''
 
 rule write_rnaseq_cnv_files:
     input:
@@ -448,5 +510,16 @@ rule run_rnaseq_cnv:
         "mv log2_fold_change_per_arm.tsv {output};"
         "mv alteration_matrix.tsv {output};"
         "mv {params.sample_id}/{params.sample_id}_CNV_main_fig.png  {output}"
+
+
+# TODO: extract the summary.txt + fastqc_data.txt from subdirectory fastqc/sample/sample_fastqc
+# TODO: Make new directory QC and put the individual left and right fastqc + multiqc output in it for better aggregation
+rule aggregate_output:
+    input:
+        left_fastqc_summary="qc/multiqc/left/{sample_id}/multiqc_fastqc.txt",
+        right_fastqc_summary="qc/multiqc/left/{sample_id}/multiqc_fastqc.txt",
+        multiqc_directory="qc/multiqc/right/{sample_id}/multiqc_general_stats",
+        prediction_file= "allcatch_output/{sample_id}/predictions.tsv",
+        fusioncatcher_file="fusioncatcher_output/{sample}"
 
 

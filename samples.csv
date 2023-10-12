@@ -1,2 +1,2 @@
 sample_id,left,right
-reads3,/media/nadine/Alina/Blast-o-Matic-Fusioninator/data/samples/rnaseq_1.fastq.gz,/media/nadine/Alina/Blast-o-Matic-Fusioninator/data/samples/rnaseq_2.fastq.gz
+test42,/path/to/left.fastq.gz,/path/to/right.fastq.gz,.fastq.gz

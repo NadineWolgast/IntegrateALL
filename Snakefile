@@ -1,5 +1,6 @@
 import glob
 import os
+import csv
 import pandas as pd
 
 
@@ -59,22 +60,51 @@ for index, row in df.iterrows():
 # Print the resulting dictionary
 print("samples_test:",samples_test)
 
-def extract_sample_ids_from_meta(meta_file):
-    df = pd.read_csv(meta_file, sep='\t', header=None)  # Avoid header inference
-
-    # Extract and return the values from the first column as a list
-    sample_ids = df.iloc[:, 0].tolist()
-
-    return sample_ids
-
-
-rnaseqcnv_sample_ids = extract_sample_ids_from_meta("data/meta.txt")
 print("sample_keys: ", list(samples.keys()))
-print("rnaseqcnv sample_keys: ", list(rnaseqcnv_sample_ids))
+
+
+
+def generate_files(input_csv, output_dir):
+    # Create the output directory if it doesn't exist
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Initialize list for meta.txt data
+    meta_data = []
+    config_data = [
+        "out_dir = 'RNAseqCNV_output'",
+        "count_dir = 'data/single_counts'",
+        "snv_dir = 'data/vcf_files'"
+    ]
+
+    # Read the sample.csv file
+    with open(input_csv, 'r') as csvfile:
+        csvreader = csv.DictReader(csvfile)
+        for row in csvreader:
+            sample_id = row['sample_id']
+            # Add data to meta.txt
+            meta_data.append(f"{sample_id}\t{sample_id}.txt\t{sample_id}.tsv")
+
+    # Write data to meta.txt
+    meta_file = os.path.join(output_dir, 'meta.txt')
+    with open(meta_file, 'w') as meta:
+        meta.write("\n".join(meta_data))
+
+    # Write data to config.txt
+    config_file = os.path.join(output_dir, 'config.txt')
+    with open(config_file, 'w') as config:
+        config.write("\n".join(config_data))
+
+    print(f"Meta.txt and config.txt files generated in {output_dir}")
+
+output_directory = 'data/'
+generate_files(sample_file, output_directory)
+
+
 
 
 rule all:
     input:
+        "check_samples.txt",
         #expand("STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",sample_id=list(samples.keys())),
         #expand("data/single_counts/{sample_id}.txt", sample_id=list(samples.keys())),
         #expand("fusions/{sample_id}.tsv",sample_id=list(samples.keys())),
@@ -83,13 +113,14 @@ rule all:
         #expand("multiqc/{sample}/multiqc_data/multiqc_fastqc.txt", sample=fastq_dataframe['sample_id']),
         #expand("data/counts/{sample_id}.tsv",sample_id= samples.keys()),
         #expand("allcatch_output/{sample_id}/predictions.tsv",sample_id= samples.keys()),
-        expand("ctat_output_directory/{sample_id}/{sample_id}.cancer.vcf",sample_id=samples_test.keys()), # Funktioniert
+        #expand("ctat_output_directory/{sample_id}/{sample_id}.cancer.vcf",sample_id=samples_test.keys()), # Funktioniert
+        #expand("ctat_output_directory/{sample_id}/",sample_id=samples_test.keys()),
         #expand("fusions/{sample_id}.tsv",sample_id=samples_test.keys()),
         #expand("data/single_counts/{sample_id}.txt", sample_id=samples.keys()),
         #expand("data/vcf_files/{sample_id}.tsv", sample_id=list(samples.keys())),
         #"data/config.txt",
         #"data/meta.txt",
-        #expand("/media/nadine/Alina/Blast-o-Matic-Fusioninator/RNAseqCNV_output/{sample_id}", sample_id=rnaseqcnv_sample_ids),
+        #expand("RNAseqCNV_output/{sample_id}",sample_id=samples.keys()),
         #"data/single_counts",
         #"fusioncatcher_output/",
         #expand("fusioncatcher_output/{sample_id}",sample_id= samples.keys()),
@@ -99,6 +130,58 @@ rule all:
         #expand("STAR_output/{sample}/Aligned.sortedByCoord.out.bam.bai",sample=list(samples.keys())),
         #expand("pysamstats_output_dir/{sample_id}.coverage.txt",sample_id=list(samples.keys())),
         #expand("aggregated_output/{sample}.csv", sample=list(samples.keys()))
+
+
+
+def validate_input(samples_csv, left_col, right_col):
+    import os
+    import csv
+
+    # Initialize a list to store error messages
+    errors = []
+
+    # Check if the samples.csv file exists
+    if not os.path.exists(samples_csv):
+        errors.append(f"{samples_csv} does not exist")
+
+    # Check if the samples.csv file has the correct format
+    try:
+        with open(samples_csv, "r") as csv_file:
+            csv_reader = csv.reader(csv_file)
+            header = next(csv_reader)  # Read the header row
+
+            if len(header) != 3 or header[0] != "sample_id" or header[1] != "left" or header[2] != "right":
+                errors.append(f"Invalid header in {samples_csv}. Expected: 'sample_id, left, right'")
+
+            for row in csv_reader:
+                sample, left, right = row
+                if not os.path.exists(left):
+                    errors.append(f"File referenced in 'left' column does not exist: {left}")
+                if not os.path.exists(right):
+                    errors.append(f"File referenced in 'right' column does not exist: {right}")
+    except Exception as e:
+        errors.append(f"Error reading {samples_csv}: {str(e)}")
+    return errors
+
+
+
+rule check_samples:
+    input:
+        samples_csv= "samples.csv"
+    output:
+        "check_samples.txt"
+    params:
+        left_col=1,
+        right_col=2
+    run:
+        errors = validate_input(input.samples_csv, params.left_col, params.right_col)
+        with open(output[0], "w") as output_file:
+            if errors:
+                for error in errors:
+                    output_file.write(f"Error: {error}\n")
+            else:
+                output_file.write("Sample format and file existence checks passed")
+
 
 
 
@@ -292,8 +375,8 @@ rule run_arriba:
 rule run_fusioncatcher:
     input:
         fastq_directory = get_unique_paths_without_extension(fastq_dataframe),
-        data_directory = "/media/nadine/HOME/nadine/fusioncatcher/data/human_v102",
-        mount_dir= config["ctat_mount_dir"]
+        data_directory = config["rna_fusion_data_directory"],
+        #mount_dir= config["ctat_mount_dir"]
 
     output:
         directory("fusioncatcher_output/{sample_id}")
@@ -370,7 +453,7 @@ rule pull_ctat_mutations_singularity_image:
     shell:
         "singularity pull docker://trinityctat/ctat_mutations"
 
-
+#cp -L files tmp/ && rm files && cp tmp/files .
 # Rule to run ctat-mutations
 rule run_ctat_mutations:
     input:
@@ -383,7 +466,7 @@ rule run_ctat_mutations:
         left= lambda wildcards: samples_test[wildcards.sample_id]['left'],
         right= lambda wildcards: samples_test[wildcards.sample_id]['right'],
         input_directory= config["ctat_input_directory"],
-        output_dir= config["ctat_output_dir"]
+
 
     wildcard_constraints:
         sample_id="|".join(samples_test.keys())
@@ -397,20 +480,38 @@ rule run_ctat_mutations:
         '''
         singularity exec -e -B {input.input_directory}:/ctat_input \
         -B {params.genome_lib}:/ctat_genome_lib_dir:ro \
-        -B {params.output_dir}/{output.directory}:/outdir \
         ctat_mutations.v3.2.0.simg \
         /usr/local/src/ctat-mutations/ctat_mutations \
         --left /ctat_input/{params.left} \
         --right /ctat_input/{params.right} \
         --sample_id {params.sample_id} \
-        --output /outdir \
+        --output {output.directory} \
         --cpu 10 \
         --genome_lib_dir /ctat_genome_lib_dir \
         --boosting_method none \
         --no_cravat
         '''
-
-
+# cp -rL /home/nadine/ctat_output/reads /media/nadine/Alina/Blast-o-Matic-Fusioninator/ctat_output_directory
+#{params.output_path}/{output.directory}
+"""
+        '''
+        mkdir {output.directory} &&
+        singularity exec -e -B {input.input_directory}:/ctat_input \
+        -B {params.genome_lib}:/ctat_genome_lib_dir:ro \
+        ctat_mutations.v3.2.0.simg \
+        /usr/local/src/ctat-mutations/ctat_mutations \
+        --left /ctat_input/{params.left} \
+        --right /ctat_input/{params.right} \
+        --sample_id {params.sample_id} \
+        --output {params.output_dir}/{output.directory} \
+        --cpu 10 \
+        --genome_lib_dir /ctat_genome_lib_dir \
+        --boosting_method none \
+        --no_cravat
+        '''
+        
+      
+"""
 
 # Rule to process ReadsPerGene.out.tab files for RNASeq-CNV
 rule process_reads_per_gene:
@@ -448,19 +549,24 @@ rule calculate_tpm:
     script:
         "scripts/calculate_tpm.py"
 '''
+
+
+
+
+'''
 #TODO: Change count_dir, vcf_dir and outdir to current path
 rule write_rnaseq_cnv_files:
     input:
         r_script_config = "scripts/write_rnaseq_cnv_config.R",
         r_script_meta = "scripts/write_rnaseq_cnv_meta.R",
-        count_dir = "/media/nadine/Alina/Blast-o-Matic-Fusioninator/data/single_counts/",
-        vcf_dir = "/media/nadine/Alina/Blast-o-Matic-Fusioninator/data/vcf_files/",
-        out_dir= "/media/nadine/Alina/Blast-o-Matic-Fusioninator/RNAseqCNV_output"
+        count_dir = "data/single_counts/",
+        vcf_dir = "data/vcf_files/",
+        out_dir= "RNAseqCNV_output"
 
 
     output:
-        config="/media/nadine/Alina/Blast-o-Matic-Fusioninator/data/config.txt",
-        meta="/media/nadine/Alina/Blast-o-Matic-Fusioninator/data/meta.txt"
+        config="data/config.txt",
+        meta="data/meta.txt"
 
     log:
         "logs/write_config_file/meta.log"
@@ -473,7 +579,7 @@ rule write_rnaseq_cnv_files:
         # Generate meta.txt
         Rscript {input.r_script_meta}  {input.count_dir} {input.vcf_dir} {output.meta} > {log};
         """
-
+'''
 rule install_rnaseq_cnv:
     shell:
         "Rscript -e 'devtools::install_github(\"honzee/RNAseqCNV\")'"
@@ -496,21 +602,24 @@ rule prepare_vcf_files:
 rule run_rnaseq_cnv:
     input:
         r_script = "scripts/run_rnaseq_cnv.R",
-        config_file = "/media/nadine/Alina/Blast-o-Matic-Fusioninator/data/config.txt",
-        metadata_file = "/media/nadine/Alina/Blast-o-Matic-Fusioninator/data/meta.txt"
+        config_file = "data/config.txt",
+        metadata_file = "data/meta.txt"
 
     output:
-        directory("/media/nadine/Alina/Blast-o-Matic-Fusioninator/RNAseqCNV_output/{sample_id}/")
+        directory="RNAseqCNV_output/{sample_id}/",
+        rna_seq_cnv_alteration_file="RNAseqCNV_output/{sample_id}/estimation_table.tsv",
+        rna_seq_cnv_log2foldchange_file="RNAseqCNV_output/{sample_id}/log2_fold_change_per_arm.tsv",
+        rna_seq_cnv_manual_an_table_file= "RNAseqCNV_output/{sample_id}/manual_an_table.tsv",
 
     shell:
-        "Rscript {input.r_script} {input.config_file} {input.metadata_file} {output};"
+        "Rscript {input.r_script} {input.config_file} {input.metadata_file} {output.directory};"
         "sleep 0.10;"
-        "mkdir {output};"
-        "mv estimation_table.tsv {output};"
-        "mv manual_an_table.tsv {output};"
-        "mv log2_fold_change_per_arm.tsv {output};"
-        "mv alteration_matrix.tsv {output};"
-        "mv {sample_id}/{sample_id}_CNV_main_fig.png  {output}"
+        "mkdir {output.directory};"
+        "mv estimation_table.tsv {output.directory};"
+        "mv manual_an_table.tsv {output.directory};"
+        "mv log2_fold_change_per_arm.tsv {output.directory};"
+        "mv alteration_matrix.tsv {output.directory};"
+        "mv {sample_id}/{sample_id}_CNV_main_fig.png  {output.directory}"
 
 #sample_id,left,right
 #reads,data/samples/reads_1.fq.gz,data/samples/reads_2.fq.gz
@@ -518,15 +627,15 @@ rule run_rnaseq_cnv:
 
 rule aggregate_output:
     input:
-        prediction_file = "/media/nadine/Alina/Blast-o-Matic-Fusioninator/allcatch_output/{sample}/predictions.tsv",
-        fusioncatcher_file = "/media/nadine/Alina/Blast-o-Matic-Fusioninator/fusioncatcher_output/{sample}/final-list_candidate-fusion-genes.txt",
-        arriba_file = "/media/nadine/Alina/Blast-o-Matic-Fusioninator/fusions/{sample}.tsv",
-        rna_seq_cnv_alteration_file= "/media/nadine/Alina/Blast-o-Matic-Fusioninator/RNAseqCNV_output/{sample}/estimation_table.tsv",
-        rna_seq_cnv_log2foldchange_file= "/media/nadine/Alina/Blast-o-Matic-Fusioninator/RNAseqCNV_output/{sample}/log2_fold_change_per_arm.tsv",
-        rna_seq_cnv_manual_an_table_file= "/media/nadine/Alina/Blast-o-Matic-Fusioninator/RNAseqCNV_output/{sample}/manual_an_table.tsv",
-        star_log_final_out_file= "/media/nadine/Alina/Blast-o-Matic-Fusioninator/STAR_output/{sample}/Log.final.out",
-        multiqc_fqc_right= "/media/nadine/Alina/Blast-o-Matic-Fusioninator/multiqc/{sample}_right/multiqc_data/multiqc_fastqc.txt",
-        multiqc_fqc_left= "/media/nadine/Alina/Blast-o-Matic-Fusioninator/multiqc/{sample}_left/multiqc_data/multiqc_fastqc.txt",
+        prediction_file = "allcatch_output/{sample}/predictions.tsv",
+        fusioncatcher_file = "fusioncatcher_output/{sample}/final-list_candidate-fusion-genes.txt",
+        arriba_file = "fusions/{sample}.tsv",
+        rna_seq_cnv_alteration_file= "RNAseqCNV_output/{sample}/estimation_table.tsv",
+        rna_seq_cnv_log2foldchange_file= "RNAseqCNV_output/{sample}/log2_fold_change_per_arm.tsv",
+        rna_seq_cnv_manual_an_table_file= "RNAseqCNV_output/{sample}/manual_an_table.tsv",
+        star_log_final_out_file= "STAR_output/{sample}/Log.final.out",
+        multiqc_fqc_right= "multiqc/{sample}_right/multiqc_data/multiqc_fastqc.txt",
+        multiqc_fqc_left= "multiqc/{sample}_left/multiqc_data/multiqc_fastqc.txt",
 
 
     output:

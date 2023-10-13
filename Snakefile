@@ -1,4 +1,3 @@
-import glob
 import os
 import csv
 import pandas as pd
@@ -6,13 +5,43 @@ import pandas as pd
 
 configfile: "config.yaml"
 
-# TODO: snakemake --list-conda-envs to get all installed packages
-
-# Import your custom Python scripts
-from scripts.extract_filenames_from_csv import extract_filenames_from_csv
+# Import custom Python scripts
+#from scripts.extract_filenames_from_csv import extract_filenames_from_csv
 from scripts.create_sample_dataframe import create_sample_dataframe
 from scripts.get_unique_paths_without_extension import get_unique_paths_without_extension
 from scripts.merge_reads_per_gene_files import merge_reads_per_gene_files
+
+
+def validate_input(samples_csv, left_col, right_col):
+    import os
+    import csv
+
+    # Initialize a list to store error messages
+    errors = []
+
+    # Check if the samples.csv file exists
+    if not os.path.exists(samples_csv):
+        errors.append(f"{samples_csv} does not exist")
+
+    # Check if the samples.csv file has the correct format
+    try:
+        with open(samples_csv, "r") as csv_file:
+            csv_reader = csv.reader(csv_file)
+            header = next(csv_reader)  # Read the header row
+
+            if len(header) != 3 or header[0] != "sample_id" or header[1] != "left" or header[2] != "right":
+                errors.append(f"Invalid header in {samples_csv}. Expected: 'sample_id, left, right'")
+
+            for row in csv_reader:
+                sample, left, right = row
+                if not os.path.exists(left):
+                    errors.append(f"File referenced in 'left' column does not exist: {left}")
+                if not os.path.exists(right):
+                    errors.append(f"File referenced in 'right' column does not exist: {right}")
+    except Exception as e:
+        errors.append(f"Error reading {samples_csv}: {str(e)}")
+    return errors
+
 
 
 samples = {}
@@ -24,14 +53,11 @@ with open(config["sample_file"], "r") as f:
 
 # Get data from input sample sheet for the rules:
 sample_file = config["sample_file"]
-left_files, right_files = extract_filenames_from_csv(sample_file)
+#left_files, right_files = extract_filenames_from_csv(sample_file)
 fastq_dataframe = create_sample_dataframe(sample_file)
 fastq_directory = get_unique_paths_without_extension(fastq_dataframe)
 print("fastq dataframe: ", fastq_dataframe)
 
-#sample_id,left,right
-#testReads,data/samples/test-reads-A01_R1_001.fastq.gz,data/samples/test-reads-A01_R2_001.fastq.gz
-#reads,data/samples/reads_1.fq.gz,data/samples/reads_2.fq.gz
 
 df = pd.read_csv(config['sample_file'],sep=',')
 
@@ -105,63 +131,28 @@ generate_files(sample_file, output_directory)
 rule all:
     input:
         "check_samples.txt",
-        #expand("STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",sample_id=list(samples.keys())),
+        expand("STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",sample_id=list(samples.keys())),
         #expand("data/single_counts/{sample_id}.txt", sample_id=list(samples.keys())),
         #expand("fusions/{sample_id}.tsv",sample_id=list(samples.keys())),
         #expand("fastqc/{sample}", sample=fastq_dataframe['sample_id']),
         #expand("multiqc/{sample}/multiqc_report.html",sample=fastq_dataframe['sample_id']),
-        #expand("multiqc/{sample}/multiqc_data/multiqc_fastqc.txt", sample=fastq_dataframe['sample_id']),
+        expand("multiqc/{sample}/multiqc_data/multiqc_fastqc.txt", sample=fastq_dataframe['sample_id']),
         #expand("data/counts/{sample_id}.tsv",sample_id= samples.keys()),
         #expand("allcatch_output/{sample_id}/predictions.tsv",sample_id= samples.keys()),
-        #expand("ctat_output_directory/{sample_id}/{sample_id}.cancer.vcf",sample_id=samples_test.keys()), # Funktioniert
-        #expand("ctat_output_directory/{sample_id}/",sample_id=samples_test.keys()),
+        expand("ctat_output_directory/{sample_id}/{sample_id}.cancer.vcf",sample_id=samples_test.keys()), # Funktioniert
         #expand("fusions/{sample_id}.tsv",sample_id=samples_test.keys()),
         #expand("data/single_counts/{sample_id}.txt", sample_id=samples.keys()),
         #expand("data/vcf_files/{sample_id}.tsv", sample_id=list(samples.keys())),
-        #"data/config.txt",
-        #"data/meta.txt",
-        #expand("RNAseqCNV_output/{sample_id}",sample_id=samples.keys()),
+        expand("RNAseqCNV_output/{sample_id}",sample_id=samples.keys()),
         #"data/single_counts",
         #"fusioncatcher_output/",
         #expand("fusioncatcher_output/{sample_id}",sample_id= samples.keys()),
-        #expand("data/total_mapped_reads/{sample_id}.txt", sample_id= samples.keys()), # doesn't work yet
-        #expand("data/tpm/{sample_id}.tsv",sample_id= samples.keys())  # doesn't work yet
-        #'/media/nadine/HOME/nadine/STAR/ensembl_94_100'
+        expand("data/total_mapped_reads/{sample_id}.txt", sample_id= samples.keys()),
+        expand("data/tpm/{sample_id}.tsv", sample_id=list(samples.keys())),
         #expand("STAR_output/{sample}/Aligned.sortedByCoord.out.bam.bai",sample=list(samples.keys())),
         #expand("pysamstats_output_dir/{sample_id}.coverage.txt",sample_id=list(samples.keys())),
-        #expand("aggregated_output/{sample}.csv", sample=list(samples.keys()))
-
-
-
-def validate_input(samples_csv, left_col, right_col):
-    import os
-    import csv
-
-    # Initialize a list to store error messages
-    errors = []
-
-    # Check if the samples.csv file exists
-    if not os.path.exists(samples_csv):
-        errors.append(f"{samples_csv} does not exist")
-
-    # Check if the samples.csv file has the correct format
-    try:
-        with open(samples_csv, "r") as csv_file:
-            csv_reader = csv.reader(csv_file)
-            header = next(csv_reader)  # Read the header row
-
-            if len(header) != 3 or header[0] != "sample_id" or header[1] != "left" or header[2] != "right":
-                errors.append(f"Invalid header in {samples_csv}. Expected: 'sample_id, left, right'")
-
-            for row in csv_reader:
-                sample, left, right = row
-                if not os.path.exists(left):
-                    errors.append(f"File referenced in 'left' column does not exist: {left}")
-                if not os.path.exists(right):
-                    errors.append(f"File referenced in 'right' column does not exist: {right}")
-    except Exception as e:
-        errors.append(f"Error reading {samples_csv}: {str(e)}")
-    return errors
+        expand("comparison/{sample_id}.csv", sample_id= samples.keys()),
+        expand("aggregated_output/{sample}.csv", sample=list(samples.keys()))
 
 
 
@@ -229,45 +220,15 @@ rule multiqc_file:
         "fastqc/{sample}/"
     output:
         multiqc_report="multiqc/{sample}/multiqc_report.html",
-        multiqc_fqc= "multiqc/{sample}/multiqc_data/multiqc_fastqc.txt",
+        multiqc_fqc= "multiqc/{sample}/multiqc_data/multiqc_fastqc.txt"
 
     params:
-        output_dir= "multiqc/{sample}/",
+        output_dir= "multiqc/{sample}/"
 
     shell:
         "multiqc {input} -o {params.output_dir}"
 
 
-
-# TODO: need to add file prefix left and right or it overwrites itself...
-'''
-rule extract_and_rename_QC_files:
-    input:
-        multiqc_dir="multiqc/",
-        fastqc_dir="fastqc/",
-
-    output:
-        directory("QC/{sample}"),
-        multiqc_fastqc="QC/{sample}/multiqc_fastqc.txt",
-        multiqc_general_stats="QC/{sample}/multiqc_general_stats.txt",
-        fastqc_data="QC/{sample}/fastqc_data.txt",
-        summary="QC/{sample}/summary.txt"
-
-
-    shell:
-        """
-            mkdir -p QC/{wildcards.sample}
-            echo Processing wildcards sample: {wildcards.sample}
-            # Copy the MultiQC files\n"
-            cp {input.multiqc_dir}/{wildcards.sample}_left/multiqc_data/multiqc_fastqc.txt {output.multiqc_fastqc}
-            cp {input.multiqc_dir}/{wildcards.sample}_right/multiqc_data/multiqc_fastqc.txt {output.multiqc_fastqc}
-            cp {input.multiqc_dir}/{wildcards.sample}_left/multiqc_data/multiqc_general_stats.txt {output.multiqc_general_stats}
-            cp {input.multiqc_dir}/{wildcards.sample}_right/multiqc_data/multiqc_general_stats.txt {output.multiqc_general_stats}
-            find {input.fastqc_dir}/{wildcards.sample}_left/ -type f -name 'fastqc_data.txt' -exec cp {} QC/{wildcards.sample}/ \ 
-            find {input.fastqc_dir}/{wildcards.sample}_right/ -type f -name 'fastqc_data.txt' -exec cp {} QC/{wildcards.sample}/ \; 
-        """
-#find fastqc/reads_left/ -type f -name 'fastqc_data.txt' -exec cp {} QC/reads/ \;
-'''
 
 #conda install star=2.7.1a
 
@@ -375,8 +336,7 @@ rule run_arriba:
 rule run_fusioncatcher:
     input:
         fastq_directory = get_unique_paths_without_extension(fastq_dataframe),
-        data_directory = config["rna_fusion_data_directory"],
-        #mount_dir= config["ctat_mount_dir"]
+        data_directory = config["rna_fusion_data_directory"]
 
     output:
         directory("fusioncatcher_output/{sample_id}")
@@ -395,7 +355,7 @@ rule run_fusioncatcher:
         -o {output}'''
 
 
-
+#Create merged reads for running final ALLCatchR on all counts
 input_directory = 'STAR_output'
 output_file = 'data/combined_counts/merged_reads_per_gene.tsv'
 merge_reads_per_gene_files(input_directory,output_file)
@@ -465,7 +425,7 @@ rule run_ctat_mutations:
         genome_lib=config["genome_lib"],
         left= lambda wildcards: samples_test[wildcards.sample_id]['left'],
         right= lambda wildcards: samples_test[wildcards.sample_id]['right'],
-        input_directory= config["ctat_input_directory"],
+        input_directory= config["ctat_input_directory"]
 
 
     wildcard_constraints:
@@ -489,29 +449,12 @@ rule run_ctat_mutations:
         --cpu 10 \
         --genome_lib_dir /ctat_genome_lib_dir \
         --boosting_method none \
-        --no_cravat
+        --no_cravat &&
+        sleep .10 &&
+        cp -rL /home/nadine/ctat_output_directory/{params.sample_id}/{params.sample_id}.cancer.vcf /media/nadine/Alina/Blast-o-Matic-Fusioninator/ctat_output_directory/{params.sample_id} &&
+        cp -rL /home/nadine/ctat_output_directory/{params.sample_id}/{params.sample_id}.cancer.tsv /media/nadine/Alina/Blast-o-Matic-Fusioninator/ctat_output_directory/{params.sample_id}
         '''
-# cp -rL /home/nadine/ctat_output/reads /media/nadine/Alina/Blast-o-Matic-Fusioninator/ctat_output_directory
-#{params.output_path}/{output.directory}
-"""
-        '''
-        mkdir {output.directory} &&
-        singularity exec -e -B {input.input_directory}:/ctat_input \
-        -B {params.genome_lib}:/ctat_genome_lib_dir:ro \
-        ctat_mutations.v3.2.0.simg \
-        /usr/local/src/ctat-mutations/ctat_mutations \
-        --left /ctat_input/{params.left} \
-        --right /ctat_input/{params.right} \
-        --sample_id {params.sample_id} \
-        --output {params.output_dir}/{output.directory} \
-        --cpu 10 \
-        --genome_lib_dir /ctat_genome_lib_dir \
-        --boosting_method none \
-        --no_cravat
-        '''
-        
-      
-"""
+
 
 # Rule to process ReadsPerGene.out.tab files for RNASeq-CNV
 rule process_reads_per_gene:
@@ -527,59 +470,36 @@ rule process_reads_per_gene:
         """
 
 
-'''
+
 rule calculate_total_mapped_reads:
     input:
         bam="STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam"
     output:
         total_mapped_reads="data/total_mapped_reads/{sample_id}.txt"
-    script:
-        "scripts/calculate_total_mapped_reads.sh"
+    shell:
+        """
+        sample_id="{wildcards.sample_id}"
+        total_mapped_reads=$(samtools view -F 4 -c "STAR_output/${{sample_id}}/Aligned.sortedByCoord.out.bam")
+        echo "$total_mapped_reads" > "data/total_mapped_reads/${{sample_id}}.txt"
+        """
 
 
 
 rule calculate_tpm:
     input:
         reads_per_gene="STAR_output/{sample_id}/ReadsPerGene.out.tab",
-        total_mapped_reads="data/total_mapped_reads/{sample_id}.txt"
+        total_mapped_reads="data/total_mapped_reads/{sample_id}.txt",
+        py_script="scripts/calculate_tpm.py"
+        
     output:
         tpm="data/tpm/{sample_id}.tsv"
-    params:
-        skip_rows=4
-    script:
-        "scripts/calculate_tpm.py"
-'''
-
-
-
-
-'''
-#TODO: Change count_dir, vcf_dir and outdir to current path
-rule write_rnaseq_cnv_files:
-    input:
-        r_script_config = "scripts/write_rnaseq_cnv_config.R",
-        r_script_meta = "scripts/write_rnaseq_cnv_meta.R",
-        count_dir = "data/single_counts/",
-        vcf_dir = "data/vcf_files/",
-        out_dir= "RNAseqCNV_output"
-
-
-    output:
-        config="data/config.txt",
-        meta="data/meta.txt"
-
-    log:
-        "logs/write_config_file/meta.log"
 
     shell:
-        """
-        # Generate config.txt
-        Rscript {input.r_script_config} {input.out_dir} {input.count_dir} {input.vcf_dir} {output.config} > {log};
+        "python {input.py_script} {input.reads_per_gene} {input.total_mapped_reads} {output.tpm}"
+   
+        
 
-        # Generate meta.txt
-        Rscript {input.r_script_meta}  {input.count_dir} {input.vcf_dir} {output.meta} > {log};
-        """
-'''
+
 rule install_rnaseq_cnv:
     shell:
         "Rscript -e 'devtools::install_github(\"honzee/RNAseqCNV\")'"
@@ -609,7 +529,7 @@ rule run_rnaseq_cnv:
         directory="RNAseqCNV_output/{sample_id}/",
         rna_seq_cnv_alteration_file="RNAseqCNV_output/{sample_id}/estimation_table.tsv",
         rna_seq_cnv_log2foldchange_file="RNAseqCNV_output/{sample_id}/log2_fold_change_per_arm.tsv",
-        rna_seq_cnv_manual_an_table_file= "RNAseqCNV_output/{sample_id}/manual_an_table.tsv",
+        rna_seq_cnv_manual_an_table_file= "RNAseqCNV_output/{sample_id}/manual_an_table.tsv"
 
     shell:
         "Rscript {input.r_script} {input.config_file} {input.metadata_file} {output.directory};"
@@ -621,21 +541,38 @@ rule run_rnaseq_cnv:
         "mv alteration_matrix.tsv {output.directory};"
         "mv {sample_id}/{sample_id}_CNV_main_fig.png  {output.directory}"
 
-#sample_id,left,right
-#reads,data/samples/reads_1.fq.gz,data/samples/reads_2.fq.gz
-#testReads,data/samples/test-reads-A01_R1_001.fastq.gz,data/samples/test-reads-A01_R2_001.fastq.gz
+
+
+rule check_subtype_and_karyotype:
+    input:
+        prediction_file = "allcatch_output/{sample}/predictions.tsv",
+        rna_seq_cnv_estimation_file="RNAseqCNV_output/{sample}/estimation_table.tsv",
+        fusioncatcher_file= "fusioncatcher_output/{sample}/final-list_candidate-fusion-genes.hg19.txt",
+        arriba_file= "fusions/{sample}.tsv",
+        chromosome_counts_karyotype_file= "annotation/chromosome_counts_vs_subtype.txt",
+        anno_gene_fusions_file= "annotation/anno_Gene_fusions_vs_Subtypes.txt",
+        r_script= "scripts/define_subtype_and_caryotype.R"
+
+    output:
+        csv= "comparison/{sample}.csv"
+
+    shell:
+        """
+            Rscript {input.r_script} {input.prediction_file} {input.rna_seq_cnv_estimation_file} {input.fusioncatcher_file} {input.arriba_file} {input.chromosome_counts_karyotype_file} {input.anno_gene_fusions_file} {output.csv}
+        """
+
 
 rule aggregate_output:
     input:
         prediction_file = "allcatch_output/{sample}/predictions.tsv",
         fusioncatcher_file = "fusioncatcher_output/{sample}/final-list_candidate-fusion-genes.txt",
         arriba_file = "fusions/{sample}.tsv",
-        rna_seq_cnv_alteration_file= "RNAseqCNV_output/{sample}/estimation_table.tsv",
         rna_seq_cnv_log2foldchange_file= "RNAseqCNV_output/{sample}/log2_fold_change_per_arm.tsv",
         rna_seq_cnv_manual_an_table_file= "RNAseqCNV_output/{sample}/manual_an_table.tsv",
         star_log_final_out_file= "STAR_output/{sample}/Log.final.out",
         multiqc_fqc_right= "multiqc/{sample}_right/multiqc_data/multiqc_fastqc.txt",
         multiqc_fqc_left= "multiqc/{sample}_left/multiqc_data/multiqc_fastqc.txt",
+        comparison_file= "comparison/{sample}.csv"
 
 
     output:
@@ -644,6 +581,7 @@ rule aggregate_output:
 
     shell:
         """
+            cat {input.comparison_file} >> {output.csv}
             uniquely_mapped_reads=$(awk -F'\t' '/Uniquely mapped reads number/ {{print $2}}' {input.star_log_final_out_file})
             echo "The transcriptome sequencing of {wildcards.sample} produced $uniquely_mapped_reads uniquely aligned sequencing reads, enabling quantification of protein coding genes." > {output.csv}
             echo -e "Quality metrics (fastQC / MultiQC) indicated:" >> {output.csv}
@@ -658,8 +596,8 @@ rule aggregate_output:
             echo -e "5’ gene name\t5’ chr.position\t3’ gene name\t3’chr. position\tfusion unique spanning reads"  >> {output.csv}
             awk -F'\t' '{{if (NR == 1) next; printf "%s\\t%s\\t%s\\t%s\\t%s\\n", $1, $9, $2, $10, $6}}' {input.fusioncatcher_file} >> {output.csv}
             echo -e "ARRIBA:" >> {output.csv}
-            echo -e "5’ gene name\t5’ chr.position\t3’ gene name\t3’chr. position\tconfidence"  >> {output.csv}
-            awk -F'\t' '{{if (NR == 1) next; printf "%s\\t%s\\t%s\\t%s\\t%s\\n", $1, $5, $2, $6, $13}}' {input.arriba_file} >> {output.csv}
+            echo -e "5’ gene name\t5’ chr.position\t3’ gene name\t3’chr. position\tdiscordant_mates"  >> {output.csv}
+            awk -F'\t' '{{if (NR == 1) next; printf "%s\\t%s\\t%s\\t%s\\t%s\\n", $1, $5, $2, $6, $12}}' {input.arriba_file} >> {output.csv}
             echo -e "RNASeqCNV identified the following karyotype:" >> {output.csv}
             echo -e "gender	chrom_n	alterations	status	comments"  >> {output.csv}
             awk -F'\t' '{{if (NR == 1) next; printf "%s\\t%s\\t%s\\t%s\\t%s\\n", $2, $3, $4, $5, $6}}' {input.rna_seq_cnv_manual_an_table_file} >> {output.csv}
@@ -672,41 +610,7 @@ rule aggregate_output:
 
 
 '''
-
-The transcriptome sequencing of (sample ID) produced xxx (STAR) uniquely aligend sequencing reads(aus Log.final.out), enabling quantification XXX (Alinas script) protein coding genes. 
-
-Quality metrics (fastQC / MultiQC) indicated … (in progress -> Ampel-System)
-
-ALLCatchR allocated this sample to the following molecular subtype:
-
-subtype prediction		score		confidence
-Xxx				xxx		xxx
-
-fusioncatcher / ARRIBA identified the following driver fusion candidates
-
-fusioncatchr
-5’ gene name	5’ chr.position	3’ gene name	3’chr. position	fusion	unique spanning reads
-
-ARRIBA
-5’ gene name	5’ chr.position	3’ gene name	3’chr. position	fusion	unique spanning reads
-
- alle Fusionen eine BCP-ALL whitelist
-
-Add on: Abfrage auf welches Exon im jeweiligen MANE transkript passt die Bruchpunktkoordinate mit einer Toleranz von 10 bp
-
-RNASeqCNV identified the following karyotype
-
-Graphical output with boxplots
-
-Table with chromosome arm calls
-
-Number of choromosomes in total
-
-The gene expression-based subtype definition of xxx, the fusion calls of xxx and a karyotype profile of xxx fit the diagnosis yyyy / do not fit a single definition. 
-
-
 Inhaltlich offene Punkte:
 Integration von karytype und gene expressionsprofil -> machine learning classifier
 Definition einer Mutations-Positiv-Liste: CITAT vs. Pysamstat
-
 '''

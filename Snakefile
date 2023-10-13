@@ -374,6 +374,9 @@ rule run_allcatchr:
     output:
         "allcatch_output/predictions.tsv"
 
+    conda:
+        "envs/catchall.yaml"
+
     shell:
         "Rscript {input.r_script} {input.input_file} {output};"
         "mv predictions.tsv {output}"
@@ -403,6 +406,9 @@ rule run_allcatchr_on_single_count_files:
     output:
         "allcatch_output/{sample}/predictions.tsv"
 
+    conda:
+        "envs/catchall.yaml"
+
     shell:
         "Rscript {input.r_script} {input.input_file} {output};"
         "mv predictions.tsv {output}"
@@ -413,7 +419,7 @@ rule pull_ctat_mutations_singularity_image:
     shell:
         "singularity pull docker://trinityctat/ctat_mutations"
 
-#cp -L files tmp/ && rm files && cp tmp/files .
+
 # Rule to run ctat-mutations
 rule run_ctat_mutations:
     input:

@@ -8,6 +8,7 @@ Snakemake diagnostic RNA-Seq Fusion Pipline for ALL
 ## Setup
 See: https://snakemake.readthedocs.io/en/stable/getting_started/installation.html for installing snakemake
 
+# TODO: write about installing mamba
 ```bash
 conda activate base
 mamba env create --name Blast-o-Matic-Fusioninator --file environment.yaml

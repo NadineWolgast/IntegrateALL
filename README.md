@@ -7,5 +7,9 @@ conda activate base
 mamba env create --name Blast-o-Matic-Fusioninator --file environment.yaml
 conda activate Blast-o-Matic-Fusioninator
 
+Edit samples.csv with the paths to your FASTQ files.
+Edit config.yaml with the correct paths.
+
+
 Run example:
 snakemake --use-conda --cores 10 

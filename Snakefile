@@ -1,157 +1,42 @@
-import os
-import csv
-import pandas as pd
-
-
-configfile: "config.yaml"
+configfile: "config_adjusted.yaml"
 
 # Import custom Python scripts
-#from scripts.extract_filenames_from_csv import extract_filenames_from_csv
 from scripts.create_sample_dataframe import create_sample_dataframe
 from scripts.get_unique_paths_without_extension import get_unique_paths_without_extension
 from scripts.merge_reads_per_gene_files import merge_reads_per_gene_files
+from scripts.generate_files import generate_files
+from scripts.validate_input import validate_input
+from scripts.get_ctat_input_files import get_ctat_input_files
 
-
-def validate_input(samples_csv, left_col, right_col):
-    import os
-    import csv
-
-    # Initialize a list to store error messages
-    errors = []
-
-    # Check if the samples.csv file exists
-    if not os.path.exists(samples_csv):
-        errors.append(f"{samples_csv} does not exist")
-
-    # Check if the samples.csv file has the correct format
-    try:
-        with open(samples_csv, "r") as csv_file:
-            csv_reader = csv.reader(csv_file)
-            header = next(csv_reader)  # Read the header row
-
-            if len(header) != 3 or header[0] != "sample_id" or header[1] != "left" or header[2] != "right":
-                errors.append(f"Invalid header in {samples_csv}. Expected: 'sample_id, left, right'")
-
-            for row in csv_reader:
-                sample, left, right = row
-                if not os.path.exists(left):
-                    errors.append(f"File referenced in 'left' column does not exist: {left}")
-                if not os.path.exists(right):
-                    errors.append(f"File referenced in 'right' column does not exist: {right}")
-    except Exception as e:
-        errors.append(f"Error reading {samples_csv}: {str(e)}")
-    return errors
-
-
-
+# Get data from input sample sheet for the rules:
+sample_file = config["sample_file"]
 samples = {}
-with open(config["sample_file"], "r") as f:
+with open(sample_file, "r") as f:
     next(f)
     for line in f:
         sample_id, left, right = line.strip().split(",")
         samples[sample_id] = (left, right)
-
-# Get data from input sample sheet for the rules:
-sample_file = config["sample_file"]
-#left_files, right_files = extract_filenames_from_csv(sample_file)
-fastq_dataframe = create_sample_dataframe(sample_file)
-fastq_directory = get_unique_paths_without_extension(fastq_dataframe)
-print("fastq dataframe: ", fastq_dataframe)
-
-
-df = pd.read_csv(config['sample_file'],sep=',')
-
-# Initialize an empty dictionary to store the results
-samples_test = {}
-
-# Iterate over the rows of the DataFrame
-for index, row in df.iterrows():
-    sample_id = row['sample_id']
-    left = os.path.basename(row['left'])
-    right = os.path.basename(row['right'])
-
-    # Add a backslash in front of the filenames
-    left = '/' + left
-    right = '/' + right
-
-    # Create a nested dictionary for each sample
-    sample_info = {
-        "left": left,
-        "right": right
-    }
-
-    # Add the sample to the samples_test dictionary
-    samples_test[sample_id] = sample_info
-
-# Print the resulting dictionary
-print("samples_test:",samples_test)
-
 print("sample_keys: ", list(samples.keys()))
 
+# Get FASTQs for QC
+fastq_dataframe = create_sample_dataframe(sample_file)
 
+#Get FASTQ's without path for CTAT
+samples_test = get_ctat_input_files(sample_file)
 
-def generate_files(input_csv, output_dir):
-    # Create the output directory if it doesn't exist
-    os.makedirs(output_dir, exist_ok=True)
-
-    # Initialize list for meta.txt data
-    meta_data = []
-    config_data = [
-        "out_dir = 'RNAseqCNV_output'",
-        "count_dir = 'data/single_counts'",
-        "snv_dir = 'data/vcf_files'"
-    ]
-
-    # Read the sample.csv file
-    with open(input_csv, 'r') as csvfile:
-        csvreader = csv.DictReader(csvfile)
-        for row in csvreader:
-            sample_id = row['sample_id']
-            # Add data to meta.txt
-            meta_data.append(f"{sample_id}\t{sample_id}.txt\t{sample_id}.tsv")
-
-    # Write data to meta.txt
-    meta_file = os.path.join(output_dir, 'meta.txt')
-    with open(meta_file, 'w') as meta:
-        meta.write("\n".join(meta_data))
-
-    # Write data to config.txt
-    config_file = os.path.join(output_dir, 'config.txt')
-    with open(config_file, 'w') as config:
-        config.write("\n".join(config_data))
-
-    print(f"Meta.txt and config.txt files generated in {output_dir}")
-
-output_directory = 'data/'
-generate_files(sample_file, output_directory)
-
-
+#Create config.txt and meta.txt for RNASeqCNV
+generate_files(sample_file, 'data/')
 
 
 rule all:
     input:
         "check_samples.txt",
-        expand("STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",sample_id=list(samples.keys())),
-        #expand("data/single_counts/{sample_id}.txt", sample_id=list(samples.keys())),
-        #expand("fusions/{sample_id}.tsv",sample_id=list(samples.keys())),
-        #expand("fastqc/{sample}", sample=fastq_dataframe['sample_id']),
-        #expand("multiqc/{sample}/multiqc_report.html",sample=fastq_dataframe['sample_id']),
-        expand("multiqc/{sample}/multiqc_data/multiqc_fastqc.txt", sample=fastq_dataframe['sample_id']),
-        #expand("data/counts/{sample_id}.tsv",sample_id= samples.keys()),
-        #expand("allcatch_output/{sample_id}/predictions.tsv",sample_id= samples.keys()),
-        expand("ctat_output_directory/{sample_id}/{sample_id}.cancer.vcf",sample_id=samples_test.keys()), # Funktioniert
-        #expand("fusions/{sample_id}.tsv",sample_id=samples_test.keys()),
-        #expand("data/single_counts/{sample_id}.txt", sample_id=samples.keys()),
-        #expand("data/vcf_files/{sample_id}.tsv", sample_id=list(samples.keys())),
-        expand("RNAseqCNV_output/{sample_id}",sample_id=samples.keys()),
-        #"data/single_counts",
-        #"fusioncatcher_output/",
-        #expand("fusioncatcher_output/{sample_id}",sample_id= samples.keys()),
-        expand("data/total_mapped_reads/{sample_id}.txt", sample_id= samples.keys()),
-        expand("data/tpm/{sample_id}.tsv", sample_id=list(samples.keys())),
-        #expand("STAR_output/{sample}/Aligned.sortedByCoord.out.bam.bai",sample=list(samples.keys())),
-        #expand("pysamstats_output_dir/{sample_id}.coverage.txt",sample_id=list(samples.keys())),
-        expand("comparison/{sample_id}.csv", sample_id= samples.keys()),
+        #expand("STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",sample_id=list(samples.keys())),
+        #expand("multiqc/{sample}/multiqc_data/multiqc_fastqc.txt", sample=fastq_dataframe['sample_id']),
+        #expand("ctat_output_directory/{sample_id}/{sample_id}.cancer.vcf",sample_id=samples_test.keys()),
+        #expand("RNAseqCNV_output/{sample_id}",sample_id=samples.keys()),
+        #expand("data/tpm/{sample_id}.tsv", sample_id=list(samples.keys())),
+        #expand("comparison/{sample_id}.csv", sample_id= samples.keys()),
         expand("aggregated_output/{sample}.csv", sample=list(samples.keys()))
 
 
@@ -161,11 +46,9 @@ rule check_samples:
         samples_csv= "samples.csv"
     output:
         "check_samples.txt"
-    params:
-        left_col=1,
-        right_col=2
+
     run:
-        errors = validate_input(input.samples_csv, params.left_col, params.right_col)
+        errors = validate_input(input.samples_csv)
         with open(output[0], "w") as output_file:
             if errors:
                 for error in errors:
@@ -175,11 +58,10 @@ rule check_samples:
 
 
 
-
 # Function to get input FASTQ files based on sample_id
 def get_input_fastqs(wildcards):
-    sample_id = wildcards.sample
-    fastq_file = fastq_dataframe[fastq_dataframe['sample_id'] == sample_id]['FASTQ'].values[0]
+    sample_name = wildcards.sample
+    fastq_file = fastq_dataframe[fastq_dataframe['sample_id'] == sample_name]['FASTQ'].values[0]
     return fastq_file
 
 
@@ -191,6 +73,9 @@ rule fastqc:
         zip="fastqc/{sample}.zip"
     log:
         "logs/fastqc/{sample}/fastqc.log"
+
+    benchmark:
+        "benchmarks/{sample}.fastqc.benchmark.txt"
 
     wrapper:
         "0.31.1/bio/fastqc"
@@ -212,7 +97,7 @@ rule multiqc_dir:
     params:
         output_dir= "multiqc/"
     shell:
-        "multiqc {input} -o {params.output_dir}"
+        "multiqc {input} -o {params.output_dir} --force"
 
 
 rule multiqc_file:
@@ -225,8 +110,11 @@ rule multiqc_file:
     params:
         output_dir= "multiqc/{sample}/"
 
+    benchmark:
+        "benchmarks/{sample}.multiqc.benchmark.txt"
+
     shell:
-        "multiqc {input} -o {params.output_dir}"
+        "multiqc {input} -o {params.output_dir} --force"
 
 
 
@@ -259,6 +147,9 @@ rule run_star_aligner:
         reads = "STAR_output/{sample_id}/ReadsPerGene.out.tab",
         log_out="STAR_output/{sample_id}/Log.final.out"
 
+    benchmark:
+        "benchmarks/{sample_id}.star_aligner.benchmark.txt"
+
     resources:
         threads=config['threads'],
         mem=config['star_mem']
@@ -278,7 +169,8 @@ rule run_star_aligner:
         '--outFilterMultimapNmax 10 '
         '--chimOutType WithinBAM '
         '--chimSegmentMin 10 '
-        '--readFilesCommand zcat '
+        '--readFilesCommand zcat && '
+        'rm -r {output.directory}/_STARgenome {output.directory}/_STARpass1 '
 
 
 rule samtools_index:
@@ -290,6 +182,8 @@ rule samtools_index:
         "logs/samtools_index/{sample}.log"
     params:
         extra=""  # optional params string
+    benchmark:
+        "benchmarks/{sample}.samtools_index.benchmark.txt"
     threads: 4  # This value - 1 will be sent to -@
     wrapper:
         "v2.6.0/bio/samtools/index"
@@ -298,6 +192,9 @@ rule samtools_index:
 rule pysamstat:
     input:
         bam="STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam"
+
+    benchmark:
+        "benchmarks/{sample_id}.pysamstat.benchmark.txt"
 
     output:
         "pysamstats_output_dir/{sample_id}.coverage.txt"
@@ -320,6 +217,8 @@ rule run_arriba:
         discarded="fusions/{sample_id}.discarded.tsv"
     log:
         "logs/arriba/{sample_id}.log"
+    benchmark:
+        "benchmarks/{sample_id}.arriba.benchmark.txt"
     params:
         genome_build="GRCh38",           # Required when blacklist or known_fusions is set
         default_blacklist=False,         # Optional
@@ -347,6 +246,9 @@ rule run_fusioncatcher:
     params:
         sample_id=lambda wildcards: wildcards.sample_id  # Extract sample_id from wildcards
 
+    benchmark:
+        "benchmarks/{sample_id}.fusioncatcher.benchmark.txt"
+
     shell:
         '''mkdir {output} &&
         fusioncatcher \
@@ -371,11 +273,12 @@ rule run_allcatchr:
     input:
         r_script = "scripts/run_ALLCatchR.R",
         input_file = 'data/combined_counts/merged_reads_per_gene.tsv'
+
     output:
         "allcatch_output/predictions.tsv"
 
-    conda:
-        "envs/catchall.yaml"
+    #conda:
+    #    "envs/catchall.yaml"
 
     shell:
         "Rscript {input.r_script} {input.input_file} {output};"
@@ -391,6 +294,8 @@ rule process_reads_per_gene_to_counts:
         counts="data/counts/{sample_id}.tsv"  # Output file for each sample
     params:
         skip_rows=4  # Number of rows to skip in the input file
+    benchmark:
+        "benchmarks/{sample_id}.reads_per_gene_to_counts.benchmark.txt"
     shell:
         """
         echo -e "Gene\t{wildcards.sample_id}" > {output.counts}
@@ -403,11 +308,15 @@ rule run_allcatchr_on_single_count_files:
     input:
         r_script = "scripts/run_ALLCatchR.R",
         input_file = 'data/counts/{sample}.tsv'
+
+    benchmark:
+        "benchmarks/{sample}.allcatchr.benchmark.txt"
+
     output:
         "allcatch_output/{sample}/predictions.tsv"
 
-    conda:
-        "envs/catchall.yaml"
+    #conda:
+    #    "envs/catchall.yaml"
 
     shell:
         "Rscript {input.r_script} {input.input_file} {output};"
@@ -425,7 +334,6 @@ rule run_ctat_mutations:
     input:
         input_directory= config["ctat_input_directory"]
 
-
     params:
         sample_id= lambda wildcards: wildcards.sample_id,
         genome_lib=config["genome_lib"],
@@ -433,9 +341,8 @@ rule run_ctat_mutations:
         right= lambda wildcards: samples_test[wildcards.sample_id]['right'],
         input_directory= config["ctat_input_directory"]
 
-
-    wildcard_constraints:
-        sample_id="|".join(samples_test.keys())
+    benchmark:
+        "benchmarks/{sample_id}.ctat_mutations.benchmark.txt"
 
     output:
         vcf ="ctat_output_directory/{sample_id}/{sample_id}.cancer.vcf",
@@ -529,31 +436,30 @@ rule run_rnaseq_cnv:
     input:
         r_script = "scripts/run_rnaseq_cnv.R",
         config_file = "data/config.txt",
-        metadata_file = "data/meta.txt"
+        metadata_file = "data/meta.txt",
+        input_counts= "data/single_counts/{sample_id}.txt",
+        input_vcf= "data/vcf_files/{sample_id}.tsv"
 
     output:
-        directory="RNAseqCNV_output/{sample_id}/",
+        directory=directory("RNAseqCNV_output/{sample_id}/"),
         rna_seq_cnv_alteration_file="RNAseqCNV_output/{sample_id}/estimation_table.tsv",
         rna_seq_cnv_log2foldchange_file="RNAseqCNV_output/{sample_id}/log2_fold_change_per_arm.tsv",
         rna_seq_cnv_manual_an_table_file= "RNAseqCNV_output/{sample_id}/manual_an_table.tsv"
 
     shell:
         "Rscript {input.r_script} {input.config_file} {input.metadata_file} {output.directory};"
-        "sleep 0.10;"
-        "mkdir {output.directory};"
-        "mv estimation_table.tsv {output.directory};"
-        "mv manual_an_table.tsv {output.directory};"
-        "mv log2_fold_change_per_arm.tsv {output.directory};"
-        "mv alteration_matrix.tsv {output.directory};"
-        "mv {sample_id}/{sample_id}_CNV_main_fig.png  {output.directory}"
-
+        "sleep 0.20;"
+        "mv RNAseqCNV_output/estimation_table.tsv {output.directory};"
+        "mv RNAseqCNV_output/manual_an_table.tsv {output.directory};"
+        "mv RNAseqCNV_output/log2_fold_change_per_arm.tsv {output.directory};"
+        "mv RNAseqCNV_output/alteration_matrix.tsv {output.directory};"
 
 
 rule check_subtype_and_karyotype:
     input:
         prediction_file = "allcatch_output/{sample}/predictions.tsv",
         rna_seq_cnv_estimation_file="RNAseqCNV_output/{sample}/estimation_table.tsv",
-        fusioncatcher_file= "fusioncatcher_output/{sample}/final-list_candidate-fusion-genes.hg19.txt",
+        fusioncatcher_file= "fusioncatcher_output/{sample}/final-list_candidate-fusion-genes.hg19.txt/final-list_candidate-fusion-genes.hg19.txt",
         arriba_file= "fusions/{sample}.tsv",
         chromosome_counts_karyotype_file= "annotation/chromosome_counts_vs_subtype.txt",
         anno_gene_fusions_file= "annotation/anno_Gene_fusions_vs_Subtypes.txt",
@@ -571,7 +477,7 @@ rule check_subtype_and_karyotype:
 rule aggregate_output:
     input:
         prediction_file = "allcatch_output/{sample}/predictions.tsv",
-        fusioncatcher_file = "fusioncatcher_output/{sample}/final-list_candidate-fusion-genes.txt",
+        fusioncatcher_file = "fusioncatcher_output/{sample}/final-list_candidate-fusion-genes.txt/final-list_candidate-fusion-genes.txt",
         arriba_file = "fusions/{sample}.tsv",
         rna_seq_cnv_log2foldchange_file= "RNAseqCNV_output/{sample}/log2_fold_change_per_arm.tsv",
         rna_seq_cnv_manual_an_table_file= "RNAseqCNV_output/{sample}/manual_an_table.tsv",
@@ -587,24 +493,25 @@ rule aggregate_output:
 
     shell:
         """
-            cat {input.comparison_file} >> {output.csv}
-            uniquely_mapped_reads=$(awk -F'\t' '/Uniquely mapped reads number/ {{print $2}}' {input.star_log_final_out_file})
-            echo "The transcriptome sequencing of {wildcards.sample} produced $uniquely_mapped_reads uniquely aligned sequencing reads, enabling quantification of protein coding genes." > {output.csv}
-            echo -e "Quality metrics (fastQC / MultiQC) indicated:" >> {output.csv}
+            echo -e "Output" > {output.csv}
+            awk -F'\t' '{{if (NR == 1) next; printf "%s\\t%s\\n", $1, $2}}' {input.comparison_file} >> {output.csv}
+            uniquely_mapped_reads=$(awk -F'\t' '/Uniquely mapped reads number/ {{print $2}}\\n' {input.star_log_final_out_file})
+            echo "The transcriptome sequencing of {wildcards.sample} produced $uniquely_mapped_reads uniquely aligned sequencing reads, enabling quantification of protein coding genes." >> {output.csv}
+            echo -e "\\nQuality metrics (fastQC / MultiQC) indicated:" >> {output.csv}
             echo -e "Filename\tTotal Sequences\tSequences flagged as poor quality\tSequence length\t%GC\ttotal_deduplicated_percentage\tavg_sequence_length\tmedian_sequence_length\tbasic_statistics\tper_base_sequence_quality\tper_sequence_quality_scores\tper_base_sequence_content\tper_sequence_gc_content\tper_base_n_content\tsequence_length_distribution\tsequence_duplication_levels\toverrepresented_sequences\tadapter_content" >> {output.csv}
             awk -F'\t' '{{if (NR == 1) next; printf "%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\n", $2, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20}}' {input.multiqc_fqc_left} >> {output.csv}
             awk -F'\t' '{{if (NR == 1) next; printf "%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\n", $2, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20}}' {input.multiqc_fqc_right} >> {output.csv}
-            echo -e "ALLCatchR allocated for sample {wildcards.sample} the following molecular subtype:" >> {output.csv}
+            echo -e "\\nALLCatchR allocated for sample {wildcards.sample} the following molecular subtype:" >> {output.csv}
             echo -e "subtype prediction\tscore\tconfidence" >> {output.csv}
             awk -F'\t' '{{if (NR == 1) next; printf "%s\\t%s\\t%s\\n", $3, $2, $4}}' {input.prediction_file} >> {output.csv}
-            echo -e "fusioncatcher / ARRIBA identified the following driver fusion candidates:" >> {output.csv}
-            echo -e "Fusioncatcher:" >> {output.csv}
+            echo -e "\\nfusioncatcher / ARRIBA identified the following driver fusion candidates:" >> {output.csv}
+            echo -e "\\nFusioncatcher:" >> {output.csv}
             echo -e "5’ gene name\t5’ chr.position\t3’ gene name\t3’chr. position\tfusion unique spanning reads"  >> {output.csv}
             awk -F'\t' '{{if (NR == 1) next; printf "%s\\t%s\\t%s\\t%s\\t%s\\n", $1, $9, $2, $10, $6}}' {input.fusioncatcher_file} >> {output.csv}
-            echo -e "ARRIBA:" >> {output.csv}
+            echo -e "\\nARRIBA:" >> {output.csv}
             echo -e "5’ gene name\t5’ chr.position\t3’ gene name\t3’chr. position\tdiscordant_mates"  >> {output.csv}
             awk -F'\t' '{{if (NR == 1) next; printf "%s\\t%s\\t%s\\t%s\\t%s\\n", $1, $5, $2, $6, $12}}' {input.arriba_file} >> {output.csv}
-            echo -e "RNASeqCNV identified the following karyotype:" >> {output.csv}
+            echo -e "\\nRNASeqCNV identified the following karyotype:" >> {output.csv}
             echo -e "gender	chrom_n	alterations	status	comments"  >> {output.csv}
             awk -F'\t' '{{if (NR == 1) next; printf "%s\\t%s\\t%s\\t%s\\t%s\\n", $2, $3, $4, $5, $6}}' {input.rna_seq_cnv_manual_an_table_file} >> {output.csv}
             echo -e "Chromosome arm calls" >> {output.csv}

@@ -8,7 +8,7 @@ library(doParallel)
 
 # Get input file path from command line arguments
 args <- commandArgs(trailingOnly = TRUE)
-print(args)
+#print(args)
 config_file <- args[1]
 metadata_file <- args[2]
 

@@ -23,7 +23,7 @@ with open(sample_file, "r") as f:
 
 # Get FASTQs for QC
 fastq_dataframe = create_sample_dataframe(sample_file)
-print(samples)
+
 #Get FASTQ's without path for CTAT
 samples_test = get_ctat_input_files(sample_file)
 
@@ -35,17 +35,18 @@ rule all:
     input:
         "check_samples.txt",
         expand("STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam.bai", sample_id=list(samples.keys())),
-        #expand("fusions/{sample_id}.pdf",sample_id=samples.keys()),
+        expand("fusions/{sample_id}.pdf",sample_id=samples.keys()),
         #expand("STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",sample_id=list(samples.keys())),
         #expand("multiqc/{sample}/multiqc_data/multiqc_fastqc.txt", sample=fastq_dataframe['sample_id']),
-        #expand("fusioncatcher_output/{sample_id}/final-list_candidate-fusion-genes.txt",sample_id=list(samples.keys())),
+        expand("fusioncatcher_output/{sample_id}/final-list_candidate-fusion-genes.txt",sample_id=list(samples.keys())),
         #expand("ctat_output_directory/{sample_id}/{sample_id}.filtered.vcf",sample_id=samples_test.keys()),
         #expand("RNAseqCNV_output/{sample_id}",sample_id=samples.keys()),
-        #expand("data/tpm/{sample_id}.tsv", sample_id=list(samples.keys())),
+        expand("data/tpm/{sample_id}.tsv", sample_id=list(samples.keys())),
+        expand("data/cpm/{sample_id}.tsv", sample_id=list(samples.keys())),
         #expand("pysamstats_output_dir/{sample_id}.tsv", sample_id=list(samples.keys())),
         #expand("comparison/{sample_id}.csv", sample_id= samples.keys()),
         #expand("data/vcf_files/{sample_id}.tsv",sample_id=samples.keys()),
-        #expand("aggregated_output/{sample}.csv", sample=list(samples.keys()))
+        expand("aggregated_output/{sample}.csv", sample=list(samples.keys()))
 
 
 
@@ -263,11 +264,13 @@ rule run_draw_arriba_fusion:
 
 
 
-
+# Changed fusioncatcher input to get input files directly from samples & access files through wildcards
 rule run_fusioncatcher:
     input:
         fastq_directory = config["ctat_input_directory"],
         data_directory = config["rna_fusion_data_directory"],
+        left= lambda wildcards: samples[wildcards.sample_id][0],
+        right= lambda wildcards: samples[wildcards.sample_id][1]
 
     output:
         dir=directory("fusioncatcher_output/{sample_id}"),
@@ -278,17 +281,16 @@ rule run_fusioncatcher:
 
     params:
         sample_id=lambda wildcards: wildcards.sample_id,  # Extract sample_id from wildcards
-        left= lambda wildcards: samples_test[wildcards.sample_id]['left'],
-        right= lambda wildcards: samples_test[wildcards.sample_id]['right']
+
 
     benchmark:
         "benchmarks/{sample_id}.fusioncatcher.benchmark.txt"
 
     shell:
-        '''mkdir {output} &&
+        '''
         fusioncatcher \
         -d {input.data_directory} \
-        -i {input.fastq_directory}/{params.left},{input.fastq_directory}/{params.right} \
+        -i {input.left},{input.right} \
         -o {output.dir}'''
 
 

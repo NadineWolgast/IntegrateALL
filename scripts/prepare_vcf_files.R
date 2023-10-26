@@ -11,7 +11,7 @@ args <- commandArgs(trailingOnly = TRUE)
 
 vcf_directory<- args[1]
 output_file <- args[2]
-print(args)
+#print(args)
 sample_file_gz <- paste(vcf_directory, sep="")
 sample_file <- R.utils::gunzip(sample_file_gz)
 
@@ -34,8 +34,8 @@ find_CHROM_row <- function(file_path) {
 
 # Find the row number where #CHROM occurs
 skip <- find_CHROM_row(sample_file)
-print("in prepare_vcf_files")
-print(skip)
+#print("in prepare_vcf_files")
+#print(skip)
 
 
 vcf <- read.csv(sample_file, skip=skip-1, header=TRUE, sep="\t")

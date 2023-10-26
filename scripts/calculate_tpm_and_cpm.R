@@ -1,7 +1,7 @@
 library(data.table)
 
 args <- commandArgs(trailingOnly = TRUE)
-print(args)
+#print(args)
 reads_per_gene_file <- args[1]
 outfile <- args[2]
 outfile_cpm <- args[3]

@@ -3,7 +3,7 @@ library("utils")
 
 args <- commandArgs(trailingOnly = TRUE)
 
-print(args)
+#print(args)
 
 prediction_file <- args[1]
 rna_seq_cnv_estimation_file <- args[2]
@@ -12,7 +12,7 @@ arriba_file <- args[4]
 chromosome_counts_karyotype_file <- args[5]
 anno_gene_fusions_file <- args[6]
 outfile <- args[7]
-print(arriba_file)
+#print(arriba_file)
 
 subtype_data <- read.table(anno_gene_fusions_file, header = TRUE, sep = "")
 
@@ -54,20 +54,20 @@ check_subtype_and_chromosome <- function(Subtype, Chromosome_number,arriba_file,
                     Chromosome_number, "not confirming the subtype allocation."))
     }
   } else {
-        print(subtype_data$Subtype)
+        #print(subtype_data$Subtype)
          if (Subtype %in% subtype_data$Subtype) {
             matching_row_index <- which(subtype_data$Subtype == Subtype)
              if (length(matching_row_index) > 0) {
                 # Extract the matching row from the dataframe
                 matching_row <- subtype_data[matching_row_index, ]
-                print("matching_row")
-                print(matching_row)
+                #print("matching_row")
+                #print(matching_row)
 
                 # Access specific columns
                 X5_end_partner <- matching_row$X5_end_partner
-                print(X5_end_partner)
+                #print(X5_end_partner)
                 X3_end_partner <- matching_row$X3_end_partner
-                print(X3_end_partner)
+                #print(X3_end_partner)
 
             } else {
                 cat("No matching row found for Subtype.\n")
@@ -79,8 +79,8 @@ check_subtype_and_chromosome <- function(Subtype, Chromosome_number,arriba_file,
 
 
              fusioncatcher_data <- read.table(fusioncatcher_file, header = TRUE, sep = "\t")
-             print("fusioncatcher_data")
-             print(head(fusioncatcher_data))
+             #print("fusioncatcher_data")
+             #print(head(fusioncatcher_data))
 
              arriba_found <- any(X5_end_partner %in% c(arriba_data$X.gene1, arriba_data$gene2)) ||
                any(X3_end_partner %in% c(arriba_data$X.gene1, arriba_data$gene2))

@@ -12,9 +12,33 @@ args <- commandArgs(trailingOnly = TRUE)
 vcf_directory<- args[1]
 output_file <- args[2]
 print(args)
-sample_file <- paste(vcf_directory, sep="")
+sample_file_gz <- paste(vcf_directory, sep="")
+sample_file <- R.utils::gunzip(sample_file_gz)
 
-vcf <- read.csv(sample_file, skip=263, header=TRUE, sep="\t")
+find_CHROM_row <- function(file_path) {
+  con <- file(file_path, "r")
+  line_num <- 0
+  while (TRUE) {
+    line <- readLines(con, n = 1)
+    if (length(line) == 0) {
+      break  # End of file
+    }
+    line_num <- line_num + 1
+    if (grepl("#CHROM", line)) {
+      return(line_num)
+    }
+  }
+  return(NULL)  # #CHROM not found
+}
+
+
+# Find the row number where #CHROM occurs
+skip <- find_CHROM_row(sample_file)
+print("in prepare_vcf_files")
+print(skip)
+
+
+vcf <- read.csv(sample_file, skip=skip-1, header=TRUE, sep="\t")
 
 #print(vcf)
 

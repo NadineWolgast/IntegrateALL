@@ -28,5 +28,5 @@ def get_ctat_input_files(samples_csv):
         samples_test[sample_id] = sample_info
 
     # Print the resulting dictionary
-    print("samples_test:",samples_test)
+    # print("samples_test:",samples_test)
     return samples_test

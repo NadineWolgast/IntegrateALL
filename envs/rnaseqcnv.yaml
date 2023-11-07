@@ -1,0 +1,7 @@
+channels:
+ - conda-forge
+ - r
+ - bioconda
+dependencies:
+ - r-base = 4.1.1
+ - r-devtools

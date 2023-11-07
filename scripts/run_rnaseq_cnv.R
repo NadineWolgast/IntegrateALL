@@ -1,10 +1,10 @@
-library(conflicted)
+#library(conflicted)
 library(RNAseqCNV)
-library(tidyverse)
-library(readxl)
-library(lubridate)
-library(foreach)
-library(doParallel)
+#library(tidyverse)
+#library(readxl)
+#library(lubridate)
+#library(foreach)
+#library(doParallel)
 
 # Get input file path from command line arguments
 args <- commandArgs(trailingOnly = TRUE)

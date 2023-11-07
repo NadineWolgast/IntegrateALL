@@ -2,7 +2,7 @@ channels:
   - r
 dependencies:
   - r=3.3.1
-  - r-devtools=2.4.5
+  - r-devtools
   - r-kknn=1.3.1
   - r-randomForest=4.7-1.1
   - r-ranger=0.15.1

@@ -33,4 +33,3 @@ def generate_files(input_csv, output_dir):
         config.write("\n".join(config_data))
 
     return
-    # print(f"Meta.txt and config.txt files generated in {output_dir}")

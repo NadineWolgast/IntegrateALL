@@ -30,16 +30,15 @@ samples_test = get_ctat_input_files(sample_file)
 #Create config.txt and meta.txt for RNASeqCNV
 generate_files(sample_file, 'data/')
 
-
 rule all:
     input:
         "check_samples.txt",
-        expand("STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam.bai", sample_id=list(samples.keys())),
-        expand("fusions/{sample_id}.pdf",sample_id=samples.keys()),
+        #expand("STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam.bai", sample_id=list(samples.keys())),
+        #expand("fusions/{sample_id}.pdf",sample_id=samples.keys()),
         #expand("STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",sample_id=list(samples.keys())),
         #expand("multiqc/{sample}/multiqc_data/multiqc_fastqc.txt", sample=fastq_dataframe['sample_id']),
-        expand("fusioncatcher_output/{sample_id}/final-list_candidate-fusion-genes.txt",sample_id=list(samples.keys())),
-        #expand("ctat_output_directory/{sample_id}/{sample_id}.filtered.vcf",sample_id=samples_test.keys()),
+        #expand("fusioncatcher_output/{sample_id}/final-list_candidate-fusion-genes.txt",sample_id=list(samples.keys())),
+        #expand("ctat_output_directory/{sample_id}/{sample_id}.filtered.vcf.gz",sample_id=samples_test.keys()),
         #expand("RNAseqCNV_output/{sample_id}",sample_id=samples.keys()),
         expand("data/tpm/{sample_id}.tsv", sample_id=list(samples.keys())),
         expand("data/cpm/{sample_id}.tsv", sample_id=list(samples.keys())),
@@ -136,7 +135,9 @@ rule index:
             gtf = config['star_gtf'] # provide your GTF file
         output:
             directory(config["genome_index"])
-        threads: 20 # set the maximum number of available cores
+
+        threads: config['threads']
+
         shell:
             'STAR --runThreadN {threads} '
             '--runMode genomeGenerate '
@@ -158,6 +159,11 @@ rule run_star_aligner:
 
     benchmark:
         "benchmarks/{sample_id}.star_aligner.benchmark.txt"
+
+    conda:
+        "envs/star.yaml"
+
+    threads: config['threads']
 
     resources:
         threads=config['threads'],
@@ -193,7 +199,7 @@ rule samtools_index:
         extra=""  # optional params string
     benchmark:
         "benchmarks/{sample}.samtools_index.benchmark.txt"
-    threads: 4  # This value - 1 will be sent to -@
+    threads: config['threads'],  # This value - 1 will be sent to -@
     wrapper:
         "v2.6.0/bio/samtools/index"
 
@@ -235,7 +241,7 @@ rule run_arriba:
         default_known_fusions=True,      # Optional
         sv_file="",                      # File containing information from structural variant analysis
         extra="-i 1,2"                  # Optional parameters
-    threads: 10
+    threads: config['threads'],
     wrapper:
         "v2.6.0/bio/arriba"
 
@@ -363,7 +369,53 @@ rule run_allcatchr_on_single_count_files:
 
 rule pull_ctat_mutations_singularity_image:
     shell:
-        "singularity pull docker://trinityctat/ctat_mutations"
+        '''singularity pull docker://trinityctat/ctat_mutations:3.2.0'''
+
+
+rule install_ctat_mutations:
+    params:
+        software_url="https://github.com/NCIP/ctat-mutations/archive/refs/tags/CTAT-Mutations-v3.2.0.tar.gz",
+        genome_lib_url="https://data.broadinstitute.org/Trinity/CTAT_RESOURCE_LIB/__genome_libs_StarFv1.10/GRCh38_gencode_v37_CTAT_lib_Mar012021.plug-n-play.tar.gz",
+        genome_lib_build_dir= config["ctat_genome_lib_build_dir"],
+        mutation_lib_supplement_url="https://data.broadinstitute.org/Trinity/CTAT_RESOURCE_LIB/MUTATION_LIB_SUPPLEMENT/GRCh38.mutation_lib_supplement.Jul272020.tar.gz",
+        rna_editing_url="https://data.broadinstitute.org/Trinity/CTAT_RESOURCE_LIB/MUTATION_LIB_SUPPLEMENT/rna_editing/GRCh38.RNAediting.vcf.gz",
+        cravat_url = "https://data.broadinstitute.org/Trinity/CTAT_RESOURCE_LIB/MUTATION_LIB_SUPPLEMENT/cravat_lib/cravat.GRCh38.tar.bz2"
+
+    shell:
+        "mkdir -p {params.genome_lib_build_dir} && cd {params.genome_lib_build_dir} && "
+
+        "wget {params.genome_lib_url} && "
+        "tar xvf GRCh38_gencode_v37_CTAT_lib_Mar012021.plug-n-play.tar.gz && "
+
+        "wget {params.software_url} && "
+        "tar xvf CTAT-Mutations-v3.2.0.tar.gz && "
+        
+        "cd {params.genome_lib_build_dir}/GRCh38_gencode_v37_CTAT_lib_Mar012021.plug-n-play/ctat_genome_lib_build_dir && "
+        "wget {params.mutation_lib_supplement_url} && "
+        "tar xvf GRCh38.mutation_lib_supplement.Jul272020.tar.gz && "
+        
+        "wget {params.rna_editing_url} && "
+        "gunzip GRCh38.RNAediting.vcf.gz && "
+        
+        "wget {params.cravat_url} && "
+        "tar xvf cravat.GRCh38.tar.bz2"
+
+
+
+rule run_ctat_genome_lib_builder:
+    input:
+        genome_lib = config["ctat_genome_lib_build_dir"]
+    params:
+        genome_lib_build_dir= config["ctat_genome_lib_build_dir"]
+
+    shell:
+        '''
+        singularity exec -e -B {params.genome_lib_build_dir}/GRCh38_gencode_v37_CTAT_lib_Mar012021.plug-n-play/ctat_genome_lib_build_dir \
+        -B {params.genome_lib_build_dir}/ctat-mutations-CTAT-Mutations-v3.2.0/mutation_lib_prep \
+        ctat_mutations.v3.2.0.simg \
+        {params.genome_lib_build_dir}/ctat-mutations-CTAT-Mutations-v3.2.0/mutation_lib_prep/ctat-mutation-lib-integration.py \
+        --genome_lib_dir {params.genome_lib_build_dir}/GRCh38_gencode_v37_CTAT_lib_Mar012021.plug-n-play/ctat_genome_lib_build_dir \
+        '''
 
 
 # Rule to run ctat-mutations
@@ -373,37 +425,37 @@ rule run_ctat_mutations:
 
     params:
         sample_id= lambda wildcards: wildcards.sample_id,
-        genome_lib=config["genome_lib"],
-        left= lambda wildcards: samples_test[wildcards.sample_id]['left'],
-        right= lambda wildcards: samples_test[wildcards.sample_id]['right'],
-        input_directory= config["ctat_input_directory"]
+        #genome_lib=config["genome_lib"],
+        genome_lib_build_dir= config["ctat_genome_lib_build_dir"],
+        left= lambda wildcards: samples_test[sample_id]['left'],
+        right= lambda wildcards: samples_test[sample_id]['right'],
+        input_directory= config["ctat_input_directory"],
+        threads= config['threads']
 
     benchmark:
         "benchmarks/{sample_id}.ctat_mutations.benchmark.txt"
 
     output:
         vcf="ctat_output_directory/{sample_id}/{sample_id}.filtered.vcf.gz",
-        #vcf ="ctat_output_directory/{sample_id}/{sample_id}.cancer.vcf",
         directory= directory("ctat_output_directory/{sample_id}/")
+
+    threads: config['threads']
 
 
     shell:
         '''
         singularity exec -e -B {input.input_directory}:/ctat_input \
-        -B {params.genome_lib}:/ctat_genome_lib_dir:ro \
+        -B {params.genome_lib_build_dir}/GRCh38_gencode_v37_CTAT_lib_Mar012021.plug-n-play/ctat_genome_lib_build_dir:/ctat_genome_lib_dir:ro \
         ctat_mutations.v3.2.0.simg \
         /usr/local/src/ctat-mutations/ctat_mutations \
         --left /ctat_input/{params.left} \
         --right /ctat_input/{params.right} \
         --sample_id {params.sample_id} \
         --output {output.directory} \
-        --cpu 10 \
+        --cpu {params.threads} \
         --genome_lib_dir /ctat_genome_lib_dir \
         --boosting_method none \
-        --no_cravat &&
-        sleep .10 &&
-        cp -rL /home/nadine/ctat_output_directory/{params.sample_id}/{params.sample_id}.cancer.vcf /media/nadine/Alina/Blast-o-Matic-Fusioninator/ctat_output_directory/{params.sample_id} &&
-        cp -rL /home/nadine/ctat_output_directory/{params.sample_id}/{params.sample_id}.cancer.tsv /media/nadine/Alina/Blast-o-Matic-Fusioninator/ctat_output_directory/{params.sample_id}
+        --no_cravat 
         '''
 
 
@@ -454,8 +506,12 @@ rule calculate_tpm_and_cpm:
 
 
 rule install_rnaseq_cnv:
+    conda:
+        "envs/rnaseqcnv.yaml"
+
     shell:
         "Rscript -e 'devtools::install_github(\"honzee/RNAseqCNV\")'"
+
 
 # TODO: Check if all the cancer.vcf files need to skip 263 lines. Needs maybe a modified skript
 rule prepare_vcf_files:
@@ -470,8 +526,6 @@ rule prepare_vcf_files:
         "Rscript {input.r_script} {input.vcf_dir} {output.counts};"
 
 #TODO: Need to rewrite meta.txt for each sample! Execute in R script : run_rnaseq_cnv.R",
-
-
 rule run_rnaseq_cnv:
     input:
         r_script = "scripts/run_rnaseq_cnv.R",

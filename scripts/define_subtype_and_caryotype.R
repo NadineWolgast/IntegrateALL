@@ -60,14 +60,16 @@ check_subtype_and_chromosome <- function(Subtype, Chromosome_number,arriba_file,
              if (length(matching_row_index) > 0) {
                 # Extract the matching row from the dataframe
                 matching_row <- subtype_data[matching_row_index, ]
-                #print("matching_row")
-                #print(matching_row)
+                print("matching_row")
+                print(matching_row)
 
                 # Access specific columns
                 X5_end_partner <- matching_row$X5_end_partner
-                #print(X5_end_partner)
+                print("X5_end_partner")
+                print(X5_end_partner)
                 X3_end_partner <- matching_row$X3_end_partner
-                #print(X3_end_partner)
+                print("X3_end_partner")
+                print(X3_end_partner)
 
             } else {
                 cat("No matching row found for Subtype.\n")
@@ -75,45 +77,94 @@ check_subtype_and_chromosome <- function(Subtype, Chromosome_number,arriba_file,
 
             # Check if X5_end_partner and X3_end_partner are present in both arriba and fusioncatcher files
 
-             arriba_data <- read.csv(arriba_file, header = TRUE, sep = "\t")
+            arriba_data <- read.csv(arriba_file, header = TRUE, sep = "\t")
 
 
-             fusioncatcher_data <- read.table(fusioncatcher_file, header = TRUE, sep = "\t")
-             #print("fusioncatcher_data")
-             #print(head(fusioncatcher_data))
+            fusioncatcher_data <- read.table(fusioncatcher_file, header = TRUE, sep = "\t")
 
-             arriba_found <- any(X5_end_partner %in% c(arriba_data$X.gene1, arriba_data$gene2)) ||
-               any(X3_end_partner %in% c(arriba_data$X.gene1, arriba_data$gene2))
+            fusioncatcher_found <- list()
+            arriba_found <- list()
+            k <- 1
+            l <- 1
+            # Loop through each row of pairs of X5_end_partner and X3_end_partner
+            for (i in 1:nrow(matching_row)) {
+                row <- matching_row[i, ]
 
-            fusioncatcher_found <- any(X5_end_partner %in% c(fusioncatcher_data$Gene_1_symbol.5end_fusion_partner., fusioncatcher_data$Gene_2_symbol.3end_fusion_partner.)) ||
-                                  any(X3_end_partner %in% c(fusioncatcher_data$Gene_1_symbol.5end_fusion_partner., fusioncatcher_data$Gene_2_symbol.3end_fusion_partner.))
+                X5_end_partner <- row$X5_end_partner
+                X3_end_partner <- row$X3_end_partner
 
-            if (arriba_found || fusioncatcher_found) {
-                result_text <- "Gene fusion calling identified"
+                # Check if the pair is present in FusionCatcher data
+                matching_fc_rows <- which(
+                    fusioncatcher_data$Gene_1_symbol.5end_fusion_partner. %in% c(X5_end_partner) &
+                    fusioncatcher_data$Gene_2_symbol.3end_fusion_partner. %in% c(X3_end_partner)
+                )
 
-                if (arriba_found && fusioncatcher_found) {
-                    result_text <- paste(result_text, "fusions confirmed by both Arriba and FusionCatcher.")
-                } else if (arriba_found) {
-                    result_text <- paste(result_text, "fusions confirmed by Arriba.")
-                } else if (fusioncatcher_found) {
-                    result_text <- paste(result_text, "fusions confirmed by FusionCatcher.")
+                if (length(matching_fc_rows) > 0) {
+                    print("matching_fc_rows")
+                    print(matching_fc_rows)
+                    found_fusions <- fusioncatcher_data[matching_fc_rows, c("Gene_1_symbol.5end_fusion_partner.", "Gene_2_symbol.3end_fusion_partner.")]
+                    fusioncatcher_found[[k]] <- found_fusions
+                    k <- k + 1
+                } else {
+                    invisible()
                 }
 
-                fusion_text <- paste("Fusion:", paste(X5_end_partner, X3_end_partner, collapse = " "), "\n")
+
+                # Check if the pair is present in Arriba data
+                matching_arriba_rows <- which(
+                    arriba_data$X.gene1 %in% c(X5_end_partner) &
+                    arriba_data$gene2 %in% c(X3_end_partner)
+                )
+
+                if (length(matching_arriba_rows) > 0) {
+                    arriba_found[[l]] <- arriba_data[matching_arriba_rows, c("X.gene1", "gene2")]
+                    l <- l + 1
+                } else {
+                    invisible()
+                }
+            }
 
 
-                return(paste(result_text, fusion_text))
+            # Check if any fusions were found in FusionCatcher or Arriba data
+            if (length(fusioncatcher_found) > 0 || length(arriba_found) > 0) {
+                result_text <- "Gene fusion calling identified"
+
+                if (length(fusioncatcher_found) > 0) {
+                    result_text <- paste(result_text, "fusions confirmed by FusionCatcher:")
+                }
+
+                if (length(arriba_found) > 0) {
+                    result_text <- paste(result_text, "fusions confirmed by Arriba:")
+                }
+
+                # Construct fusion_text with found fusions
+                fusion_text <- character()
+
+                if (length(fusioncatcher_found) > 0) {
+                    #fusion_text <- c(fusion_text, "Fusion (FusionCatcher):")
+                    for (i in 1:length(fusioncatcher_found)) {
+                        fusion_text <- c(paste(fusioncatcher_found[[i]]$Gene_1_symbol.5end_fusion_partner., fusioncatcher_found[[i]]$Gene_2_symbol.3end_fusion_partner., collapse = " "))
+                    }
+                }
+
+                if (length(arriba_found) > 0) {
+                    #fusion_text <- c(fusion_text, "Fusion (Arriba):")
+                    for (i in 1:length(arriba_found)) {
+                        fusion_text <- c(fusion_text, paste(arriba_found[[i]]$X.gene1, arriba_found[[i]]$gene2, collapse = " "))
+                    }
+                }
+
+                return(paste(result_text, fusion_text, collapse = "\n"))
             } else {
                 return("Gene fusion calling identified fusions not confirming the subtype allocation.")
             }
+
 
          } else {
             return("Subtype not found in the subtype data.")
          }
     }
 }
-
-# Example usage:
 
 
 result <- check_subtype_and_chromosome(subtype, chromosome_number, arriba_file,fusioncatcher_file)

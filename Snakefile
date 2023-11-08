@@ -126,9 +126,20 @@ rule multiqc_file:
 
 
 
+
+rule download_star_ref:
+    input:
+        star_directory= config["star_files"]
+
+    shell:
+        "cd {input.star_directory} && "
+        "wget 'https://ftp.ensembl.org/pub/release-110/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz' && "
+        "gunzip Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz && "
+        "wget 'https://ftp.ensembl.org/pub/release-94/gtf/homo_sapiens/Homo_sapiens.GRCh38.94.gtf.gz' && "
+        "gunzip Homo_sapiens.GRCh38.94.gtf.gz "
+
 #conda install star=2.7.1a
 
-# TODO: rule index not tested yet, too large for my machine
 rule index:
         input:
             fa = config['star_ref'], # provide your reference FASTA file

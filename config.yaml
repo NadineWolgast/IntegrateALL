@@ -1,17 +1,17 @@
 sample_file: samples.csv
 
-rna_fusion_data_directory: /path/to/fusioncatcher/data/human_v102
+rna_fusion_data_directory: /path/to/fusioncatcher/data/human_v102 # TODO: Adjust the path to point to your actual fusioncatcher data directory
 
-star_ref: /path/to/STAR_indexfiles/GRCh38.primary_assembly.genome.fa
-star_gtf: /path/to/STAR_indexfiles/gencode.v32.annotation.gtf
+star_files: /path/to/where/STAR_reference_files/shall_be_installed_to
+star_ref: /path/to/STAR_indexfiles/GRCh38.primary_assembly.genome.fa # TODO: Adjust the path to point to your actual star_ref fasta file
+star_gtf: /path/to/STAR_indexfiles/gencode.v32.annotation.gtf # TODO: Adjust the path to point to your actual star gtf file
 star_mem: 80000
 threads: 20
 genome_index: /path/to/genome_index/STAR/ensembl_94_100
-star_tmp_directory: /path/to/STAR_tmp
 
 
 ctat_input_directory: /path/to/data/samples
-genome_lib: /path/to/ctat-mutationst/ctat_genome_lib_build_dir
+ctat_genome_lib_build_dir: /path/to/ctat-mutationst/ctat_genome_lib_build_dir
 
 # singularity
 use-singularity: True

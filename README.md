@@ -2,6 +2,8 @@
 
 Snakemake diagnostic RNA-Seq Fusion Pipline for ALL
 
+![Blast-o-Matic-Fusionator](https://github.com/[NadineKraf]/[Blast-o-Matic-Fusioninator]/blob/[main]/Blast-o-Matic-Fusioninator.png?raw=true)
+
 
 ##  Prerequisites
 

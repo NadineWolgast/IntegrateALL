@@ -1,1 +1,1 @@
-reads3	reads3.txt	reads3.tsv
+sample_id	sample_id.txt	sample_id.tsv

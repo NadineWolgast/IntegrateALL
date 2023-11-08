@@ -63,6 +63,13 @@ Install the ALLCatchR with the command:
 snakemake --cores 10 install_allcatchr
 ```
 
+## RNASeqCNV 
+Install RNASeqCnv with the command:
+```bash
+snakemake --use-conda --cores 10 install_rnaseq_cnv
+```
+
+
 ### Fusioncatcher
 See: https://github.com/ndaniel/fusioncatcher for installing and downloading fusioncatcher db:
 ```bash

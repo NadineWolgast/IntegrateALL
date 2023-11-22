@@ -87,6 +87,13 @@ Now adjust in config.yaml the rna_fusion_data_directory with the installed path 
 rna_fusion_data_directory: /path/to/fusioncatcher/data/human_v102
 ```
 
+### ARRIBA draw fusions
+In order to produce arribas publication-quality visualizations of the transcripts involved in predicted fusions it needs to be installed with the command
+```bash
+snakemake --cores 10 install_arriba_draw_fusions
+```
+This will install arrbia version 2.4.0 and its' database in the same directory as the pipeline.  
+
 ### STAR reference files
 You can download your STAR reference and gtf file or use the pipeline to get them. You only need to adjust the paths inside the config.yaml to point where they are or should be stored.
 

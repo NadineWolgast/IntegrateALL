@@ -57,7 +57,7 @@ snakemake --cores 10 install_ctat_mutations
 snakemake --cores 10 run_ctat_genome_lib_builder
 ```
 This will install the Plug-n-Play genome library needed for running CTAT mutations. Keep in mind, that this will need at least 78 GB space. 
-if you already have a CTAT mutations Genome library installed, you can adjust the path ctat_genome_lib_build_dir in the config.yaml with the actual path and skip this installation. 
+If you already have a CTAT mutations Genome library installed, you can adjust the path ctat_genome_lib_build_dir in the config.yaml with the actual path and skip this installation. 
 
 ### ALLCatchR
 Install the ALLCatchR with the command:
@@ -92,7 +92,7 @@ In order to produce arribas publication-quality visualizations of the transcript
 ```bash
 snakemake --cores 10 install_arriba_draw_fusions
 ```
-This will install arrbia version 2.4.0 and its' database in the same directory as the pipeline.  
+This will download and install arrbia version 2.4.0 and its' database in the same directory as the pipeline.  
 
 ### STAR reference files
 You can download your STAR reference and gtf file or use the pipeline to get them. You only need to adjust the paths inside the config.yaml to point where they are or should be stored.
@@ -115,18 +115,23 @@ Generate the STAR genome_index with
 ```bash
   snakemake --cores 10 index
 ```
-Now you have all needed reference files to run the pipeline. 
+Now you have all needed reference files and tools to run the pipeline. 
 
 
 ## Run examples
 Change the samples.csv file to point to your actual samples and change the sample_id names.
+Inside the config.yaml file change this line to point to your actual FASTQ samples directory:
+```bash
+ctat_input_directory: /path/to/your/samples/directory
+```
+**Don't** put an extra slash after the directory or CTAT will throw an error.
+
 
 To test and see the pipelines execution jobs before running the pipeline you can run the command:
 ```bash
   snakemake -n
 ```
-To see the resulting jobs and reasons for them. If you agree with them, you can run
-them with:
+This will list the resulting jobs and reasons for them. If you agree with them, you can run them with:
 ```bash
   snakemake --use-singularity --use-conda --cores 10 
 ```
@@ -139,14 +144,14 @@ If you want to run only a selection of the pipeline analysis methods you can cha
 ```
 This will run only the analysis ALLCatchR for all samples in your samples.csv file.
 
-You can also run an analysis for only one sample.
-For example, if you want the CTAT mutations output for only one sample you can change YOUR_SAMPLE_ID to one of your 
+You can also run a single analysis for only one sample.
+For example, if you want the CTAT mutations output for only one sample you can change **YOUR_SAMPLE_ID** to one of your 
 actual sample_ids from the samples.csv file and run the following command:
 ```bash
-  snakemake --use-singularity --use-conda --cores 10 ctat_output_directory/YOUR_SAMPLE_ID
+  snakemake --use-singularity --use-conda --cores 10 ctat_output_directory/YOUR_SAMPLE_ID/
 ```
 
-If you want to run the pipeline on a cluster with slurm for example you can run it with:
+If you want to run the pipeline on a cluster with slurm you can change the command to match your available resources and run it with:
 ```bash
   srun -c 20 --mem 100G snakemake --use-singularity --use-conda --cores 20 --resources threads=200 -j 20
 ```

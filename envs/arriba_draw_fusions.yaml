@@ -1,0 +1,18 @@
+channels:
+  - defaults
+  - bioconda
+  - conda-forge
+dependencies:
+  - r-base = 4.1.1
+  - star = 2.7.11a
+  - arriba = 2.4.0
+  - ca-certificates
+  - libgcc-ng
+  - python = 3.7
+  - bioconductor-genomicranges = 1.50.0
+  - bioconductor-genomicalignments
+  - r-circlize = 0.4.15
+  - libgcc-ng
+  - libstdcxx-ng
+  - htslib = 1.17
+  - samtools = 2.6.0

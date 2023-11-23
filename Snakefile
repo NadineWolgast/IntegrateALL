@@ -1,4 +1,4 @@
-configfile: "config_adjusted.yaml"
+configfile: "config.yaml"
 
 # Import custom Python scripts
 from scripts.create_sample_dataframe import create_sample_dataframe

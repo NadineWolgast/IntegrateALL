@@ -40,12 +40,15 @@ rule all:
         #expand("fusioncatcher_output/{sample_id}/final-list_candidate-fusion-genes.txt",sample_id=list(samples.keys())),
         #expand("ctat_output_directory/{sample_id}/{sample_id}.filtered.vcf.gz",sample_id=samples_test.keys()),
         #expand("RNAseqCNV_output/{sample_id}",sample_id=samples.keys()),
-        expand("data/tpm/{sample_id}.tsv", sample_id=list(samples.keys())),
-        expand("data/cpm/{sample_id}.tsv", sample_id=list(samples.keys())),
-        #expand("pysamstats_output_dir/{sample_id}.tsv", sample_id=list(samples.keys())),
+        #expand("data/tpm/{sample_id}.tsv", sample_id=list(samples.keys())),
+        #expand("data/cpm/{sample_id}.tsv", sample_id=list(samples.keys())),
+        expand("pysamstats_output_dir/{sample_id}/", sample_id=list(samples.keys())),
         #expand("comparison/{sample_id}.csv", sample_id= samples.keys()),
+        #expand("data/single_counts/{sample_id}.txt", sample_id=samples.keys()),
         #expand("data/vcf_files/{sample_id}.tsv",sample_id=samples.keys()),
-        expand("aggregated_output/{sample}.csv", sample=list(samples.keys()))
+        #expand("allcatch_output/{sample_id}/predictions.tsv", sample_id= samples.keys()),
+        #expand("aggregated_output/{sample}.csv", sample=list(samples.keys()))
+        #expand("interactive_output/output_report_{sample}.html",  sample=list(samples.keys()))
 
 
 
@@ -210,26 +213,31 @@ rule samtools_index:
         extra=""  # optional params string
     benchmark:
         "benchmarks/{sample}.samtools_index.benchmark.txt"
-    threads: config['threads'],  # This value - 1 will be sent to -@
+    threads: config['threads']
     wrapper:
         "v2.6.0/bio/samtools/index"
 
-
+#TODO: Thomas fragen, wie die variation analyse richtig ausgeführt wird. Bis jetzte ist das Ergebnis immer leer...
 rule pysamstat:
     input:
-        bam="STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam"
+        bam="STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",
+        #fa = "data/GCF_000001405.39_GRCh38.p13_genomic.fna"
+        fa= "data/GRCh38.primary_assembly.genome.fa",
 
     benchmark:
         "benchmarks/{sample_id}.pysamstat.benchmark.txt"
 
     output:
-        "pysamstats_output_dir/{sample_id}.tsv"
+        directory("pysamstats_output_dir/{sample_id}/")
 
     shell:
-        #"pysamstats -t variation -c chr9 -u -s 10000 -e 20000  -f  {input.bam} >  pysamstats_output_dir/{sample_id}.tsv"
-         "pysamstats --type coverage {input.bam} > pysamstats_output_dir/{sample_id}.txt"
+        "mkdir 'pysamstats_output_dir/{sample_id}/' && "
+        "pysamstats --type variation --chromosome 7 --start 50382594 --end 50382594 -f {input.fa} {input.bam} > pysamstats_output_dir/{sample_id}/{sample_id}_IKZF1.tsv && "
+        "pysamstats --type variation --chromosome 9 -u -s 37015168 -e 37015168 -f {input.fa} {input.bam} >  pysamstats_output_dir/{sample_id}/{sample_id}_PAX5.tsv && "
+        "pysamstats --type coverage --chromosome 7 --start 50300000 --end 50410000 {input.bam}  > pysamstats_output_dir/{sample_id}/example.coverage.txt"
 
-# TODO:
+
+
 rule run_arriba:
     input:
         # STAR BAM containing chimeric alignments from 'run_star_aligner'
@@ -252,9 +260,23 @@ rule run_arriba:
         default_known_fusions=True,      # Optional
         sv_file="",                      # File containing information from structural variant analysis
         extra="-i 1,2"                  # Optional parameters
-    threads: config['threads'],
+    threads: config['threads']
     wrapper:
         "v2.6.0/bio/arriba"
+
+
+rule install_arriba_draw_fusions:
+    conda:
+        "envs/arriba_draw_fusions.yaml"
+
+    shell:
+        """
+        wget 'https://github.com/suhrig/arriba/releases/download/v2.4.0/arriba_v2.4.0.tar.gz' &&
+        tar -xzf arriba_v2.4.0.tar.gz &&
+        cd arriba_v2.4.0 &&
+        ./download_references.sh hs37d5viral+GENCODE19
+        """
+
 
 rule run_draw_arriba_fusion:
     input:
@@ -267,6 +289,9 @@ rule run_draw_arriba_fusion:
     output:
         pdf="fusions/{sample_id}.pdf"
 
+    conda:
+        "envs/arriba_draw_fusions.yaml"
+
     shell:
         '''
         Rscript {input.r_script} \
@@ -274,14 +299,12 @@ rule run_draw_arriba_fusion:
         --alignments={input.bam} \
         --output={output.pdf} \
         --annotation={input.annotation}\
-        --cytobands=$CONDA_PREFIX/var/lib/arriba/cytobands_hg19_hs37d5_GRCh37_v2.4.0.tsv \
-        --proteinDomains=$CONDA_PREFIX/var/lib/arriba/protein_domains_hg19_hs37d5_GRCh37_v2.4.0.gff3
+        --cytobands=arriba_v2.4.0/database/cytobands_hg19_hs37d5_GRCh37_v2.4.0.tsv \
+        --proteinDomains=arriba_v2.4.0/database/protein_domains_hg19_hs37d5_GRCh37_v2.4.0.gff3
         '''
 
 
 
-
-# Changed fusioncatcher input to get input files directly from samples & access files through wildcards
 rule run_fusioncatcher:
     input:
         fastq_directory = config["ctat_input_directory"],
@@ -297,7 +320,7 @@ rule run_fusioncatcher:
         "envs/fusioncatcher.yaml"
 
     params:
-        sample_id=lambda wildcards: wildcards.sample_id,  # Extract sample_id from wildcards
+        sample_id=lambda wildcards: wildcards.sample_id
 
 
     benchmark:
@@ -330,9 +353,6 @@ rule run_allcatchr:
 
     output:
         "allcatch_output/predictions.tsv"
-
-    #conda:
-    #    "envs/catchall.yaml"
 
     shell:
         "Rscript {input.r_script} {input.input_file} {output};"
@@ -369,8 +389,8 @@ rule run_allcatchr_on_single_count_files:
     output:
         "allcatch_output/{sample}/predictions.tsv"
 
-    #conda:
-    #    "envs/catchall.yaml"
+    conda:
+        "envs/catchall.yaml"
 
     shell:
         "Rscript {input.r_script} {input.input_file} {output};"
@@ -436,7 +456,6 @@ rule run_ctat_mutations:
 
     params:
         sample_id= lambda wildcards: wildcards.sample_id,
-        #genome_lib=config["genome_lib"],
         genome_lib_build_dir= config["ctat_genome_lib_build_dir"],
         left= lambda wildcards: samples_test[sample_id]['left'],
         right= lambda wildcards: samples_test[sample_id]['right'],
@@ -452,23 +471,23 @@ rule run_ctat_mutations:
 
     threads: config['threads']
 
-
     shell:
         '''
         singularity exec -e -B {input.input_directory}:/ctat_input \
         -B {params.genome_lib_build_dir}/GRCh38_gencode_v37_CTAT_lib_Mar012021.plug-n-play/ctat_genome_lib_build_dir:/ctat_genome_lib_dir:ro \
+        -B {params.genome_lib_build_dir}/ctat-mutations-CTAT-Mutations-v3.2.0\
         ctat_mutations.v3.2.0.simg \
-        /usr/local/src/ctat-mutations/ctat_mutations \
+        {params.genome_lib_build_dir}/ctat-mutations-CTAT-Mutations-v3.2.0/ctat_mutations \
         --left /ctat_input/{params.left} \
         --right /ctat_input/{params.right} \
         --sample_id {params.sample_id} \
         --output {output.directory} \
-        --cpu {params.threads} \
+        --cpu {config[threads]} \
         --genome_lib_dir /ctat_genome_lib_dir \
         --boosting_method none \
-        --no_cravat 
+        --no_cravat &&
+        sed -i ';' {output.vcf} 
         '''
-
 
 
 
@@ -551,6 +570,9 @@ rule run_rnaseq_cnv:
         rna_seq_cnv_log2foldchange_file="RNAseqCNV_output/{sample_id}/log2_fold_change_per_arm.tsv",
         rna_seq_cnv_manual_an_table_file= "RNAseqCNV_output/{sample_id}/manual_an_table.tsv"
 
+    conda:
+        "envs/rnaseqcnv.yaml"
+
     shell:
         "Rscript {input.r_script} {input.config_file} {input.metadata_file} {wildcards.sample_id};"
         "sleep 0.20;"
@@ -558,6 +580,8 @@ rule run_rnaseq_cnv:
         "mv RNAseqCNV_output/manual_an_table.tsv {output.directory};"
         "mv RNAseqCNV_output/log2_fold_change_per_arm.tsv {output.directory};"
         "mv RNAseqCNV_output/alteration_matrix.tsv {output.directory};"
+
+
 
 
 rule check_subtype_and_karyotype:
@@ -581,14 +605,14 @@ rule check_subtype_and_karyotype:
 
 rule aggregate_output:
     input:
-            prediction_file = "allcatch_output/{sample}/predictions.tsv", \
-            fusioncatcher_file = "fusioncatcher_output/{sample}/final-list_candidate-fusion-genes.txt", \
-            arriba_file = "fusions/{sample}.tsv", \
-            rna_seq_cnv_log2foldchange_file = "RNAseqCNV_output/{sample}/log2_fold_change_per_arm.tsv", \
-            rna_seq_cnv_manual_an_table_file = "RNAseqCNV_output/{sample}/manual_an_table.tsv", \
-            star_log_final_out_file = "STAR_output/{sample}/Log.final.out", \
-            multiqc_fqc_right = "multiqc/{sample}_right/multiqc_data/multiqc_fastqc.txt", \
-            multiqc_fqc_left = "multiqc/{sample}_left/multiqc_data/multiqc_fastqc.txt", \
+            prediction_file = "allcatch_output/{sample}/predictions.tsv",
+            fusioncatcher_file = "fusioncatcher_output/{sample}/final-list_candidate-fusion-genes.txt",
+            arriba_file = "fusions/{sample}.tsv",
+            rna_seq_cnv_log2foldchange_file = "RNAseqCNV_output/{sample}/log2_fold_change_per_arm.tsv",
+            rna_seq_cnv_manual_an_table_file = "RNAseqCNV_output/{sample}/manual_an_table.tsv",
+            star_log_final_out_file = "STAR_output/{sample}/Log.final.out",
+            multiqc_fqc_right = "multiqc/{sample}_right/multiqc_data/multiqc_fastqc.txt",
+            multiqc_fqc_left = "multiqc/{sample}_left/multiqc_data/multiqc_fastqc.txt",
             comparison_file = "comparison/{sample}.csv"
 
     output:
@@ -600,6 +624,26 @@ rule aggregate_output:
         """
 
 
+
+rule interactive_report:
+    input:
+            prediction_file = "allcatch_output/{sample}/predictions.tsv",
+            fusioncatcher_file = "fusioncatcher_output/{sample}/final-list_candidate-fusion-genes.txt",
+            arriba_file = "fusions/{sample}.tsv",
+            rna_seq_cnv_log2foldchange_file = "RNAseqCNV_output/{sample}/log2_fold_change_per_arm.tsv",
+            rna_seq_cnv_manual_an_table_file = "RNAseqCNV_output/{sample}/manual_an_table.tsv",
+            star_log_final_out_file = "STAR_output/{sample}/Log.final.out",
+            multiqc_fqc_right = "multiqc/{sample}_right/multiqc_report.html",
+            multiqc_fqc_left = "multiqc/{sample}_left/multiqc_report.html",
+            aggregated_output = "aggregated_output/{sample}.csv"
+
+    output:
+        html="interactive_output/output_report_{sample}.html"
+
+    shell:
+        """
+        python scripts/generate_report.py  {input.prediction_file} {input.fusioncatcher_file} {input.arriba_file} {input.rna_seq_cnv_log2foldchange_file} {input.rna_seq_cnv_manual_an_table_file} {input.star_log_final_out_file} {input.multiqc_fqc_right} {input.multiqc_fqc_left} {input.aggregated_output} {output.html}
+        """
 
 
 '''

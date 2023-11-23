@@ -90,7 +90,7 @@ rna_fusion_data_directory: /path/to/fusioncatcher/data/human_v102
 ### ARRIBA draw fusions
 In order to produce arribas publication-quality visualizations of the transcripts involved in predicted fusions it needs to be installed with the command
 ```bash
-snakemake --cores 10 install_arriba_draw_fusions
+snakemake --cores 10 --use-conda install_arriba_draw_fusions
 ```
 This will download and install arrbia version 2.4.0 and its' database in the same directory as the pipeline.  
 

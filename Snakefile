@@ -33,21 +33,21 @@ generate_files(sample_file, 'data/')
 rule all:
     input:
         "check_samples.txt",
-        #expand("STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam.bai", sample_id=list(samples.keys())),
-        #expand("fusions/{sample_id}.pdf",sample_id=samples.keys()),
-        #expand("STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",sample_id=list(samples.keys())),
+        expand("STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",sample_id=list(samples.keys())),
+        expand("STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam.bai", sample_id=list(samples.keys())),
+        expand("fusions/{sample_id}.pdf",sample_id=samples.keys()),
         #expand("multiqc/{sample}/multiqc_data/multiqc_fastqc.txt", sample=fastq_dataframe['sample_id']),
         #expand("fusioncatcher_output/{sample_id}/final-list_candidate-fusion-genes.txt",sample_id=list(samples.keys())),
         #expand("ctat_output_directory/{sample_id}/{sample_id}.filtered.vcf.gz",sample_id=samples_test.keys()),
         #expand("RNAseqCNV_output/{sample_id}",sample_id=samples.keys()),
-        #expand("data/tpm/{sample_id}.tsv", sample_id=list(samples.keys())),
-        #expand("data/cpm/{sample_id}.tsv", sample_id=list(samples.keys())),
-        expand("pysamstats_output_dir/{sample_id}/", sample_id=list(samples.keys())),
+        expand("data/tpm/{sample_id}.tsv", sample_id=list(samples.keys())),
+        expand("data/cpm/{sample_id}.tsv", sample_id=list(samples.keys())),
+        #expand("pysamstats_output_dir/{sample_id}/", sample_id=list(samples.keys())),
         #expand("comparison/{sample_id}.csv", sample_id= samples.keys()),
         #expand("data/single_counts/{sample_id}.txt", sample_id=samples.keys()),
         #expand("data/vcf_files/{sample_id}.tsv",sample_id=samples.keys()),
         #expand("allcatch_output/{sample_id}/predictions.tsv", sample_id= samples.keys()),
-        #expand("aggregated_output/{sample}.csv", sample=list(samples.keys()))
+        expand("aggregated_output/{sample}.csv", sample=list(samples.keys()))
         #expand("interactive_output/output_report_{sample}.html",  sample=list(samples.keys()))
 
 
@@ -644,37 +644,3 @@ rule interactive_report:
         """
         python scripts/generate_report.py  {input.prediction_file} {input.fusioncatcher_file} {input.arriba_file} {input.rna_seq_cnv_log2foldchange_file} {input.rna_seq_cnv_manual_an_table_file} {input.star_log_final_out_file} {input.multiqc_fqc_right} {input.multiqc_fqc_left} {input.aggregated_output} {output.html}
         """
-
-
-'''
-Inhaltlich offene Punkte:
-Integration von karytype und gene expressionsprofil -> machine learning classifier
-Definition einer Mutations-Positiv-Liste: CITAT vs. Pysamstat
-'''
-
-'''
-            echo -e "Output" > {output.csv}
-            awk -F'\t' '{{if (NR == 1) next; printf "%s\\t%s\\n", $1, $2}}' {input.comparison_file} >> {output.csv}
-            uniquely_mapped_reads=$(awk -F'\t' '/Uniquely mapped reads number/ {{print $2}}\\n' {input.star_log_final_out_file})
-            echo "The transcriptome sequencing of {wildcards.sample} produced $uniquely_mapped_reads uniquely aligned sequencing reads, enabling quantification of protein coding genes." >> {output.csv}
-            echo -e "\\nQuality metrics (fastQC / MultiQC) indicated:" >> {output.csv}
-            echo -e "Filename\tTotal Sequences\tSequences flagged as poor quality\tSequence length\t%GC\ttotal_deduplicated_percentage\tavg_sequence_length\tmedian_sequence_length\tbasic_statistics\tper_base_sequence_quality\tper_sequence_quality_scores\tper_base_sequence_content\tper_sequence_gc_content\tper_base_n_content\tsequence_length_distribution\tsequence_duplication_levels\toverrepresented_sequences\tadapter_content" >> {output.csv}
-            awk -F'\t' '{{if (NR == 1) next; printf "%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\n", $2, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20}}' {input.multiqc_fqc_left} >> {output.csv}
-            awk -F'\t' '{{if (NR == 1) next; printf "%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\n", $2, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20}}' {input.multiqc_fqc_right} >> {output.csv}
-            echo -e "\\nALLCatchR allocated for sample {wildcards.sample} the following molecular subtype:" >> {output.csv}
-            echo -e "subtype prediction\tscore\tconfidence" >> {output.csv}
-            awk -F'\t' '{{if (NR == 1) next; printf "%s\\t%s\\t%s\\n", $3, $2, $4}}' {input.prediction_file} >> {output.csv}
-            echo -e "\\nfusioncatcher / ARRIBA identified the following driver fusion candidates:" >> {output.csv}
-            echo -e "\\nFusioncatcher:" >> {output.csv}
-            echo -e "5’ gene name\t5’ chr.position\t3’ gene name\t3’chr. position\tfusion unique spanning reads"  >> {output.csv}
-            awk -F'\t' '{{if (NR == 1) next; printf "%s\\t%s\\t%s\\t%s\\t%s\\n", $1, $9, $2, $10, $6}}' {input.fusioncatcher_file} >> {output.csv}
-            echo -e "\\nARRIBA:" >> {output.csv}
-            echo -e "5’ gene name\t5’ chr.position\t3’ gene name\t3’chr. position\tdiscordant_mates"  >> {output.csv}
-            awk -F'\t' '{{if (NR == 1) next; printf "%s\\t%s\\t%s\\t%s\\t%s\\n", $1, $5, $2, $6, $12}}' {input.arriba_file} >> {output.csv}
-            echo -e "\\nRNASeqCNV identified the following karyotype:" >> {output.csv}
-            echo -e "gender	chrom_n	alterations	status	comments"  >> {output.csv}
-            awk -F'\t' '{{if (NR == 1) next; printf "%s\\t%s\\t%s\\t%s\\t%s\\n", $2, $3, $4, $5, $6}}' {input.rna_seq_cnv_manual_an_table_file} >> {output.csv}
-            echo -e "Chromosome arm calls" >> {output.csv}
-            echo -e "chr\tarm\tlog2FC per arm"  >> {output.csv}
-            awk -F'\t' '{{if (NR == 1) next; printf "%s\\t%s\\t%s\\n", $1, $2, $3}}' {input.rna_seq_cnv_log2foldchange_file} >> {output.csv}
-'''

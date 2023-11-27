@@ -25,12 +25,12 @@ def generate_pdf_path(sample_id):
     return arriba_fusion_pdf_path
 
 
-def generate_multiqc_right_path(sample_id):
+def generate_multiqc_right_path():
     multiqc_right_path = f'"multiqc_right/multiqc_report.html"'
     return multiqc_right_path
 
 
-def generate_multiqc_left_path(sample_id):
+def generate_multiqc_left_path():
     multiqc_left_path = f'"multiqc_left/multiqc_report.html"'
     return multiqc_left_path
 
@@ -43,7 +43,8 @@ def generate_RNASeq_cnv_png_path(sample_id):
 def arriba_file_to_html_table(arriba_file):
     table_content = "<table id='arriba_table'>"
     table_content += "<table border='1' class='my-table-class'>\n"
-    table_content += "<thead><tr><th>5’ gene name</th><th>5’ chr.position</th><th>3’ gene name</th><th>3’chr. position</th><th>discordant_mates</th></tr></thead>\n"  # Header der Tabelle
+    table_content += ("<thead><tr><th>5’ gene name</th><th>5’ chr.position</th><th>3’ gene name</th><th>3’chr. "
+                      "position</th><th>discordant_mates</th></tr></thead>\n")  # Header der Tabelle
 
     table_content += "<tbody>\n"
 
@@ -62,7 +63,8 @@ def arriba_file_to_html_table(arriba_file):
 
 def fusionctacher_file_to_html_table(fusioncatcher_file):
     table_content = "<table id='fusioncatcher_table' class='my-table-class'>\n"
-    table_content += "<thead><tr><th>5’ gene name</th><th>5’ chr.position</th><th>3’ gene name</th><th>3’chr. position</th><th>fusion unique spanning reads</th></tr></thead>\n"
+    table_content += ("<thead><tr><th>5’ gene name</th><th>5’ chr.position</th><th>3’ gene name</th><th>3’chr. "
+                      "position</th><th>fusion unique spanning reads</th></tr></thead>\n")
     table_content += "<tbody>\n"
 
     with open(fusioncatcher_file, 'r') as file:
@@ -77,10 +79,11 @@ def fusionctacher_file_to_html_table(fusioncatcher_file):
     table_content += "</table>\n"
     return table_content
 
+
 def generate_report(prediction_file, fusioncatcher_file, arriba_file,
                     rna_seq_cnv_log2foldchange_file, rna_seq_cnv_manual_an_table_file,
-                    star_log_final_out_file, multiqc_fqc_right, multiqc_fqc_left,
-                    comparison_file, arriba_file_fusion, pysamstats_files_IKZF1, pysamstats_files_PAX5,
+                    star_log_final_out_file,
+                    comparison_file, pysamstats_files_IKZF1, pysamstats_files_PAX5,
                     pysamstats_files_coverage, sample_id, output_file):
     # Read CSV/TSV files
     prediction_data = pd.read_csv(prediction_file, delimiter='\t')  # Example for TSV
@@ -92,8 +95,8 @@ def generate_report(prediction_file, fusioncatcher_file, arriba_file,
     prediction_data_subset = prediction_data.iloc[:, :9]
     arriba_fusion_pdf_path = generate_pdf_path(sample_id)
     rnaseqcnv_png_path = generate_RNASeq_cnv_png_path(sample_id)
-    multiqc_left_path = generate_multiqc_left_path(sample_id)
-    multiqc_right_path = generate_multiqc_right_path(sample_id)
+    multiqc_left_path = generate_multiqc_left_path()
+    multiqc_right_path = generate_multiqc_right_path()
     arriba_html_table = arriba_file_to_html_table(arriba_file)
     fusioncatcher_html_table = fusionctacher_file_to_html_table(fusioncatcher_file)
     comparison_file = pd.read_csv(comparison_file, delimiter='\t', skiprows=1)
@@ -111,7 +114,6 @@ def generate_report(prediction_file, fusioncatcher_file, arriba_file,
     pysamstats_PAX5_html_table = pysamstats_files_PAX5.to_html(classes='my-table-class no-sort', index=False)
     pysamstats_coverage_html_table = pysamstats_files_coverage.to_html(classes='my-table-class no-sort', index=False)
     star_log_final_out_file_html_table = star_log_final_out_file.to_html(classes='my-table-class no-sort', index=False)
-
 
     custom_css = """
     <style>
@@ -258,7 +260,7 @@ def generate_report(prediction_file, fusioncatcher_file, arriba_file,
 
 if __name__ == "__main__":
     print(len(sys.argv))
-    if len(sys.argv) != 16:
+    if len(sys.argv) != 13:
         print(sys.argv)
         print(len(sys.argv))
         print("Usage: python generate_report.py <prediction_file> <fusioncatcher_file> ... <output_file>")
@@ -266,12 +268,12 @@ if __name__ == "__main__":
     print(sys.argv)
 
     prediction_file, fusioncatcher_file, arriba_file, rna_seq_cnv_log2foldchange_file, \
-        rna_seq_cnv_manual_an_table_file, star_log_final_out_file, multiqc_fqc_right, \
-        multiqc_fqc_left, comparison_file, arriba_file_fusion, pysamstats_files_IKZF1, pysamstats_files_PAX5, \
+        rna_seq_cnv_manual_an_table_file, star_log_final_out_file, \
+        comparison_file, pysamstats_files_IKZF1, pysamstats_files_PAX5, \
         pysamstats_files_coverage, sample_id, output_file = sys.argv[1:]
 
     generate_report(prediction_file, fusioncatcher_file, arriba_file,
                     rna_seq_cnv_log2foldchange_file, rna_seq_cnv_manual_an_table_file,
-                    star_log_final_out_file, multiqc_fqc_right, multiqc_fqc_left,
-                    comparison_file, arriba_file_fusion, pysamstats_files_IKZF1, pysamstats_files_PAX5,
+                    star_log_final_out_file,
+                    comparison_file,  pysamstats_files_IKZF1, pysamstats_files_PAX5,
                     pysamstats_files_coverage, sample_id, output_file)

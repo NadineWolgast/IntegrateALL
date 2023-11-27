@@ -217,25 +217,28 @@ rule samtools_index:
     wrapper:
         "v2.6.0/bio/samtools/index"
 
-#TODO: Thomas fragen, wie die variation analyse richtig ausgeführt wird. Bis jetzte ist das Ergebnis immer leer...
+
 rule pysamstat:
     input:
         bam="STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",
-        #fa = "data/GCF_000001405.39_GRCh38.p13_genomic.fna"
-        fa= "data/GRCh38.primary_assembly.genome.fa",
+        fa= config['star_ref']
 
     benchmark:
         "benchmarks/{sample_id}.pysamstat.benchmark.txt"
 
     output:
-        directory("pysamstats_output_dir/{sample_id}/")
+        directory("pysamstats_output_dir/{sample_id}/"),
+        ikzf1="pysamstats_output_dir/{sample_id}/{sample_id}_IKZF1.tsv",
+        pax5="pysamstats_output_dir/{sample_id}/{sample_id}_PAX5.tsv",
+        coverage="pysamstats_output_dir/{sample_id}/example.coverage.txt"
+
 
     shell:
-        "mkdir 'pysamstats_output_dir/{sample_id}/' && "
-        "pysamstats --type variation --chromosome 7 --start 50382594 --end 50382594 -f {input.fa} {input.bam} > pysamstats_output_dir/{sample_id}/{sample_id}_IKZF1.tsv && "
-        "pysamstats --type variation --chromosome 9 -u -s 37015168 -e 37015168 -f {input.fa} {input.bam} >  pysamstats_output_dir/{sample_id}/{sample_id}_PAX5.tsv && "
-        "pysamstats --type coverage --chromosome 7 --start 50300000 --end 50410000 {input.bam}  > pysamstats_output_dir/{sample_id}/example.coverage.txt"
-
+        """
+        pysamstats --type variation --chromosome 7 -u --start 50382594 --end 50382595 -f {input.fa} {input.bam} > {output.ikzf1} &&
+        pysamstats --type variation --chromosome 9 -u --start 37015167 --end 37015168 -f {input.fa} {input.bam} > {output.pax5} &&
+        pysamstats --type coverage --chromosome 7 -u --start 50382594 --end 50382595 {input.bam} > {output.coverage}
+        """
 
 
 rule run_arriba:

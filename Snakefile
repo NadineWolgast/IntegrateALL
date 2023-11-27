@@ -625,22 +625,41 @@ rule aggregate_output:
 
 
 
+
 rule interactive_report:
     input:
             prediction_file = "allcatch_output/{sample}/predictions.tsv",
             fusioncatcher_file = "fusioncatcher_output/{sample}/final-list_candidate-fusion-genes.txt",
             arriba_file = "fusions/{sample}.tsv",
+            arriba_file_fusion = "fusions/{sample}.pdf",
             rna_seq_cnv_log2foldchange_file = "RNAseqCNV_output/{sample}/log2_fold_change_per_arm.tsv",
+            rna_seq_cnv_plot= "RNAseqCNV_output/{sample}/{sample}/{sample}_CNV_main_fig.png",
             rna_seq_cnv_manual_an_table_file = "RNAseqCNV_output/{sample}/manual_an_table.tsv",
             star_log_final_out_file = "STAR_output/{sample}/Log.final.out",
             multiqc_fqc_right = "multiqc/{sample}_right/multiqc_report.html",
             multiqc_fqc_left = "multiqc/{sample}_left/multiqc_report.html",
-            aggregated_output = "aggregated_output/{sample}.csv"
+            comparison_file = "comparison/{sample}.csv",
+            pysamstats_files_IKZF1= "pysamstats_output_dir/{sample}/{sample}_IKZF1.tsv",
+            pysamstats_files_PAX5= "pysamstats_output_dir/{sample}/{sample}_PAX5.tsv",
+            pysamstats_files_coverage= "pysamstats_output_dir/{sample}/example.coverage.txt"
+
 
     output:
-        html="interactive_output/output_report_{sample}.html"
+        html="interactive_output/{sample}/output_report_{sample}.html"
 
     shell:
         """
-        python scripts/generate_report.py  {input.prediction_file} {input.fusioncatcher_file} {input.arriba_file} {input.rna_seq_cnv_log2foldchange_file} {input.rna_seq_cnv_manual_an_table_file} {input.star_log_final_out_file} {input.multiqc_fqc_right} {input.multiqc_fqc_left} {input.aggregated_output} {output.html}
+        mkdir interactive_output/{wildcards.sample}/fusions &&
+        cp {input.arriba_file_fusion} interactive_output/{wildcards.sample}/fusions &&
+        
+        mkdir interactive_output/{wildcards.sample}/multiqc_right &&
+        cp {input.multiqc_fqc_right} interactive_output/{wildcards.sample}/multiqc_right &&
+        
+        mkdir interactive_output/{wildcards.sample}/multiqc_left &&
+        cp {input.multiqc_fqc_left} interactive_output/{wildcards.sample}/multiqc_left &&
+        
+        mkdir interactive_output/{wildcards.sample}/RNAseqCNV &&
+        cp {input.rna_seq_cnv_plot} interactive_output/{wildcards.sample}/RNAseqCNV &&
+        
+        python scripts/generate_report.py  {input.prediction_file} {input.fusioncatcher_file} {input.arriba_file} {input.rna_seq_cnv_log2foldchange_file} {input.rna_seq_cnv_manual_an_table_file} {input.star_log_final_out_file}  {input.comparison_file} {input.pysamstats_files_IKZF1} {input.pysamstats_files_PAX5} {input.pysamstats_files_coverage} {wildcards.sample} {output.html}
         """

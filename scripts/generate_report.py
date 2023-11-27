@@ -1,32 +1,183 @@
 import pandas as pd
 import sys
-from bs4 import BeautifulSoup
+
+
+def read_file_content(filename):
+    with open(filename, 'r') as file:
+        return file.read()
+
+
+def write_to_file(filename, content):
+    with open(filename, 'w') as file:
+        file.write(content)
+
+
+def extract_uniquely_mapped_reads(filename):
+    with open(filename, 'r') as file:
+        for line in file:
+            if 'Uniquely mapped reads number' in line:
+                return line.split('\t')[1].strip()
+    return ''
+
+
+def generate_pdf_path(sample_id):
+    arriba_fusion_pdf_path = f'"fusions/{sample_id}.pdf"'
+    return arriba_fusion_pdf_path
+
+
+def generate_multiqc_right_path(sample_id):
+    multiqc_right_path = f'"multiqc_right/multiqc_report.html"'
+    return multiqc_right_path
+
+
+def generate_multiqc_left_path(sample_id):
+    multiqc_left_path = f'"multiqc_left/multiqc_report.html"'
+    return multiqc_left_path
+
+
+def generate_RNASeq_cnv_png_path(sample_id):
+    RNASeq_cnv_png_path = f'"RNAseqCNV/{sample_id}_CNV_main_fig.png"'
+    return RNASeq_cnv_png_path
+
+
+def arriba_file_to_html_table(arriba_file):
+    table_content = "<table id='arriba_table'>"
+    table_content += "<table border='1' class='my-table-class'>\n"
+    table_content += "<thead><tr><th>5’ gene name</th><th>5’ chr.position</th><th>3’ gene name</th><th>3’chr. position</th><th>discordant_mates</th></tr></thead>\n"  # Header der Tabelle
+
+    table_content += "<tbody>\n"
+
+    with open(arriba_file, 'r') as file:
+        next(file)
+        for line in file:
+            columns = line.strip().split('\t')
+            table_content += "<tr>"
+            table_content += f"<td>{columns[0]}</td><td>{columns[4]}</td><td>{columns[1]}</td><td>{columns[5]}</td><td>{columns[11]}</td>"
+            table_content += "</tr>\n"
+
+    table_content += "</tbody>\n"
+    table_content += "</table>\n"
+    return table_content
+
+
+def fusionctacher_file_to_html_table(fusioncatcher_file):
+    table_content = "<table id='fusioncatcher_table' class='my-table-class'>\n"
+    table_content += "<thead><tr><th>5’ gene name</th><th>5’ chr.position</th><th>3’ gene name</th><th>3’chr. position</th><th>fusion unique spanning reads</th></tr></thead>\n"
+    table_content += "<tbody>\n"
+
+    with open(fusioncatcher_file, 'r') as file:
+        next(file)
+        for line in file:
+            columns = line.strip().split('\t')
+            table_content += "<tr>"
+            table_content += f"<td>{columns[0]}</td><td>{columns[8]}</td><td>{columns[1]}</td><td>{columns[9]}</td><td>{columns[5]}</td>"
+            table_content += "</tr>\n"
+
+    table_content += "</tbody>\n"
+    table_content += "</table>\n"
+    return table_content
 
 def generate_report(prediction_file, fusioncatcher_file, arriba_file,
                     rna_seq_cnv_log2foldchange_file, rna_seq_cnv_manual_an_table_file,
                     star_log_final_out_file, multiqc_fqc_right, multiqc_fqc_left,
-                    aggregated_output, output_file):
+                    comparison_file, arriba_file_fusion, pysamstats_files_IKZF1, pysamstats_files_PAX5,
+                    pysamstats_files_coverage, sample_id, output_file):
     # Read CSV/TSV files
     prediction_data = pd.read_csv(prediction_file, delimiter='\t')  # Example for TSV
-    aggregated_output = pd.read_csv(aggregated_output, skiprows=17, delimiter='\t', na_values=['NaN', 'N/A', ''])  # Example for CSV
-    aggregated_output = aggregated_output.fillna('')
+    pysamstats_files_IKZF1 = pd.read_csv(pysamstats_files_IKZF1, delimiter='\t')
+    pysamstats_files_PAX5 = pd.read_csv(pysamstats_files_PAX5, delimiter='\t')
+    pysamstats_files_coverage = pd.read_csv(pysamstats_files_coverage, delimiter='\t')
+    star_log_final_out_file = pd.read_csv(star_log_final_out_file, delimiter='\t')
+
     prediction_data_subset = prediction_data.iloc[:, :9]
-    # Read the HTML file
-    with open(multiqc_fqc_right, 'r') as file:
-        html_content = file.read()
+    arriba_fusion_pdf_path = generate_pdf_path(sample_id)
+    rnaseqcnv_png_path = generate_RNASeq_cnv_png_path(sample_id)
+    multiqc_left_path = generate_multiqc_left_path(sample_id)
+    multiqc_right_path = generate_multiqc_right_path(sample_id)
+    arriba_html_table = arriba_file_to_html_table(arriba_file)
+    fusioncatcher_html_table = fusionctacher_file_to_html_table(fusioncatcher_file)
+    comparison_file = pd.read_csv(comparison_file, delimiter='\t', skiprows=1)
+    comparison_html_table = comparison_file.to_html(classes='my-table-class no-sort', index=False)
 
-    # Create a BeautifulSoup object
-    soup = BeautifulSoup(html_content, 'html.parser')
+    rna_seq_cnv_manual_an_table_file = pd.read_csv(rna_seq_cnv_manual_an_table_file, delimiter='\t')
+    rna_seq_cnv_manual_an_table_file_html_table = rna_seq_cnv_manual_an_table_file.to_html(classes='my-table-class',
+                                                                                           index=False)
+    rna_seq_cnv_log2foldchange_file = pd.read_csv(rna_seq_cnv_log2foldchange_file, delimiter='\t')
+    rna_seq_cnv_log2foldchange_file_html_table = rna_seq_cnv_log2foldchange_file.to_html(classes='my-table-class',
+                                                                                         index=False)
 
-    # Find and extract content within a specific <div> element with a class or ID
-    general_stats = soup.find('div', id='general_stats')  # Replace with your class name
-    # OR
-    mqc = soup.find('div', id='fastqc-status-check-heatmap')  # Replace with your ID
-    extracted_html = ''
-    # Extract the text or content within the specific <div> element
-    extracted_general_stats = general_stats.encode_contents().decode() if general_stats else ''
-    extracted_mqc = mqc.encode_contents().decode() if mqc else ''
+    html_table = prediction_data_subset.to_html(classes='my-table-class no-sort', index=False)
+    pysamstats_IKZF1_html_table = pysamstats_files_IKZF1.to_html(classes='my-table-class no-sort', index=False)
+    pysamstats_PAX5_html_table = pysamstats_files_PAX5.to_html(classes='my-table-class no-sort', index=False)
+    pysamstats_coverage_html_table = pysamstats_files_coverage.to_html(classes='my-table-class no-sort', index=False)
+    star_log_final_out_file_html_table = star_log_final_out_file.to_html(classes='my-table-class no-sort', index=False)
 
+
+    custom_css = """
+    <style>
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #333;
+            padding: 10px 0;
+            z-index: 999;
+        }
+
+        nav a {
+            display: inline-block;
+            padding: 10px 20px;
+            text-decoration: none;
+            color: #fff;
+            transition: background-color 0.3s ease;
+        }
+
+        nav a:hover {
+            background-color: #555;
+        }
+
+        body {
+            margin-top: 60px; 
+            padding-top: 20px; 
+        }
+
+        .my-table-class {
+            font-family: Arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+        .my-table-class th, .my-table-class td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .my-table-class th {
+            background-color: #f2f2f2;
+            color: #333;
+        }
+        .my-table-class tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .my-table-class tr:hover {
+            background-color: #f1f1f1;
+        }
+        
+        .center {
+          display: block;
+          margin-left: auto;
+          margin-right: auto;
+          width: 50%;
+        } 
+    </style>
+    """
+
+    html_table_with_style = custom_css + html_table
+    arriba_html_table_with_style = custom_css + arriba_html_table
+    pysamstats_IKZF1_html_table_with_style = custom_css + pysamstats_IKZF1_html_table
+    pysamstats_PAX5_html_table_with_style = custom_css + pysamstats_PAX5_html_table
+    pysamstats_coverage_html_table_with_style = custom_css + pysamstats_coverage_html_table
+    star_log_final_out_file_html_table_with_style = custom_css + star_log_final_out_file_html_table
 
     # Construct HTML output
     html_output = f"""
@@ -34,41 +185,68 @@ def generate_report(prediction_file, fusioncatcher_file, arriba_file,
     <html>
     <head>
         <title>Report</title>
-         <style>
-            /* Define styles for your table class */
-            .my-table-class {{
-                font-family: Arial, sans-serif;
-                border-collapse: collapse;
-                width: 100%;
-            }}
-            .my-table-class th, .my-table-class td {{
-                border: 1px solid #ddd;
-                padding: 8px;
-                text-align: left;
-            }}
-            .my-table-class th {{
-                background-color: #f2f2f2;
-                color: #333;
-            }}
-            .my-table-class tr:nth-child(even) {{
-                background-color: #f9f9f9;
-            }}
-            .my-table-class tr:hover {{
-                background-color: #f1f1f1;
-            }}
-        </style>
+        <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+        <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+    </head>
     </head>
     <body>
-        <h1>Prediction Data</h1>
-        {prediction_data_subset.to_html()}
-
-
-        <h1>MultiQC Results</h1>
-        {extracted_general_stats} 
-        {extracted_mqc} 
+        <nav>
+            <a href="#section1">Overview</a>
+            <a href="#section2">Prediction Data</a>
+            <a href="#section11">Pysamstats</a>
+            <a href="#section3">RNASeq-CNV Plot</a>
+            <a href="#section4">RNASeq-CNV manual an table</a>
+            <a href="#section5">RNASeq-CNV log2FC table</a>
+            <a href="#section6">MultiQC Right</a>
+            <a href="#section7">MultiQC Left</a>
+            <a href="#section8">ARRIBA Fusions Table</a>
+            <a href="#section9">ARRIBA Fusions Plots</a>
+            <a href="#section10">Fusioncatcher Fusions</a>
+            <a href="#section12">STAR Stats</a>
+            
+        </nav>
         
-        <h1>Aggregated Output</h1>
-        {aggregated_output.to_html()}
+        <h1 id="section1">Result Data</h1>
+        {comparison_html_table}
+        <h1 id="section2">ALLCatchR Prediction Data</h1>
+        {html_table_with_style}
+        <h1 id="section11">Pysamstats IKZF1</h1>
+        {pysamstats_IKZF1_html_table_with_style}
+        <h1 id="section11">Pysamstats PAX5</h1>
+        {pysamstats_PAX5_html_table_with_style}
+        <h1 id="section11">Pysamstats Coverage IKZF1</h1>
+        {pysamstats_coverage_html_table_with_style}
+        <h1 id="section3">RNASeq-CNV Plot</h1>
+        <img src={rnaseqcnv_png_path} alt="RNASeqCNV first plot" width="900" height="600" class="center">
+        <h2 id="section4">RNASeq-CNV Manual An Table</h2>
+        {rna_seq_cnv_manual_an_table_file_html_table}
+        <h2 id="section5">RNASeq-CNV Log2FC Table</h2>        
+        {rna_seq_cnv_log2foldchange_file_html_table}
+
+        <h1 id="section6">MultiQC Right FASTQ Results</h1>
+        <iframe src={multiqc_right_path} name="multiqc_right_path" width="100%" height="600" frameborder="0"></iframe>
+        
+        <h1 id="section7">MultiQC Left FASTQ Results</h1>
+        <iframe src={multiqc_left_path} name="multiqc_left_path" width="100%" height="600" frameborder="0"></iframe>
+
+        <h1 id="section8">ARRIBA Fusions Table</h1>
+
+        {arriba_html_table_with_style}
+        
+        <h1 id="section9">ARRIBA Fusions Plots</h1>
+        <iframe src= {arriba_fusion_pdf_path} name="arriba_fusion_pdf_path" width="100%" height="600" frameborder="0"></iframe>
+        
+        <h1 id="section10">Fusioncatcher Fusions</h1>
+        {fusioncatcher_html_table}
+        
+        <h1 id="section12">STAR Stats</h1>
+        {star_log_final_out_file_html_table_with_style}
+        <script>
+            $(document).ready(function() {{
+                $('.my-table-class').not('.no-sort').DataTable();
+            }});
+        </script>
     </body>
     </html>
     """
@@ -78,20 +256,22 @@ def generate_report(prediction_file, fusioncatcher_file, arriba_file,
         file.write(html_output)
 
 
-# Usage: python generate_report.py <prediction_file> <fusioncatcher_file> ... <output_file>
 if __name__ == "__main__":
-    if len(sys.argv) != 11:
+    print(len(sys.argv))
+    if len(sys.argv) != 16:
         print(sys.argv)
         print(len(sys.argv))
         print("Usage: python generate_report.py <prediction_file> <fusioncatcher_file> ... <output_file>")
         sys.exit(1)
+    print(sys.argv)
 
     prediction_file, fusioncatcher_file, arriba_file, rna_seq_cnv_log2foldchange_file, \
         rna_seq_cnv_manual_an_table_file, star_log_final_out_file, multiqc_fqc_right, \
-        multiqc_fqc_left, comparison_file, output_file = sys.argv[1:]
+        multiqc_fqc_left, comparison_file, arriba_file_fusion, pysamstats_files_IKZF1, pysamstats_files_PAX5, \
+        pysamstats_files_coverage, sample_id, output_file = sys.argv[1:]
 
     generate_report(prediction_file, fusioncatcher_file, arriba_file,
                     rna_seq_cnv_log2foldchange_file, rna_seq_cnv_manual_an_table_file,
                     star_log_final_out_file, multiqc_fqc_right, multiqc_fqc_left,
-                    comparison_file, output_file)
-
+                    comparison_file, arriba_file_fusion, pysamstats_files_IKZF1, pysamstats_files_PAX5,
+                    pysamstats_files_coverage, sample_id, output_file)

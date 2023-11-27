@@ -103,7 +103,7 @@ def generate_report(prediction_file, fusioncatcher_file, arriba_file,
     comparison_html_table = comparison_file.to_html(classes='my-table-class no-sort', index=False)
 
     rna_seq_cnv_manual_an_table_file = pd.read_csv(rna_seq_cnv_manual_an_table_file, delimiter='\t')
-    rna_seq_cnv_manual_an_table_file_html_table = rna_seq_cnv_manual_an_table_file.to_html(classes='my-table-class',
+    rna_seq_cnv_manual_an_table_file_html_table = rna_seq_cnv_manual_an_table_file.to_html(classes='my-table-class no-sort',
                                                                                            index=False)
     rna_seq_cnv_log2foldchange_file = pd.read_csv(rna_seq_cnv_log2foldchange_file, delimiter='\t')
     rna_seq_cnv_log2foldchange_file_html_table = rna_seq_cnv_log2foldchange_file.to_html(classes='my-table-class',
@@ -113,7 +113,33 @@ def generate_report(prediction_file, fusioncatcher_file, arriba_file,
     pysamstats_IKZF1_html_table = pysamstats_files_IKZF1.to_html(classes='my-table-class no-sort', index=False)
     pysamstats_PAX5_html_table = pysamstats_files_PAX5.to_html(classes='my-table-class no-sort', index=False)
     pysamstats_coverage_html_table = pysamstats_files_coverage.to_html(classes='my-table-class no-sort', index=False)
-    star_log_final_out_file_html_table = star_log_final_out_file.to_html(classes='my-table-class no-sort', index=False)
+
+    first_section_end = star_log_final_out_file[star_log_final_out_file.iloc[:, 0].str.endswith(':')].index[0]
+    first_part = star_log_final_out_file.iloc[:first_section_end, :]
+    first_part.loc[:, first_part.columns[0]] = first_part[first_part.columns[0]].str.replace('|', '')
+    star_log_final_out_file.columns = ['Parameter', 'Value']
+    second_part = star_log_final_out_file.iloc[first_section_end:, :]
+    second_part.loc[:, second_part.columns[0]] = second_part[second_part.columns[0]].str.replace('|', '')
+    first_part_without_start = first_part[first_part[first_part.columns[0]] != 'Started job on |']
+    first_part_html = first_part_without_start.to_html(classes='my-table-class no-sort', index=False)
+
+    grouped_sections = {}
+    current_section = None
+
+    for index, row in second_part.iterrows():
+        text = row[second_part.columns[0]]
+        if text.endswith(':'):
+            current_section = text
+            grouped_sections[current_section] = []
+        elif current_section is not None:
+            grouped_sections[current_section].append(row)
+
+    table_segments = ''
+    for section, rows in grouped_sections.items():
+        section_data = pd.DataFrame(rows, columns=second_part.columns)
+        table_html = section_data.to_html(classes='my-table-class no-sort', index=False)
+        table_segments += f'<h2>{section}</h2>'
+        table_segments += table_html
 
     custom_css = """
     <style>
@@ -179,7 +205,6 @@ def generate_report(prediction_file, fusioncatcher_file, arriba_file,
     pysamstats_IKZF1_html_table_with_style = custom_css + pysamstats_IKZF1_html_table
     pysamstats_PAX5_html_table_with_style = custom_css + pysamstats_PAX5_html_table
     pysamstats_coverage_html_table_with_style = custom_css + pysamstats_coverage_html_table
-    star_log_final_out_file_html_table_with_style = custom_css + star_log_final_out_file_html_table
 
     # Construct HTML output
     html_output = f"""
@@ -243,7 +268,9 @@ def generate_report(prediction_file, fusioncatcher_file, arriba_file,
         {fusioncatcher_html_table}
         
         <h1 id="section12">STAR Stats</h1>
-        {star_log_final_out_file_html_table_with_style}
+        {first_part_html}
+        {table_segments}
+
         <script>
             $(document).ready(function() {{
                 $('.my-table-class').not('.no-sort').DataTable();
@@ -259,13 +286,11 @@ def generate_report(prediction_file, fusioncatcher_file, arriba_file,
 
 
 if __name__ == "__main__":
-    print(len(sys.argv))
     if len(sys.argv) != 13:
         print(sys.argv)
         print(len(sys.argv))
         print("Usage: python generate_report.py <prediction_file> <fusioncatcher_file> ... <output_file>")
         sys.exit(1)
-    print(sys.argv)
 
     prediction_file, fusioncatcher_file, arriba_file, rna_seq_cnv_log2foldchange_file, \
         rna_seq_cnv_manual_an_table_file, star_log_final_out_file, \
@@ -275,5 +300,5 @@ if __name__ == "__main__":
     generate_report(prediction_file, fusioncatcher_file, arriba_file,
                     rna_seq_cnv_log2foldchange_file, rna_seq_cnv_manual_an_table_file,
                     star_log_final_out_file,
-                    comparison_file,  pysamstats_files_IKZF1, pysamstats_files_PAX5,
+                    comparison_file, pysamstats_files_IKZF1, pysamstats_files_PAX5,
                     pysamstats_files_coverage, sample_id, output_file)

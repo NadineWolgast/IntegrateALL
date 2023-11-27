@@ -140,9 +140,9 @@ This command will invoke the whole analysis for all samples in your samples.csv.
 If you want to run only a selection of the pipeline analysis methods you can change the command for example to:
 
 ```bash
-  snakemake --use-singularity --use-conda --cores 10 allowed_rules run_allcatchr_on_single_count_files
+  snakemake --use-conda --cores 10 allowed_rules run_allcatchr_on_single_count_files
 ```
-This will run only the analysis ALLCatchR for all samples in your samples.csv file.
+This will run only the analysis ALLCatchR for all samples in your samples.csv file, as long as you've executed the rule process_reads_per_gene_to_counts prior (They are needed as input for AllCatchR).
 
 You can also run a single analysis for only one sample.
 For example, if you want the CTAT mutations output for only one sample you can change **YOUR_SAMPLE_ID** to one of your 

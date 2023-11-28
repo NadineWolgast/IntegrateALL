@@ -141,26 +141,52 @@ This will list the resulting jobs and reasons for them. If you agree with them, 
 ```
 You can adjust the amount of cores to your available amount.
 This command will invoke the whole analysis for all samples in your samples.csv.
+
 If you want to run only a selection of the pipeline analysis methods you can change the command for example to:
 
 ```bash
-  snakemake --use-conda --cores 10 allowed_rules run_allcatchr_on_single_count_files
+  snakemake --use-conda --cores 10 allowed_rules run_fusioncatcher
 ```
-This will run only the analysis ALLCatchR for all samples in your samples.csv file, as long as you've executed the rule process_reads_per_gene_to_counts prior (They are needed as input for AllCatchR).
+But you will need to adjust the **rule all** in the Snakemake file like this: 
 
-You can also run a single analysis for only one sample.
+```bash
+  rule all:
+    input:
+        "check_samples.txt",
+        #expand("STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam.bai", sample_id=list(samples.keys())),
+        #expand("fusions/{sample_id}.pdf",sample_id=samples.keys()),
+        #expand("STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",sample_id=list(samples.keys())),
+        #expand("multiqc/{sample}/multiqc_data/multiqc_fastqc.txt", sample=fastq_dataframe['sample_id']),
+        expand("fusioncatcher_output/{sample_id}/final-list_candidate-fusion-genes.txt",sample_id=list(samples.keys())),
+        #expand("ctat_output_directory/{sample_id}/{sample_id}.filtered.vcf.gz",sample_id=samples_test.keys()),
+        #expand("RNAseqCNV_output/{sample_id}",sample_id=samples.keys()),
+        #expand("data/tpm/{sample_id}.tsv", sample_id=list(samples.keys())),
+        #expand("data/cpm/{sample_id}.tsv", sample_id=list(samples.keys())),
+        #expand("pysamstats_output_dir/{sample_id}/", sample_id=list(samples.keys())),
+        #expand("comparison/{sample_id}.csv", sample_id= samples.keys()),
+        #expand("data/single_counts/{sample_id}.txt", sample_id=samples.keys()),
+        #expand("data/vcf_files/{sample_id}.tsv",sample_id=samples.keys()),
+        #expand("allcatch_output/{sample_id}/predictions.tsv", sample_id= samples.keys()),
+        #expand("aggregated_output/{sample}.csv", sample=list(samples.keys())),
+        #expand("interactive_output/{sample}/output_report_{sample}.html",  sample=list(samples.keys()))
+```
+
+This will run only the analysis Fusioncatcher for all samples in your samples.csv file.
+
+You can also run a single analysis for only one of your samples.
 For example, if you want the CTAT mutations output for only one sample you can change **YOUR_SAMPLE_ID** to one of your 
 actual sample_ids from the samples.csv file and run the following command:
 ```bash
   snakemake --use-singularity --use-conda --cores 10 ctat_output_directory/YOUR_SAMPLE_ID/
 ```
+You don't need to adjust the Snakemake file for this.
 
 If you want to run the pipeline on a cluster with slurm you can change the command to match your available resources and run it with:
 ```bash
   srun -c 20 --mem 100G snakemake --use-singularity --use-conda --cores 20 --resources threads=200 -j 20
 ```
 
-The pipeline will output an interactive report in the folder /path/to/the/pipeline/interactive_output/**YOUR_SAMPLE_ID**/output_report_YOUR_SAMPLE_ID.html with the necessary result files. 
+The pipeline will output an interactive report for each of your samples in the folder /path/to/the/pipeline/interactive_output/**YOUR_SAMPLE_ID**/output_report_YOUR_SAMPLE_ID.html with the necessary result files. 
 If you want to process the output further you will find all produced data in the individual output folders:
 * /ctat_output_directory/YOUR_SAMPLE_ID
 * allcatch_output/YOUR_SAMPLE_ID
@@ -171,8 +197,11 @@ If you want to process the output further you will find all produced data in the
 * pysamstats_output_dir/YOUR_SAMPLE_ID
 * RNAseqCNV_output/YOUR_SAMPLE_ID
 * STAR_output/YOUR_SAMPLE_ID
+*  aggregated_output/YOUR_SAMPLE_ID.csv (contains a summary of the above results)
+
+Furthermore, the pipline produces the following files for your downstream analysis:   
 * data/tpm/YOUR_SAMPLE_ID.tsv
 * data/cpm/YOUR_SAMPLE_ID.tsv
 * data/vcf_files/YOUR_SAMPLE_ID.tsv
 * data/counts/YOUR_SAMPLE_ID.tsv
-* aggregated_output/YOUR_SAMPLE_ID.csv (contains a summary of the above results)
+

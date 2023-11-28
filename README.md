@@ -54,11 +54,11 @@ You need to adjust the config.yaml file and install the missing genome librarys
 
 ### CTAT mutations
 
-To install CTAT mutations genome library edit in the config.yaml the path ctat_genome_lib_build_dir: /path/where/the/ctat_genome_library_shall_be_installed  and run the following commands:
+To install CTAT mutations genome library edit in the config.yaml the path ctat_genome_lib_build_dir: /path/where/the/ctat_genome_library_shall_be_installed and run the following commands:
 ```bash
-snakemake --cores 10 pull_ctat_mutations_singularity_image
-snakemake --cores 10 install_ctat_mutations
-snakemake --cores 10 run_ctat_genome_lib_builder
+snakemake --cores 1 pull_ctat_mutations_singularity_image
+snakemake --cores 1 install_ctat_mutations
+snakemake --cores 1 run_ctat_genome_lib_builder
 ```
 This will install the Plug-n-Play genome library needed for running CTAT mutations. Keep in mind, that this will need at least 78 GB space. 
 If you already have a CTAT mutations Genome library installed, you can adjust the path ctat_genome_lib_build_dir in the config.yaml with the actual path and skip this installation. 
@@ -66,13 +66,13 @@ If you already have a CTAT mutations Genome library installed, you can adjust th
 ### ALLCatchR
 Install the ALLCatchR with the command:
 ```bash
-snakemake --cores 10 install_allcatchr
+snakemake --cores 1 install_allcatchr
 ```
 
 ## RNASeqCNV 
 Install RNASeqCnv with the command:
 ```bash
-snakemake --use-conda --cores 10 install_rnaseq_cnv
+snakemake --use-conda --cores 1 install_rnaseq_cnv
 ```
 
 
@@ -94,7 +94,7 @@ rna_fusion_data_directory: /path/to/fusioncatcher/data/human_v102
 ### ARRIBA draw fusions
 In order to produce arribas publication-quality visualizations of the transcripts involved in predicted fusions it needs to be installed with the command
 ```bash
-snakemake --cores 10 --use-conda install_arriba_draw_fusions
+snakemake --cores 1 --use-conda install_arriba_draw_fusions
 ```
 This will download and install arrbia version 2.4.0 and its' database in the same directory as the pipeline.  
 
@@ -105,7 +105,7 @@ If you want the pipeline to download them, you need to edit the path in config.y
 Then run 
 
 ```bash
-  snakemake --cores 10 download_star_ref
+  snakemake --cores 1 download_star_ref
 ```
 
 Adjust now the paths of star_ref and star_gtf in the config.yaml to point to the actual files.
@@ -117,7 +117,7 @@ star_gtf: /path/to/STAR_indexfiles/gencode.v32.annotation.gtf
 Generate the STAR genome_index with
 
 ```bash
-  snakemake --cores 10 index
+  snakemake --cores all index
 ```
 Now you have all needed reference files and tools to run the pipeline. 
 
@@ -139,13 +139,13 @@ This will list the resulting jobs and reasons for them. If you agree with them, 
 ```bash
   snakemake --use-singularity --use-conda --cores 10 
 ```
-You can adjust the amount of cores to your available amount.
+You can adjust the amount of cores to your available amount with **--cores all**.
 This command will invoke the whole analysis for all samples in your samples.csv.
 
 If you want to run only a selection of the pipeline analysis methods you can change the command for example to:
 
 ```bash
-  snakemake --use-conda --cores 10 allowed_rules run_fusioncatcher
+  snakemake --use-conda --cores 1 allowed_rules run_fusioncatcher
 ```
 But you will need to adjust the **rule all** in the Snakemake file like this: 
 
@@ -177,7 +177,7 @@ You can also run a single analysis for only one of your samples.
 For example, if you want the CTAT mutations output for only one sample you can change **YOUR_SAMPLE_ID** to one of your 
 actual sample_ids from the samples.csv file and run the following command:
 ```bash
-  snakemake --use-singularity --use-conda --cores 10 ctat_output_directory/YOUR_SAMPLE_ID/
+  snakemake --use-singularity --use-conda --cores 1 ctat_output_directory/YOUR_SAMPLE_ID/
 ```
 You don't need to adjust the Snakemake file for this.
 

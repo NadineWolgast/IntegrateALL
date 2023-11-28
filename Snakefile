@@ -8,8 +8,26 @@ from scripts.validate_input import validate_input
 from scripts.get_ctat_input_files import get_ctat_input_files
 
 
+def creatingfolders(specificfolder: str) -> str:
+    """
+    As the name suggest it will create a folder if the folder do not exist. it will also check if the end is '/' and add
+     it if not there. it will return the folder it created
 
+    :param specificfolder: The folder needs to be created
+    :return: will not return anything. Either it will create if the folder do not exist or not return anything
+    """
+    import os
+    if specificfolder != '':
+        if specificfolder[-1] != '/':
+            specificfolder = specificfolder + '/'
 
+        specificfolder = os.path.expanduser(specificfolder)
+        if not os.path.exists(specificfolder):
+            os.makedirs(specificfolder)
+    return specificfolder
+
+creatingfolders('STAR_output')
+creatingfolders('data/combined_counts')
 
 # Get data from input sample sheet for the rules:
 sample_file = config["sample_file"]

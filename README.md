@@ -5,6 +5,10 @@ Snakemake diagnostic RNA-Seq Fusion Pipline for ALL
 ![Blast-o-Matic-Fusionator](Blast-o-Matic-Fusioninator.png?raw=true)
 
 
+Includes the following rules:
+
+![Rulegraph](rulegraph.svg?raw=true)
+
 ##  Prerequisites
 
 For the pipeline to run, we need

@@ -1,2 +1,2 @@
 sample_id,left,right
-test42,/path/to/left.fastq.gz,/path/to/right.fastq.gz,.fastq.gz
+test42,/path/to/left.fastq.gz,/path/to/right.fastq.gz

@@ -2,7 +2,7 @@
 
 Snakemake diagnostic RNA-Seq Fusion Pipline for ALL
 
-![Blast-o-Matic-Fusionator](Blast-o-Matic-Fusioninator.png?raw=true)
+![Blast-o-Matic-Fusionator](Pipeline.png?raw=true)
 
 
 Includes the following rules:

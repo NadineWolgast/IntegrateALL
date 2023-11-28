@@ -38,8 +38,8 @@ Snakemake will be installed with all dependencies needed to run it in an isolate
 ```bash
 cd /path/to/Blast-o-Matic-Fusioninator
 conda activate base
-mamba env create --name Blast-o-Matic-Fusioninator --file environment.yaml
-conda activate Blast-o-Matic-Fusioninator
+mamba env create --name bomf --file environment.yaml
+conda activate bomf
 ```
 
 You can deactivate the environment when you don't need it anymore with 
@@ -94,7 +94,7 @@ source activate fusioncatcher
 download-human-db.sh
 ```
 Now adjust in config.yaml the rna_fusion_data_directory with the installed path to the downloaded human_v102 directory.
-```bash
+```yaml
 rna_fusion_data_directory: /path/to/fusioncatcher/data/human_v102
 ```
 
@@ -116,7 +116,7 @@ Then run
 ```
 
 Adjust now the paths of star_ref and star_gtf in the config.yaml to point to the actual files.
-```bash
+```yaml
 star_ref: /path/to/STAR_indexfiles/GRCh38.primary_assembly.genome.fa
 star_gtf: /path/to/STAR_indexfiles/gencode.v32.annotation.gtf
 ```
@@ -132,7 +132,7 @@ Now you have all needed reference files and tools to run the pipeline.
 ## Run examples
 Change the samples.csv file to point to your actual samples and change the sample_id names.
 Inside the config.yaml file change this line to point to your actual FASTQ samples directory:
-```bash
+```yaml
 ctat_input_directory: /path/to/your/samples/directory
 ```
 **Don't** put an extra slash after the directory or CTAT will throw an error.
@@ -144,9 +144,9 @@ To test and see the pipelines execution jobs before running the pipeline you can
 ```
 This will list the resulting jobs and reasons for them. If you agree with them, you can run them with:
 ```bash
-  snakemake --use-singularity --use-conda --cores 10 
+  snakemake --use-singularity --use-conda --cores 1
 ```
-You can adjust the amount of cores to your available amount with **--cores all**.
+You can adjust the amount of cores to your available amount with **--cores all**. This will allow parallelization and faster execution for multiple jobs. 
 This command will invoke the whole analysis for all samples in your samples.csv.
 
 If you want to run only a selection of the pipeline analysis methods you can change the command for example to:
@@ -156,7 +156,7 @@ If you want to run only a selection of the pipeline analysis methods you can cha
 ```
 But you will need to adjust the **rule all** in the Snakemake file like this: 
 
-```bash
+```python
   rule all:
     input:
         "check_samples.txt",
@@ -190,10 +190,10 @@ You don't need to adjust the Snakemake file for this.
 
 If you want to run the pipeline on a cluster with slurm you can change the command to match your available resources and run it with:
 ```bash
-  srun -c 20 --mem 100G snakemake --use-singularity --use-conda --cores 20 --resources threads=200 -j 20
+  srun -c 10 --mem 100G snakemake --use-singularity --use-conda --cores 10 --resources threads=100 -j 10
 ```
 
-The pipeline will output an interactive report for each of your samples in the folder /path/to/the/pipeline/interactive_output/**YOUR_SAMPLE_ID**/output_report_YOUR_SAMPLE_ID.html with the necessary result files. 
+The pipeline will output an interactive report for each of your samples in the folder `/path/to/the/pipeline/interactive_output/**YOUR_SAMPLE_ID**/output_report_YOUR_SAMPLE_ID.html` with the necessary result files. 
 If you want to process the output further you will find all produced data in the individual output folders:
 * ctat_output_directory/YOUR_SAMPLE_ID
 * allcatch_output/YOUR_SAMPLE_ID

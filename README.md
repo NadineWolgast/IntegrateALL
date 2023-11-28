@@ -54,7 +54,14 @@ You need to adjust the config.yaml file and install the missing genome librarys
 
 ### CTAT mutations
 
-To install CTAT mutations genome library edit in the config.yaml the path ctat_genome_lib_build_dir: /path/where/the/ctat_genome_library_shall_be_installed and run the following commands:
+To install CTAT mutations genome library edit in the config.yaml the path
+
+```yaml
+ctat_genome_lib_build_dir: /path/where/the/ctat_genome_library_shall_be_installed 
+```
+
+and run the following commands:
+
 ```bash
 snakemake --cores 1 pull_ctat_mutations_singularity_image
 snakemake --cores 1 install_ctat_mutations

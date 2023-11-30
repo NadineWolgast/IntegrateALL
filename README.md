@@ -57,7 +57,7 @@ You need to adjust the config.yaml file and install the missing genome librarys
 To install CTAT mutations genome library edit in the config.yaml the path
 
 ```yaml
-ctat_genome_lib_build_dir: /path/where/the/ctat_genome_library_shall_be_installed 
+ctat_genome_lib_build_dir: /path/where/the/ctat_genome_library_shall_be_installed # You need the absolute path here
 ```
 
 and run the following commands:
@@ -133,7 +133,7 @@ Now you have all needed reference files and tools to run the pipeline.
 Change the samples.csv file to point to your actual samples and change the sample_id names.
 Inside the config.yaml file change this line to point to your actual FASTQ samples directory:
 ```yaml
-ctat_input_directory: /path/to/your/samples/directory
+ctat_input_directory: /path/to/your/samples/directory # You need the absolute path here!
 ```
 **Don't** put an extra slash after the directory or CTAT will throw an error.
 

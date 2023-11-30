@@ -421,7 +421,7 @@ rule run_allcatchr_on_single_count_files:
 
 rule pull_ctat_mutations_singularity_image:
     shell:
-        '''singularity pull docker://trinityctat/ctat_mutations:3.2.0'''
+        '''wget "https://data.broadinstitute.org/Trinity/CTAT_SINGULARITY/CTAT_MUTATIONS/__archived_releases/ctat_mutations.v3.2.0.simg"'''
 
 
 rule install_ctat_mutations:

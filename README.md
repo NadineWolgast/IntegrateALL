@@ -71,7 +71,8 @@ And install all required pipeline tools with:
 ```bash
 snakemake --use-conda --use-singularity --cores all install_all
 ```
-
+## Install only selceted tools
+If you don't want to install all tools and references for the pipeline because you already have some of them you can select the missing ones and install them individually:
 ### CTAT mutations
 
 To install CTAT mutations genome library edit in the config.yaml the path

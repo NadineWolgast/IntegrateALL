@@ -151,7 +151,7 @@ Now you have all needed reference files and tools to run the pipeline.
 
 
 ## Run examples
-Change the samples.csv file to point to your actual samples and change the sample_id names.
+Change the samples.csv file to point to your actual samples and change the sample_id names. for example:
 
 | sample_id   |      left     |  right |
 |----------|:-------------:|------:|

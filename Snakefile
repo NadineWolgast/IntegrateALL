@@ -154,7 +154,7 @@ rule install_all:
         """
             snakemake --cores 2 download_star_ref &&
             snakemake --cores all index &&
-            snakemake --use-conda --cores 1 install_arriba_draw_fusions &&
+            snakemake --cores 1 install_arriba_draw_fusions &&
             snakemake --cores 2 install_allcatchr &&
             snakemake --cores 1 pull_ctat_mutations_singularity_image &&
             snakemake --cores 2 install_ctat_mutations &&
@@ -303,9 +303,6 @@ rule run_arriba:
 
 
 rule install_arriba_draw_fusions:
-    conda:
-        "envs/arriba_draw_fusions.yaml"
-
     shell:
         """
         wget 'https://github.com/suhrig/arriba/releases/download/v2.4.0/arriba_v2.4.0.tar.gz' &&

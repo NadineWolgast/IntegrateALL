@@ -639,8 +639,8 @@ rule check_subtype_and_karyotype:
         rna_seq_cnv_estimation_file="RNAseqCNV_output/{sample}/estimation_table.tsv",
         fusioncatcher_file = "fusioncatcher_output/{sample}/final-list_candidate-fusion-genes.txt",
         arriba_file= "fusions/{sample}.tsv",
-        chromosome_counts_karyotype_file= "annotation/chromosome_counts_vs_subtype.txt",
-        anno_gene_fusions_file= "annotation/anno_Gene_fusions_vs_Subtypes.txt",
+        chromosome_counts_karyotype_file= "data/annotation/chromosome_counts_vs_subtype.txt",
+        anno_gene_fusions_file= "data/annotation/anno_Gene_fusions_vs_Subtypes.txt",
         r_script= "scripts/define_subtype_and_caryotype.R"
 
     output:

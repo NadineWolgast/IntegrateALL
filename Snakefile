@@ -168,13 +168,11 @@ rule install_fusioncatcher:
         data_directory=config["rna_fusion_data_directory"]
     shell:
         """
-            conda config --add channels defaults &&
-            conda config --add channels bioconda &&
-            conda config --add channels conda-forge &&
-            conda create -n fusioncatcher fusioncatcher &&
-            source activate fusioncatcher &&
-            download-human-db.sh &&
-            mv human_v102 {params.data_directory}
+        wget 'https://github.com/ndaniel/fusioncatcher/archive/refs/heads/master.zip' && 
+        unzip master.zip && 
+        cd fusioncatcher-master/data && 
+        ./download-human-db.sh && 
+        mv human_v102 {params.data_directory}
         """
 
 

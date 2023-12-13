@@ -1,0 +1,1362 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Report</title>
+        <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+        <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+    </head>
+    </head>
+    <body>
+        <nav>
+            <a href="#section1">Overview</a>
+            <a href="#section2">Prediction</a>
+            <a href="#section3">MultiQC Right</a>
+            <a href="#section4">MultiQC Left</a>
+            <a href="#section5">STAR Results</a>
+            <a href="#section6">Pysamstats</a>
+            <a href="#section7">RNASeqCNV Plot</a>
+            <a href="#section8">RNASeqCNV Table</a>
+            <a href="#section10">ARRIBA Fusions</a>
+            <a href="#section11">ARRIBA Plots</a>
+            <a href="#section12">Fusioncatcher Fusions</a>            
+        </nav>
+
+        
+        <h1 id="section1">Blast-o-Matic-Fusioninator Results</h1>
+        <table border="1" class="dataframe my-table-class no-sort">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Based on the gene expression profile, the sample AL09ID was allocated to the CEBP subtype with high-confidence .</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Gene fusion calling identified fusions not confirming the subtype allocation.</td>
+    </tr>
+  </tbody>
+</table>
+        
+        <h1 id="section2">ALLCatchR Prediction Data</h1>
+        
+    <style>
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #333;
+            padding: 10px 0;
+            z-index: 999;
+        }
+
+        nav a {
+            display: inline-block;
+            padding: 10px 20px;
+            text-decoration: none;
+            color: #fff;
+            transition: background-color 0.3s ease;
+        }
+
+        nav a:hover {
+            background-color: #555;
+        }
+
+        body {
+            margin-top: 60px; 
+            padding-top: 20px; 
+            font-family: Calibri, sans-serif; 
+        }
+
+        .my-table-class {
+            font-family: Calibri, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+        .my-table-class th, .my-table-class td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .my-table-class th {
+            background-color: #f2f2f2;
+            color: #333;
+        }
+        .my-table-class tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .my-table-class tr:hover {
+            background-color: #f1f1f1;
+        }
+        
+        .center {
+          display: block;
+          margin-left: auto;
+          margin-right: auto;
+          width: 50%;
+        } 
+    </style>
+    <table border="1" class="dataframe my-table-class no-sort">
+  <thead>
+    <tr style="text-align: right;">
+      <th>sample</th>
+      <th>Score</th>
+      <th>Prediction</th>
+      <th>Confidence</th>
+      <th>BlastCounts</th>
+      <th>Sex</th>
+      <th>Score_sex</th>
+      <th>Immuno</th>
+      <th>ScoreImmuno</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>AL09ID</td>
+      <td>0.8</td>
+      <td>CEBP</td>
+      <td>high-confidence</td>
+      <td>64.877055</td>
+      <td>F</td>
+      <td>1</td>
+      <td>common_B</td>
+      <td>1</td>
+    </tr>
+  </tbody>
+</table>
+        
+        <h1 id="section3">MultiQC Right FASTQ Results</h1>
+        <iframe src="multiqc_right/multiqc_report.html" name="multiqc_right_path" width="100%" height="600" frameborder="0"></iframe>
+        
+        <h1 id="section4">MultiQC Left FASTQ Results</h1>
+        <iframe src="multiqc_left/multiqc_report.html" name="multiqc_left_path" width="100%" height="600" frameborder="0"></iframe>
+        
+        <h1 id="section5">STAR Results</h1>
+        <table border="1" class="dataframe my-table-class no-sort">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Started job on |</th>
+      <th>Nov 06 21:10:18</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Started mapping on</td>
+      <td>Nov 06 21:55:50</td>
+    </tr>
+    <tr>
+      <td>Finished on</td>
+      <td>Nov 06 22:34:36</td>
+    </tr>
+    <tr>
+      <td>Mapping speed, Million of reads per hour</td>
+      <td>40.85</td>
+    </tr>
+    <tr>
+      <td>Number of input reads</td>
+      <td>26392526</td>
+    </tr>
+    <tr>
+      <td>Average input read length</td>
+      <td>202</td>
+    </tr>
+  </tbody>
+</table>
+        <h2>                                    UNIQUE READS:</h2><table border="1" class="dataframe my-table-class no-sort">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Parameter</th>
+      <th>Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Uniquely mapped reads number</td>
+      <td>24318750</td>
+    </tr>
+    <tr>
+      <td>Uniquely mapped reads %</td>
+      <td>92.14%</td>
+    </tr>
+    <tr>
+      <td>Average mapped length</td>
+      <td>201.00</td>
+    </tr>
+    <tr>
+      <td>Number of splices: Total</td>
+      <td>9709499</td>
+    </tr>
+    <tr>
+      <td>Number of splices: Annotated (sjdb)</td>
+      <td>9679593</td>
+    </tr>
+    <tr>
+      <td>Number of splices: GT/AG</td>
+      <td>9601542</td>
+    </tr>
+    <tr>
+      <td>Number of splices: GC/AG</td>
+      <td>76893</td>
+    </tr>
+    <tr>
+      <td>Number of splices: AT/AC</td>
+      <td>6977</td>
+    </tr>
+    <tr>
+      <td>Number of splices: Non-canonical</td>
+      <td>24087</td>
+    </tr>
+    <tr>
+      <td>Mismatch rate per base, %</td>
+      <td>0.26%</td>
+    </tr>
+    <tr>
+      <td>Deletion rate per base</td>
+      <td>0.01%</td>
+    </tr>
+    <tr>
+      <td>Deletion average length</td>
+      <td>1.74</td>
+    </tr>
+    <tr>
+      <td>Insertion rate per base</td>
+      <td>0.01%</td>
+    </tr>
+    <tr>
+      <td>Insertion average length</td>
+      <td>1.36</td>
+    </tr>
+  </tbody>
+</table><h2>                             MULTI-MAPPING READS:</h2><table border="1" class="dataframe my-table-class no-sort">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Parameter</th>
+      <th>Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Number of reads mapped to multiple loci</td>
+      <td>856625</td>
+    </tr>
+    <tr>
+      <td>% of reads mapped to multiple loci</td>
+      <td>3.25%</td>
+    </tr>
+    <tr>
+      <td>Number of reads mapped to too many loci</td>
+      <td>13718</td>
+    </tr>
+    <tr>
+      <td>% of reads mapped to too many loci</td>
+      <td>0.05%</td>
+    </tr>
+  </tbody>
+</table><h2>                                  UNMAPPED READS:</h2><table border="1" class="dataframe my-table-class no-sort">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Parameter</th>
+      <th>Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Number of reads unmapped: too many mismatches</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>% of reads unmapped: too many mismatches</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>Number of reads unmapped: too short</td>
+      <td>1030539</td>
+    </tr>
+    <tr>
+      <td>% of reads unmapped: too short</td>
+      <td>3.90%</td>
+    </tr>
+    <tr>
+      <td>Number of reads unmapped: other</td>
+      <td>27133</td>
+    </tr>
+    <tr>
+      <td>% of reads unmapped: other</td>
+      <td>0.10%</td>
+    </tr>
+  </tbody>
+</table><h2>                                  CHIMERIC READS:</h2><table border="1" class="dataframe my-table-class no-sort">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Parameter</th>
+      <th>Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Number of chimeric reads</td>
+      <td>279543</td>
+    </tr>
+    <tr>
+      <td>% of chimeric reads</td>
+      <td>1.06%</td>
+    </tr>
+  </tbody>
+</table>
+        
+   
+        <h1 id="section6">Pysamstats Hotspots</h1>
+        <h2>Es wurden 34 Positionen abgefragt mit folgenden Ergebnissen:</h2>
+        <h3>ZEB2: H1038</h3><table border="1" class="dataframe my-table-class no-sort">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Gene</th>
+      <th>Hotspot</th>
+      <th>Chromosome</th>
+      <th>Start</th>
+      <th>End</th>
+      <th>New_Aminoacid</th>
+      <th>Percentage</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>ZEB2</td>
+      <td>H1038</td>
+      <td>chr2</td>
+      <td>144389982</td>
+      <td>144389984</td>
+      <td>R</td>
+      <td>42.244224</td>
+    </tr>
+  </tbody>
+</table><h3>ZEB2: H1038 CTAT Result</h3><table border="1" class="dataframe my-table-class no-sort">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Zeile</th>
+      <th>nicht</th>
+      <th>gefunden</th>
+      <th>chr2</th>
+      <th>and</th>
+      <th>144389982</th>
+    </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table><h3>ZEB2: H1038 variants</h3><table border="1" class="dataframe my-table-class no-sort">
+  <thead>
+    <tr style="text-align: right;">
+      <th>chrom</th>
+      <th>pos</th>
+      <th>ref</th>
+      <th>reads_pp</th>
+      <th>mismatches_pp</th>
+      <th>deletions_pp</th>
+      <th>insertions_pp</th>
+      <th>A_pp</th>
+      <th>C_pp</th>
+      <th>T_pp</th>
+      <th>G_pp</th>
+      <th>N_pp</th>
+      <th>new_base</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>2</td>
+      <td>144389981</td>
+      <td>G</td>
+      <td>308</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>266</td>
+      <td>0</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>144389982</td>
+      <td>T</td>
+      <td>303</td>
+      <td>128</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>128</td>
+      <td>133</td>
+      <td>0</td>
+      <td>0</td>
+      <td>C</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>144389983</td>
+      <td>G</td>
+      <td>328</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>286</td>
+      <td>0</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+        <h2> IKZF1</h2>
+        
+    <style>
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #333;
+            padding: 10px 0;
+            z-index: 999;
+        }
+
+        nav a {
+            display: inline-block;
+            padding: 10px 20px;
+            text-decoration: none;
+            color: #fff;
+            transition: background-color 0.3s ease;
+        }
+
+        nav a:hover {
+            background-color: #555;
+        }
+
+        body {
+            margin-top: 60px; 
+            padding-top: 20px; 
+            font-family: Calibri, sans-serif; 
+        }
+
+        .my-table-class {
+            font-family: Calibri, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+        .my-table-class th, .my-table-class td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .my-table-class th {
+            background-color: #f2f2f2;
+            color: #333;
+        }
+        .my-table-class tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .my-table-class tr:hover {
+            background-color: #f1f1f1;
+        }
+        
+        .center {
+          display: block;
+          margin-left: auto;
+          margin-right: auto;
+          width: 50%;
+        } 
+    </style>
+    <table border="1" class="dataframe my-table-class no-sort">
+  <thead>
+    <tr style="text-align: right;">
+      <th>chrom</th>
+      <th>pos</th>
+      <th>ref</th>
+      <th>reads_all</th>
+      <th>reads_pp</th>
+      <th>matches</th>
+      <th>matches_pp</th>
+      <th>mismatches</th>
+      <th>mismatches_pp</th>
+      <th>deletions</th>
+      <th>deletions_pp</th>
+      <th>insertions</th>
+      <th>insertions_pp</th>
+      <th>A</th>
+      <th>A_pp</th>
+      <th>C</th>
+      <th>C_pp</th>
+      <th>T</th>
+      <th>T_pp</th>
+      <th>G</th>
+      <th>G_pp</th>
+      <th>N</th>
+      <th>N_pp</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>7</td>
+      <td>50382593</td>
+      <td>A</td>
+      <td>102</td>
+      <td>102</td>
+      <td>96</td>
+      <td>96</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>96</td>
+      <td>96</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td>50382594</td>
+      <td>A</td>
+      <td>104</td>
+      <td>104</td>
+      <td>98</td>
+      <td>98</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>98</td>
+      <td>98</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td>50382595</td>
+      <td>C</td>
+      <td>104</td>
+      <td>104</td>
+      <td>98</td>
+      <td>98</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>98</td>
+      <td>98</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+        
+        <h2>PAX5</h2>
+        
+    <style>
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #333;
+            padding: 10px 0;
+            z-index: 999;
+        }
+
+        nav a {
+            display: inline-block;
+            padding: 10px 20px;
+            text-decoration: none;
+            color: #fff;
+            transition: background-color 0.3s ease;
+        }
+
+        nav a:hover {
+            background-color: #555;
+        }
+
+        body {
+            margin-top: 60px; 
+            padding-top: 20px; 
+            font-family: Calibri, sans-serif; 
+        }
+
+        .my-table-class {
+            font-family: Calibri, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+        .my-table-class th, .my-table-class td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .my-table-class th {
+            background-color: #f2f2f2;
+            color: #333;
+        }
+        .my-table-class tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .my-table-class tr:hover {
+            background-color: #f1f1f1;
+        }
+        
+        .center {
+          display: block;
+          margin-left: auto;
+          margin-right: auto;
+          width: 50%;
+        } 
+    </style>
+    <table border="1" class="dataframe my-table-class no-sort">
+  <thead>
+    <tr style="text-align: right;">
+      <th>chrom</th>
+      <th>pos</th>
+      <th>ref</th>
+      <th>reads_all</th>
+      <th>reads_pp</th>
+      <th>matches</th>
+      <th>matches_pp</th>
+      <th>mismatches</th>
+      <th>mismatches_pp</th>
+      <th>deletions</th>
+      <th>deletions_pp</th>
+      <th>insertions</th>
+      <th>insertions_pp</th>
+      <th>A</th>
+      <th>A_pp</th>
+      <th>C</th>
+      <th>C_pp</th>
+      <th>T</th>
+      <th>T_pp</th>
+      <th>G</th>
+      <th>G_pp</th>
+      <th>N</th>
+      <th>N_pp</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>9</td>
+      <td>37015166</td>
+      <td>A</td>
+      <td>178</td>
+      <td>176</td>
+      <td>168</td>
+      <td>166</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>168</td>
+      <td>166</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>9</td>
+      <td>37015167</td>
+      <td>G</td>
+      <td>178</td>
+      <td>176</td>
+      <td>168</td>
+      <td>166</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>168</td>
+      <td>166</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>9</td>
+      <td>37015168</td>
+      <td>G</td>
+      <td>173</td>
+      <td>171</td>
+      <td>163</td>
+      <td>161</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>163</td>
+      <td>161</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+        
+        <h2">Coverage IKZF1</h2>
+        
+    <style>
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #333;
+            padding: 10px 0;
+            z-index: 999;
+        }
+
+        nav a {
+            display: inline-block;
+            padding: 10px 20px;
+            text-decoration: none;
+            color: #fff;
+            transition: background-color 0.3s ease;
+        }
+
+        nav a:hover {
+            background-color: #555;
+        }
+
+        body {
+            margin-top: 60px; 
+            padding-top: 20px; 
+            font-family: Calibri, sans-serif; 
+        }
+
+        .my-table-class {
+            font-family: Calibri, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+        .my-table-class th, .my-table-class td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .my-table-class th {
+            background-color: #f2f2f2;
+            color: #333;
+        }
+        .my-table-class tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .my-table-class tr:hover {
+            background-color: #f1f1f1;
+        }
+        
+        .center {
+          display: block;
+          margin-left: auto;
+          margin-right: auto;
+          width: 50%;
+        } 
+    </style>
+    <table border="1" class="dataframe my-table-class no-sort">
+  <thead>
+    <tr style="text-align: right;">
+      <th>chrom</th>
+      <th>pos</th>
+      <th>reads_all</th>
+      <th>reads_pp</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>7</td>
+      <td>50382594</td>
+      <td>104</td>
+      <td>104</td>
+    </tr>
+  </tbody>
+</table>
+        
+        <h1 id="section7">RNASeq-CNV Plot</h1>
+        <img src="RNAseqCNV/AL09ID_CNV_main_fig.png" alt="RNASeqCNV first plot" width="900" height="600" class="center">
+        
+        <h2 id="section8">RNASeq-CNV Manual An Table</h2>
+        <table border="1" class="dataframe my-table-class no-sort">
+  <thead>
+    <tr style="text-align: right;">
+      <th>sample</th>
+      <th>gender</th>
+      <th>chrom_n</th>
+      <th>alterations</th>
+      <th>status</th>
+      <th>comments</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>AL09ID</td>
+      <td>female</td>
+      <td>46</td>
+      <td>?9p, ?19p</td>
+      <td>not checked</td>
+      <td>none</td>
+    </tr>
+  </tbody>
+</table>
+        
+        <h2 id="section9">RNASeq-CNV Log2FC Table</h2>        
+        <table border="1" class="dataframe my-table-class">
+  <thead>
+    <tr style="text-align: right;">
+      <th>chr</th>
+      <th>arm</th>
+      <th>AL09ID</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>p</td>
+      <td>0.027</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>q</td>
+      <td>0.008</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>p</td>
+      <td>0.025</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>q</td>
+      <td>0.036</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>p</td>
+      <td>0.022</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>q</td>
+      <td>0.002</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>p</td>
+      <td>0.000</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>q</td>
+      <td>0.000</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>p</td>
+      <td>0.043</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>q</td>
+      <td>0.002</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>p</td>
+      <td>0.020</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>q</td>
+      <td>0.000</td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td>p</td>
+      <td>0.025</td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td>q</td>
+      <td>0.015</td>
+    </tr>
+    <tr>
+      <td>8</td>
+      <td>p</td>
+      <td>0.018</td>
+    </tr>
+    <tr>
+      <td>8</td>
+      <td>q</td>
+      <td>0.000</td>
+    </tr>
+    <tr>
+      <td>9</td>
+      <td>p</td>
+      <td>-0.009</td>
+    </tr>
+    <tr>
+      <td>9</td>
+      <td>q</td>
+      <td>0.026</td>
+    </tr>
+    <tr>
+      <td>10</td>
+      <td>p</td>
+      <td>0.009</td>
+    </tr>
+    <tr>
+      <td>10</td>
+      <td>q</td>
+      <td>0.021</td>
+    </tr>
+    <tr>
+      <td>11</td>
+      <td>p</td>
+      <td>0.022</td>
+    </tr>
+    <tr>
+      <td>11</td>
+      <td>q</td>
+      <td>-0.013</td>
+    </tr>
+    <tr>
+      <td>12</td>
+      <td>p</td>
+      <td>0.033</td>
+    </tr>
+    <tr>
+      <td>12</td>
+      <td>q</td>
+      <td>0.004</td>
+    </tr>
+    <tr>
+      <td>13</td>
+      <td>q</td>
+      <td>0.044</td>
+    </tr>
+    <tr>
+      <td>14</td>
+      <td>q</td>
+      <td>0.020</td>
+    </tr>
+    <tr>
+      <td>15</td>
+      <td>q</td>
+      <td>0.000</td>
+    </tr>
+    <tr>
+      <td>16</td>
+      <td>p</td>
+      <td>0.036</td>
+    </tr>
+    <tr>
+      <td>16</td>
+      <td>q</td>
+      <td>0.016</td>
+    </tr>
+    <tr>
+      <td>17</td>
+      <td>p</td>
+      <td>0.048</td>
+    </tr>
+    <tr>
+      <td>17</td>
+      <td>q</td>
+      <td>0.020</td>
+    </tr>
+    <tr>
+      <td>18</td>
+      <td>p</td>
+      <td>0.000</td>
+    </tr>
+    <tr>
+      <td>18</td>
+      <td>q</td>
+      <td>-0.005</td>
+    </tr>
+    <tr>
+      <td>19</td>
+      <td>p</td>
+      <td>-0.031</td>
+    </tr>
+    <tr>
+      <td>19</td>
+      <td>q</td>
+      <td>-0.011</td>
+    </tr>
+    <tr>
+      <td>20</td>
+      <td>p</td>
+      <td>0.060</td>
+    </tr>
+    <tr>
+      <td>20</td>
+      <td>q</td>
+      <td>0.036</td>
+    </tr>
+    <tr>
+      <td>21</td>
+      <td>q</td>
+      <td>0.009</td>
+    </tr>
+    <tr>
+      <td>22</td>
+      <td>q</td>
+      <td>0.015</td>
+    </tr>
+    <tr>
+      <td>X</td>
+      <td>p</td>
+      <td>0.003</td>
+    </tr>
+    <tr>
+      <td>X</td>
+      <td>q</td>
+      <td>-0.004</td>
+    </tr>
+  </tbody>
+</table>
+
+        <h1 id="section10">ARRIBA Fusions Table</h1>
+        
+    <style>
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #333;
+            padding: 10px 0;
+            z-index: 999;
+        }
+
+        nav a {
+            display: inline-block;
+            padding: 10px 20px;
+            text-decoration: none;
+            color: #fff;
+            transition: background-color 0.3s ease;
+        }
+
+        nav a:hover {
+            background-color: #555;
+        }
+
+        body {
+            margin-top: 60px; 
+            padding-top: 20px; 
+            font-family: Calibri, sans-serif; 
+        }
+
+        .my-table-class {
+            font-family: Calibri, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+        .my-table-class th, .my-table-class td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .my-table-class th {
+            background-color: #f2f2f2;
+            color: #333;
+        }
+        .my-table-class tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .my-table-class tr:hover {
+            background-color: #f1f1f1;
+        }
+        
+        .center {
+          display: block;
+          margin-left: auto;
+          margin-right: auto;
+          width: 50%;
+        } 
+    </style>
+    <table id='arriba_table'><table border='1' class='my-table-class'>
+<thead><tr><th>5’ gene name</th><th>5’ chr.position</th><th>3’ gene name</th><th>3’chr. position</th><th>discordant_mates</th><th>confidence</th><th>reading frame</th><th>fusion transcript</th></tr></thead>
+<tbody>
+<tr><td>CEP170</td><td>1:243255040</td><td>ZBTB18</td><td>1:244053788</td><td>1</td><td>high</td><td>.</td><td>CCCGGAGCTCGACCGCAGCGGCAGCGACGACAACAGCGGCGACGACGACGACGACGAGGTGGGGGGAGGACGGCGTGCGAGAGACTCACGGGACGCGACGC...TCCCTCTCTCCACGGTAAGGG|GTTATGAAGACAGTATGGAGTTTCCAGACCATAGTAGACATTTGCTACAGTGTCTGAGCGAGCAGAGACACCAGGGTTTTCTTTGTGACTGCACTGTTCTGGTGGGAGATGCCCA</td></tr>
+<tr><td>CXCR4</td><td>2:136118046</td><td>PTMA</td><td>2:231711348</td><td>0</td><td>medium</td><td>in-frame</td><td>GTGACGCCGAGGGCCTGAGTGCTCCAGTAGCCACCGCATCTGGAGAACCAGCGGTTACCATGGAGGGGATCAGT|GACTTAAAGGAGAAGAAGGAAGTTGTGGAAGAGGCAGAAAATGGAAGAGACGCCCCTGCTAACGGGAATGCT___AATGAGGAAAATGGGGAGCAGGAGGCTGACAATGAGGTAGACGAAGAAGA</td></tr>
+<tr><td>PTMA</td><td>2:231708751</td><td>CXCR4</td><td>2:136115912</td><td>0</td><td>medium</td><td>in-frame</td><td>CTCCGCCGCGCGCCTCCTCCGCCGCCGCGGACTCCGGCAGCTTTATCGCCAGAGTCCCTGAACTCTCGCTTTCTTTTTAATCCCCTGCATCGGATCACCGGCGTGCCCCACCATGTCAGACGCAGCCGTAGACACCAGCTCCGAAATCACCACCAAG|ATATACACTTCAGATAACTACACCGAGGAAATGGGCTCAGG</td></tr>
+<tr><td>CCDC88A</td><td>2:55299202</td><td>CCDC88A</td><td>2:55300549</td><td>2</td><td>medium</td><td>.</td><td>.</td></tr>
+<tr><td>ARPC2</td><td>2:218233208</td><td>ARPC2</td><td>2:218230115</td><td>2</td><td>medium</td><td>.</td><td>TGGGAGGCCAAGGTAGAAGGATCACTTGAGCCTAGAAGTTCAAGGCTGCAGTGAGCTATTGTATCAATGCACTGTAGCCTGGACTACAGAGTAAGACCCTGCTTCCAAAACAATAATAATAATCGTAAATTTTGGCTGGGTGTGGAAAAATTAGC|CATGCACCGCTACACCTGGCTAATTTTTTGTACTTTTCATAGAGATGGCGTTTCACCACATTGGCCAGGCTGCTCTCAAACTTCTGACCTCAGGTGATCTGCCTGCCTCGACCTCCCACAGTGCTAAGATTGCAGGTGTGAGCCACCGTG...GGCACAATCACAGCCACTGCACCCgTCAACCTCCCAGGCTCAAGCAGTCCTCTCACCTCAGCCgCCTGAGTGTCTGGGACTACAGGCACGTGCCACCACAC</td></tr>
+<tr><td>BCL2L11</td><td>2:111121188</td><td>CXCR4</td><td>2:136115912</td><td>2</td><td>medium</td><td>.</td><td>CTTGATTCTTGCAGCCACCCTGCGAACCCTGCCACACTGCGATCGCATCATCGCGGTATTCGGTTCGCTGCGTTCCCGCCGCCACCGCCTCGGCGCCCTTTCTTGGCCCTTGTTCCCCCAAATGTCTGACTCTGACTCTCGGACTGAGAAACGCAAG|ATATACACTTCAGATAACTACACCGAGGAAATGGGCTCAGGGGACTATGACTCCATGAAGGAACCCTGTTTCCGTGAAGAAAATGCTAATTTCAATAAAATCTTCCTGCCCA...TGACGGACAAGTACAGGCTGCACCTGTCAGTGGCCGACCTCCTCTgTGTCATCACGCTTCCCTTCTGGGCAGTTGATGCCGTGGCAAACTGGTACTTTGGG</td></tr>
+<tr><td>HNRNPU</td><td>1:244863674</td><td>ZBTB18</td><td>1:244053788</td><td>1</td><td>medium</td><td>in-frame</td><td>CAGCCTCAACCGCCGGCGACGCAGCAGCAACAGCCCCAACAGCAGCGCGGGGCCGCCAAGGAGGCCGCGGGGAAGAGCAGCGGCCCCACCTCGCTGTTCGCGGTGACGGTGGCGCCGCCCGGGGCGAGGCAGGGCCAGCAGCAGGCGGGAG|GTTATGAAGACAGTATGGAGTTTCCAGACCATAGTAGACATTTGCTACAGTGTCTGAGCGAGCAGAGACACCAGGGTTTTCTTTGTGACTGCACTGTTC</td></tr>
+<tr><td>DHX9</td><td>1:182839456</td><td>GLUL</td><td>1:182388750</td><td>0</td><td>medium</td><td>.</td><td>CGCCGCGGTCGGAGCCATTTCGCCGATTCCTCCATGCGAGTTGCTGTGCGTTTCTCTGTTGTCTCGGTAGAAGGCCAGAGTCACACACGGTCCTAAGAGCTGGGCACCAGGAAGCGAAGGCTG|AACACCTTCCACCATGACCACCTCAGCAAGTTCCCACTTAAATAAAGGCATCAAGCAGGTGTACATGTCCCTGCCTCAGGGTGAGAAAGTCC</td></tr>
+<tr><td>DNAJC8</td><td>1:28228922</td><td>SRSF4</td><td>1:29154910</td><td>0</td><td>medium</td><td>in-frame</td><td>GGGAAATGGCGGCTTCAGGAGAGAGCGGGACTTCAGGCGGCGGAGGCAGCACCGAGGAAGCATTTATGACCTTCTACAGTGAG___GTGAAACAAATAGAGAAG...CTCGGTTCTAACTTCGAAAAATCAGATTGAAAGACTGACCCGTCCTGGTTCCTCTTACTTCAATTTGAACCCATTTGAG|GATTATATGCGTCAGGCAGGAGAAGTGACTTATGCAGATGCTCACAAGGGACGCAAAAAT...CAGCCATAGCGCTGGCAAGAGCCGCAGCAAGAGCAAAGACCAAGCTGAAGAGAAGATCCAAAACAATGACAATGTCGGGAAACCCAAGAGCCGGAGTCCTA</td></tr>
+<tr><td>LRRN2</td><td>1:204621122</td><td>RNA5SP74(34591),AL512306.3(5923)</td><td>1:204597112</td><td>2</td><td>low</td><td>.</td><td>CTGCAAGAGCATAAAGCCAGCCCCTTAGTCAGCCAGGTGGGGAGGTTTTGGAGAAGACTTCTGCAGGTGGTGACTGAACTTAAAGTTGAGCGTTGAAGAACAAGTAGGAGTTGT___CTGCACAGCTGAGGAGCTCAGACCCAGGCTTCTTAACTCCACTGCCTCCTCCTGGGCAACACTGCCAGGCTGTTGGGAAAGGAGAAACACTC|CTCAGTCGATCTCTCCTTCCAAGTAAAGCAGTCAACAAGCAGTACTGCTCAAAGCACgGCCCACTAGAAGGATTTCTGGTCTCTACTTCGGAGGCTCTTCTGAATGGAGCTAGAAGGCTAGAGCAGTTTACTTTGAGTGGGGACGAACATATCATGAAGAGTTTTGCAAAGCAGTCATGGGTGTTTTCCTCCTCAGTCAACTCTGCATGCAGCCATAGATGCAGATTGAGGGAGA</td></tr>
+<tr><td>SIPA1L2(12616),RNU6-1211P(126030)</td><td>1:232574174</td><td>SIPA1L2</td><td>1:232533583</td><td>3</td><td>low</td><td>.</td><td>CGGCGAGGCGGCAGCCCGGGTACGCGCCGCCCGGgGCGCACAGGCTGTAGCAGGTTCCGGCGGACGGCGTTGCGAAG___GTTCTTGCCAGGCTGTGTGAGCAGGAGCCCGCTGCTCTTCCCCACTCAG|ATTGAACACTGGCCCAGAACACCTGCTCCAACTGAAACCTTATATCCACCATCTCATACAGTATATTCAACTCAGGTGCTGACTCCAGTTTCAG___GTGAAGGAAATACTCATGACCAGCCAGATGTCTTAAGGAATGCTTTTGAAAAGAACAGAGGCGTACAACATTATTACGACAACAGAGAAGCAAGTTGGCTTTGAAGAAA</td></tr>
+<tr><td>CCDC195(24930),DOCK10(23795)</td><td>2:224741295</td><td>CCDC195</td><td>2:224710219</td><td>2</td><td>low</td><td>.</td><td>CTTGGCCTCCCAAAGTACTGGGATTACAGTCGTGAGCCACCCCACCCGGCCGATGGTTGGTTTCTTAAGAAAGGTACTCAG___GTCAGAATGTGGAATCCAAAGACGAAATAGAAAGCAGATATGTCTCATCCTGCTGAGGCTAACTGAACATTCTGTATACCTCTGGGAGAGATCTTCTATGTACATGAACATAG|GCAATGTCATGATTGTTAGACGCTATTCCATTTCATCATCAGTTTGCTCATCTGCTGTAAATGATCCCTGGAAATCTGGGAAAAGTCACCCAAAGAGCGGAATTCTAGAAGGTCAGAGAACACTGAAGTCATTGGCATGTTCTCCAATTAAGAAGCAAGACATGGAAGA</td></tr>
+<tr><td>RMND5A</td><td>2:86741069</td><td>AC083899.1</td><td>2:87140827</td><td>5</td><td>low</td><td>out-of-frame</td><td>CTCAAGCACGAGATCCTGCAGAGCCACG___GCCAAGATGCTGAATTATCAGGGACACTTTCACTTGTTTTGACACAGTGCTGTAAAAGAATAAAGGATACTGTTCAAAAATTGGCCTCCGACCACAAAGACATCCACAGCAGTGTTTCTCGGGTTGGAAAAGCCATTGATAAG|GATTCACTTTAAGAGATTTGGAAACTCTTCCCTTTGGAATTGCTCTTCCCATCAGAGATGCA...CAGCCTGCCTCAGACTGGCCAGAAGCTGTCTGTCTCTTGATTGGACGTCAGGATCTTTCCAAGCAGGCCTGCGAAGGAAACTTACCCAAAGGGAAGTCT___GTG...___GGCGTGCCCCTCCT...CAGCCTGCCTCAGACTGGCCAGAAGCTGTCTGTCTCTTGAtTGGACGTCAGGATCTTTCCAAGCAGGCCTGCGAAGGAAACTTACCCAAAG</td></tr>
+<tr><td>AC012358.3</td><td>2:55299202</td><td>CCDC88A</td><td>2:55300549</td><td>2</td><td>low</td><td>.</td><td>.</td></tr>
+<tr><td>RPS10P7</td><td>1:201539342</td><td>NAV1</td><td>1:201622853</td><td>0</td><td>low</td><td>.</td><td>.</td></tr>
+<tr><td>TAGLN2</td><td>1:159918763</td><td>CFAP45</td><td>1:159893305</td><td>0</td><td>low</td><td>stop-codon</td><td>TGGCAGTAGCCCGAGATGATGGGCTCTTCTCTGGGGATCCCAACTGGTTCCCTAA___GAAATCCAAGGAGAATCCTCGGAACTTCTCGGATAACCAGCTGCAAGAGGGCAAGAACGTGATCGGGTTACAGATGG...CCAACCGCGGGGCGTCTCAGGCAGGCATGACTGGCTACGGGATGCCACGCCAGATCCTCTGATCCCACCCCAGGCCTTGCCCCTGCCCTCCCACGAATG|CCACTAAGCACAGCTGGCATCCTGAGCTCCTCTTCTGCCGCTTCCAACAGGTCAAGGAATAAGGCTCGCTATCGGACCAAAGCCGTGAGCTCTGAGGTGGATGAGAGCCTCTTTGGAGATATCAAG___TCCCCAGCCCAGGGCCAGAGCGACAGCCCCATTGTGCTGCTCCGAGATAAGCATACCCTTCAAAAAACTCTCACTGCTTTGGGCTTGGATCGCAAGCCAGAGACCATCCAGCTCATCACCCGGGACATGGTCCGAG</td></tr>
+<tr><td>TAGLN2</td><td>1:159925450</td><td>CFAP45</td><td>1:159893305</td><td>0</td><td>low</td><td>.</td><td>CTTGCCTTGAGTCAGTGCGCCGCTCTCCAGCCCGCTTGAACG|CCAtTAAGCACAGCTGGCATCCTGAGCTCCTCTTCTGCCGCTTCCAACAGGTCAAGGAA...CTGAGGTGGATGAGAGCCTCTTTGGAGATATCAAG___TCCCCAGCCCAGGGCCAGAGCGgCAGCCCCATTGTGCTGCTCCGAGATAAGCATACCCTTCAAAAA</td></tr>
+<tr><td>VPS13D</td><td>1:12510715</td><td>VPS13D(15398),LINC02766(279)</td><td>1:12527445</td><td>0</td><td>low</td><td>.</td><td>GGGAGCTTTAGCACAAGTAGCTACATAGTGTTCAAGGATCAGCTTTCTTGAACTCCGAGGCTTGGTTGCCTTTGCTGAACTCCAAGTTAGTGGATTGCAGAATGGAAACTTGGCTTTTGCGGCACTGG|AACAGCTCAACTCCAAATAGGCGCATTTCCATCGCCTCCATCGCCGCTGTAGCTGGTGGCTGTCAGATTGGACAGCACGGTAGAGGCGGGTCA</td></tr>
+<tr><td>METTL8</td><td>2:171324199</td><td>TLK1(69869),METTL8(16222)</td><td>2:171301183</td><td>2</td><td>low</td><td>out-of-frame</td><td>GTACCAGAGCATATTTCTTTACAAAAG___GGGAAGTCCACAGTATGTTCTGCAAAGCCAGTTTAGATGAAAAGCAAAATCTGGTTGATCGCCGCTTACAAGTTAATAGGAAAAAACAAGTGAAAATGCACCGAGTGTGGATTCAAG...CTCAGAATAGCTCCAATATG|TAGAGACGGGGTTTCACGATGTTGGCCCGGCTGTCCTCGAACTCCTGGACTCAAGTGATCTGCCGTCCTTGGCCTCCCAAAGTGCTGGAATTACAGGCGTGAGCCACTGCACCTGACCTCCATTTTCCTCTGGTCTTTCAGAGAGCCCAG</td></tr>
+<tr><td>CD53</td><td>1:110891471</td><td>AL360270.1</td><td>1:110952184</td><td>0</td><td>low</td><td>out-of-frame</td><td>CTAAATTCTGCCGAAAGGACTGAGGAACGGTGCCTGGAAAAG___GGCAAGAATATCACGGCATGGGCATGAGTAGCTTGAAACTGCTGAAGTATGTCCTGTTTTTCTTCAACTTGCTCTTTTGG|GAGATACATAAATAACGGTTGGCATTTGGGAGGCCTCAACCATTCCTGAGGTACTGGTGGTGGCAGTTGCAAGTATCTTTTGCTGCACTGAAGGAGGCAATG</td></tr>
+<tr><td>CD53</td><td>1:110891471</td><td>AL360270.1</td><td>1:110944918</td><td>0</td><td>low</td><td>out-of-frame</td><td>GCCTTGTCTCGGCCACCTCAAGGATAATCACTAAATTCTGCCGAAAGGACTGAGGAACGGTGCCTGGAAAAG___GGCAAGAATATCtCGGCATGGGCATGAGT...CTTGAAACTGCTGAAGTATGTCCTGTTTTTCTTCAACTTGCTCTTTTGG|GTATGTTCTCACTCTGTCAACCAGACTGGAATGCAGTGGCATGTTCACAGTTCACTACGACCTTGACCCACTAGGCTCAAGTGATCTTTCCACCTCAG</td></tr>
+<tr><td>CD53</td><td>1:110895055</td><td>AL360270.1</td><td>1:110952184</td><td>1</td><td>low</td><td>out-of-frame</td><td>CTTGGCCATCCTGCTCTTTGTATATGAACAGAAG___CTGAATGAGTATGTGGCTAAGGGTCTGACCGACAGCATCCACCGTTACCACTCAGACAATAGCACCAAGGCAGCGTGGGACTCCATCCAGTCATTT|GAGATACATAAATAACGGTTGGCATTTGGGAGGCCTCAACCATTCCTGAGGTACTGGTGGTGGCAGTTGCAAGTATCTTTTGCTGCACTGAAGGAGGCAATG</td></tr>
+<tr><td>DRAXIN</td><td>1:11715208</td><td>AGTRAP</td><td>1:11745803</td><td>0</td><td>low</td><td>out-of-frame</td><td>CTGCGACCTGCGGGAGCATCTCTGCACACCCCACAACCGAGGCCTCAACAACAAATGCTTCGATGACTGCATGTGTGTGGAAG|GTGATTCTCCTAGGTCACTGGCTGCTGACAACCTG___GGGCTGCATTGTATTCTCAGGCTCCTATGCCTGGGCCAACTTCACCATCCTGGCCTTGGG</td></tr>
+<tr><td>DRAXIN</td><td>1:11715208</td><td>AGTRAP</td><td>1:11744533</td><td>0</td><td>low</td><td>out-of-frame</td><td>GCCTTGTTCGACTGGACCGATTATGAAGACTTAAAACCTGATGGTTGGCCCTCTGCAAAGAAGAAAG___AGAAACACCGCGGTAAACTCTCCAGTGATGGTAA...AAGACTGCCTGCCAG___GGACTTGCTGCGACCTGCGGGAGCATCTCTGCACACCCCACAACCGAGGCCTCAACAACAAATGCTTCGATGACTGCATGTGTGTGGAAG|TGCGCCAGCTCCAGTGTCC</td></tr>
+<tr><td>DRAXIN</td><td>1:11715208</td><td>AGTRAP</td><td>1:11750077</td><td>0</td><td>low</td><td>in-frame</td><td>AAAACCTGATGGTTGGCCCTCTGCAAAGAAGAAAG___AGAAACACCGCGGTAAACTCTCCAGTGATGGTAACGAAACATCACCAGCCGAAGGGGAACCATGCG...GCTGCGACCTGCGGGAGCATCTCTGCACACCCCACAACCGAGGCCTCAACAACAAATGCTTCGATGACTGCATGTGTGTGGAAG|GTTTCCTTGGGTCTTCT</td></tr>
+<tr><td>MRPL37</td><td>1:54216344</td><td>SSBP3-AS1</td><td>1:54237715</td><td>0</td><td>low</td><td>out-of-frame</td><td>AAGAATTTGGCCTGGGTGGACTCAGACCAGCTCCTCTATCAGCATTTTTGGTGTCTCCCAGTGATCAAAAAGAGAGTGGTTGTG|GAAATACAGTCACAATATTCATGATGTCAAGACTGAAACCAGCACCGTCTAGACAAAAAGCCCAACACTGAATCTGCAGCAGACTCCTAGGCAAGTGCTGCTAACATGCATGACTGCAGCGTGCGGAGTTGCAGCCTGAGTGATGTGATCCATGGTGAATCACAAGTCCTG...CAGGACTTTCTGTGTCCTGGGATTCCTCAGGATGTGGGGCTTTTTAGTGTTAAAAGCCAGATGGTTGGTCACACCAGTGAGGACCCTGGCAACGGAGGCAG</td></tr>
+<tr><td>WDR77</td><td>1:111441211</td><td>OVGP1</td><td>1:111427091</td><td>1</td><td>low</td><td>stop-codon</td><td>TGAGTTCATACCGAG___CTCATGCTGCTCAGGTCACTTGTGTTGCTGCCTCTCCTCACAAGGACTCTGTGTTTCTTTCATGCAGCGAG___GACAATAGAATTTTA...CAATCACTCCCTGCTTACCACAGTGGGCTGGGACCATCAGGTCGTCCACCACGTTGTGCCCACAGAACCTCTCCCAGCCCCTGGACCTGCAAGTGTTACTGAGTAGATTGGATTTAAGACAAAAA|GGCTGGTTCTTGTGCTGAAACACCACGATG___GTGCTGCCCATAAACTCGTGTGTTATTTCACCAACTGGGCACACAGTCGGCCAGGCCCTGCCTCGATCTTGCCCC</td></tr>
+<tr><td>INPP5D</td><td>2:233198376</td><td>ATG16L1</td><td>2:233256102</td><td>0</td><td>low</td><td>out-of-frame</td><td>CTCCAGCATCACTGAAATCATCAACCCCAACTACATGGGAGTGGGGCCCTTTGGGCCACCAATGCCCCTGCACGTGAAGCAGACCTTGTCCCCTGACCAGC...CTCCGACACCTCCCGGCCAGCCGCCCATATCACCCAAGAAGTTTTTACCCTCAACAGCAAACCGGGGTCTCCCTCCCAGGACACAGGAGTCAAG|ATAACAAATTGCTGGAAAAGTCAGATCTTCATTCAGTGTTGGCCCAGAAACTACAGGCTGAAAAGCATGACGTACCAAACAGGCACGAGA...TCCTCTAAGGAAATTTATCTCAGTTCAGTTGTCACTTCTCTAATTTAAAAGCAAATCAAGTACTATTTCTGTGTTCCAGTTTTTGTCAGCTCCTTTCAAAT</td></tr>
+<tr><td>INPP5D</td><td>2:233195495</td><td>ATG16L1</td><td>2:233256102</td><td>0</td><td>low</td><td>out-of-frame</td><td>GGGCCAAAGACCCTGAAGAGCCTCACCAGCCACGACCCCATGAAGCAGTGGGAAGTCACTAGCAG|ATAACAAATTGCTGGAAAAGTCAGATCTTCATTCAGTGTTGGCCCAGAAACTACAGGCTGAAAAGCATGACGTACCAAACAGGCACGAGATAAG___TCCCGGACATGATGGCACATGGAATGACAATCAGCTACAAGAA</td></tr>
+<tr><td>CCT4</td><td>2:61876199</td><td>GCA</td><td>2:162355548</td><td>2</td><td>low</td><td>.</td><td>TAAAATTCTACTTTTAAACTTAAAATATCTTACAATGCAAATTATGATGTTCTTTTTCTGAACAGATGGATAATCAAATAGTGGTTTCTGACTATGCCCAG...|...TCAGGGCATGAAATTAGTCTTGAGATATGTCAGCATACAAATTGAATGTAATTGGATTAGAAAAATTAGAAAAGGATTAGAAAAATTGAATTTTATCAATA...TTTCTCCCCCCAACCCCCGAGAAAAACCAGTTGCTTCAATTCAGATGCTCATTTTTTCTTACTTGGTCTATTACAATAAATTACCAATGGACTTACCTAT</td></tr>
+<tr><td>ZEB2</td><td>2:144517278</td><td>CXCR4</td><td>2:136115912</td><td>1</td><td>low</td><td>out-of-frame</td><td>TGTCGCTGTGTTTGGTTGCTAGATCGAGCCTGCGTGCTGCCGAAGCAGGGCGCCGAGTCCATGCGAACTGCCATCTGATCCGCTCTTATCAATGAAGCAGC...CCCGGgGCAAGAGGCGCAAACAAGCCAATCCCAGGAGGAAAAACG|ATATACACTTCAGATAACTACACCGAGGAAATGGGCTCAGGGGACTATGACTCCAT...GCCCACCATCTACTCCATCATCTTCTTAACTGGCATTGTGGGCAATGGATTGGTCATCCTGGTCATGGGTTACCAGAAGAAACTGAGAAGCATGACGGACA</td></tr>
+<tr><td>ARID5A</td><td>2:96536830</td><td>PTMA</td><td>2:231711348</td><td>0</td><td>low</td><td>in-frame</td><td>GGACAGCCGCGCGCTGAGGGTCTCGGGGCGGGCGCCGCGGGACCTCTCCGGGCCATGG|GACTTAAAGGAGAAGAAGGAAGTTGTGGAAGAGGCAGAAAATGGAAGAGACGCCCCTGCTAACGGGAATGCT___AATGAGGAAAATGGGGAGCAGGAGGCTGACAATGAGGTAGACGAAGAAGAGGAAGAAGGTGGGGAGGAAGAGGAGGAGGAAGAAGAAGtTGATGGTGAG</td></tr>
+<tr><td>PTMA</td><td>2:231708751</td><td>ARID5A</td><td>2:96547402</td><td>0</td><td>low</td><td>out-of-frame</td><td>CCTTGCTCGCCGCAGCCGCCTCCGCCGCGCGCCTCCTCCGCCGCCGCGGACTCCGGCAGCTTTATCGCCAGAGTCCCTGAACTCTCGCTTTCTTTTTAATCCCCTGCATCGGATCACCGGCGTGCCCCACCATGTCAGACGCAGCCGTAGACACCAGCTCCGAAATCACCACCAAG|CAGCCCCTGTCAAAGGGAACAGGAAG</td></tr>
+<tr><td>YPEL5</td><td>2:30147062</td><td>WDR43</td><td>2:28906460</td><td>0</td><td>low</td><td>.</td><td>CGACAAGCCGCTGGCAGCCGCGGATCTCACCGCCGCTCAGG|AGTGGTGGACATGACAACAGAGTCAACTGCATACAGTGGCATCAAGACAGTGGCTGTTTATATAGTTGTTCAGATGATAAACATATTGTGGAATGGAACGTACAGACATGCAAAGTAAAGTG___CAAAT</td></tr>
+<tr><td>YPEL5</td><td>2:30147062</td><td>WDR43</td><td>2:28941461</td><td>0</td><td>low</td><td>.</td><td>CGACAAGCCGCTGGCAGCCGCGGATCTCACCGCCGCTCAGG|TTGCCTGACCTGGTACCCCAGCTGGGGACACTCTACCAGTTAATGGAAAGCAGAGTCAAAACTTTTCAGAAACTTTCACACCTTCATGGAAAGCTTATTCTTCTAATTACAC</td></tr>
+</tbody>
+</table>
+
+        
+        <h1 id="section11">ARRIBA Fusions Plots</h1>
+        <iframe src= "fusions/AL09ID.pdf" name="arriba_fusion_pdf_path" width="100%" height="600" frameborder="0"></iframe>
+        
+        <h1 id="section12">Fusioncatcher Fusions</h1>
+        <table id='fusioncatcher_table' class='my-table-class'>
+<thead><tr><th>5’ gene name</th><th>5’ chr.position</th><th>3’ gene name</th><th>3’chr. position</th><th>fusion unique spanning reads</th><th>fusion description</th><th>fusion sequence</th><th>predicted effect</th></tr></thead>
+<tbody>
+<tr><td>NPIPB5</td><td>16:22506235:+</td><td>SMG1</td><td>16:18879719:-</td><td>2</td><td>banned,known,bodymap2,hpa,m6,tcga3,t6,exon-exon,reciprocal</td><td>AGCGATTCTCCTGCCTCAGCCTCCCGAGTAGCTGGGATTACAG*GTTCTGTACAGAGTAATGAGATGTGTGACGGCTGCAAACCAGG</td><td>UTR/CDS(truncated)</td></tr>
+<tr><td>SMG1</td><td>16:18858170:-</td><td>NPIPB5</td><td>16:22513522:+</td><td>17</td><td>banned,known,bodymap2,hpa,m6,tcga3,t6,exon-exon,reciprocal</td><td>AGGTATACTATGTACCAGAATCAGTTGTTGGAGAAAATTAAAG*GTATGATCTCGTGAAATCTTGAGAGAAACTGAATGACGAATGA</td><td>CDS(truncated)/UTR</td></tr>
+<tr><td>SMG1</td><td>16:18858170:-</td><td>NPIPB5</td><td>16:22523820:+</td><td>17</td><td>banned,known,bodymap2,hpa,m6,tcga3,t6,exon-exon,reciprocal</td><td>AGGTATACTATGTACCAGAATCAGTTGTTGGAGAAAATTAAAG*GTTATCAATACTCTGGCTGACCATCATCATCGTGGGACTGACT</td><td>in-frame</td></tr>
+<tr><td>SMG1</td><td>16:18858170:-</td><td>NPIPB5</td><td>16:22507337:+</td><td>8</td><td>banned,known,bodymap2,hpa,m6,tcga3,t6,exon-exon,reciprocal</td><td>AGGTATACTATGTACCAGAATCAGTTGTTGGAGAAAATTAAAG*AGCTTGAAATGAATTTTAAAGGATGACTGATGGTCCTTGGAAG</td><td>CDS(truncated)/UTR</td></tr>
+<tr><td>SMG1</td><td>16:18858170:-</td><td>NPIPB5</td><td>16:22513523:+</td><td>5</td><td>banned,known,bodymap2,hpa,m6,tcga3,t6,exon-exon,reciprocal</td><td>AGGTATACTATGTACCAGAATCAGTTGTTGGAGAAAATTAAAG*TATGATCTCGTGAAATCTTGAGAGAAACTGAATGACGAATGAA</td><td>CDS(truncated)/UTR</td></tr>
+<tr><td>SMG1</td><td>16:18858211:-</td><td>NPIPB5</td><td>16:22513522:+</td><td>3</td><td>banned,known,bodymap2,hpa,m6,tcga3,t6,reciprocal</td><td>TTACGTTCATGTAAACAGCATGACGTGAGGCCATGGATGCAGGCATTAAG*GTATGATCTCGTGAAATCTTGAGAGAAACTGAATGACGAATGAAACTATT</td><td>CDS(truncated)/UTR</td></tr>
+<tr><td>SMG1</td><td>16:18858211:-</td><td>NPIPB5</td><td>16:22507337:+</td><td>2</td><td>banned,known,bodymap2,hpa,m6,tcga3,t6,reciprocal</td><td>TTACGTTCATGTAAACAGCATGACGTGAGGCCATGGATGCAGGCATTAAG*AGCTTGAAATGAATTTTAAAGGATGACTGATGGTCCTTGGAAGAGAAACA</td><td>CDS(truncated)/UTR</td></tr>
+<tr><td>SMG1</td><td>16:18858211:-</td><td>NPIPB5</td><td>16:22513764:+</td><td>2</td><td>banned,known,bodymap2,hpa,m6,tcga3,t6,reciprocal</td><td>TTACGTTCATGTAAACAGCATGACGTGAGGCCATGGATGCAGGCATTAAG*GTTGGCACTCATCATGAGCCCCTGTTCTCATTCTGCAAATGGTGAAGCTC</td><td>CDS(truncated)/UTR</td></tr>
+<tr><td>SMG1</td><td>16:18858170:-</td><td>NPIPB5</td><td>16:22513424:+</td><td>2</td><td>banned,known,bodymap2,hpa,m6,tcga3,t6,exon-exon,reciprocal</td><td>AGGTATACTATGTACCAGAATCAGTTGTTGGAGAAAATTAAAG*GTTTCAGGCACAGAACTGTATATCCAATAATAGTGAAATGGAT</td><td>CDS(truncated)/UTR</td></tr>
+<tr><td>SMG1</td><td>16:18858211:-</td><td>NPIPB5</td><td>16:22523820:+</td><td>2</td><td>banned,known,bodymap2,hpa,m6,tcga3,t6,reciprocal</td><td>TTACGTTCATGTAAACAGCATGACGTGAGGCCATGGATGCAGGCATTAAG*GTTATCAATACTCTGGCTGACCATCATCATCGTGGGACTGACTTTGGTGG</td><td>out-of-frame</td></tr>
+<tr><td>SMG1</td><td>16:18858170:-</td><td>NPIPB5</td><td>16:22510916:+</td><td>2</td><td>banned,known,bodymap2,hpa,m6,tcga3,t6,reciprocal</td><td>GGCATTAAGGTATACTATGTACCAGAATCAGTTGTTGGAGAAAATTAAAG*GCGGGAGTGCAGTGGCATGATCTCGGCTCACTACAACCTCCGCATCCTGG</td><td>CDS(truncated)/intronic</td></tr>
+<tr><td>AOX3P</td><td>2:200732539:+</td><td>AOX2P</td><td>2:200738662:+</td><td>4</td><td>adjacent,pseudogene,1K<gap<10K,readthrough</td><td>AATGAAGCTTTTGCTCAAAGCACTAGTTTGTCTGCCACTGGATATTTTAG*CTGACAATAGGCGCTGGCTGCAGCCTGGCCCAGATGCAGGACATCTTG</td><td>exonic(no-known-CDS)/exonic(no-known-CDS)</td></tr>
+<tr><td>AOX3P</td><td>2:200732539:+</td><td>AOX2P</td><td>2:200740758:+</td><td>4</td><td>adjacent,pseudogene,1K<gap<10K,readthrough,exon-exon</td><td>CTTTTGCTCAAAGCACTAGTTTGTCTGCCACTGGATATTTTAG*TCCTTAGGGGGGCATGTGAGAAGCCGGCATTGCTATTCGGACC</td><td>exonic(no-known-CDS)/exonic(no-known-CDS)</td></tr>
+<tr><td>KANSL1</td><td>17:46094560:-</td><td>ARL17A</td><td>17:46570869:-</td><td>19</td><td>banned,known,healthy,bodymap2,hpa,gtex,18cancers,chimer4seq,m5,mitelman,t5,exon-exon</td><td>TCGTCAGCAAACAGACATTTACAAACAGATACGTGCTAATAAG*GTTTCTGTGTGGAGACAGTAGAATATAAAAATAACACCTTCGC</td><td>out-of-frame</td></tr>
+<tr><td>KANSL1</td><td>17:46094560:-</td><td>ARL17B</td><td>17:46352930:-</td><td>19</td><td>banned,known,healthy,bodymap2,hpa,chimer4seq,m5,rt_circ_rna,mitelman,t5,10K<gap<100K,exon-exon</td><td>TCGTCAGCAAACAGACATTTACAAACAGATACGTGCTAATAAG*GTTTCTGTGTGGAGACAGTAGAATATAAAAATAACACCTTCGC</td><td>out-of-frame</td></tr>
+<tr><td>ADGRE2</td><td>19:14774256:-</td><td>ADGRE5</td><td>19:14388702:+</td><td>4</td><td>banned,known,paralogs,similar_reads,healthy,duplicates,bodymap2,hpa,gtex,cancer,m22,tcga-normal,exon-exon,reciprocal</td><td>GTCTGGCTGACTCTGCCGGGAGCTGAAACCCAGGACTCCAGGG*GCTGTGCCCGGTGGTGCCCTCAGAACTCCTCGTGTGTCAATGC</td><td>in-frame</td></tr>
+<tr><td>ADGRE5</td><td>19:14388500:+</td><td>ADGRE2</td><td>19:14774054:-</td><td>3</td><td>banned,known,paralogs,similar_reads,healthy,duplicates,bodymap2,hpa,gtex,cancer,m22,tcga-normal,exon-exon,reciprocal</td><td>GTCTGGCTGACTCTGCCGGGAGCTGAAACCCAGGACTCCAGGG*GCTGTGCCCGGTGGTGCCCTCAGGACTCCTCGTGTGTCAATGC</td><td>in-frame</td></tr>
+<tr><td>ADGRE5</td><td>19:14397804:+</td><td>ADGRE2</td><td>19:14765570:-</td><td>3</td><td>banned,known,paralogs,similar_reads,healthy,duplicates,bodymap2,hpa,gtex,cancer,m22,tcga-normal,exon-exon,reciprocal</td><td>AGACACGGAATCCCGAATAACCAAAAGGACACTGTCTGTGAAG*ATATGACTTTCTCCACCTGGACCCCGCCCCCTGGAGTCCACAG</td><td>in-frame</td></tr>
+<tr><td>SIDT2</td><td>11:117195915:+</td><td>TAGLN</td><td>11:117203002:+</td><td>9</td><td>banned,known,adjacent,conjoing,healthy,cacg,bodymap2,hpa,chimer4seq,cancer,mitelman,t3,1K<gap<10K,readthrough,exon-exon</td><td>CTGGCACTTCCTCTCCTCCATCGCCATGTTCGGGTCCTTCCTG*CTTTCCCCAGACATGGCCAACAAGGGTCCTTCCTATGGCATGA</td><td>CDS(truncated)/UTR</td></tr>
+<tr><td>CD81</td><td>11:2396964:+</td><td>TSSC4</td><td>11:2402294:+</td><td>9</td><td>banned,known,adjacent,healthy,hpa,1K<gap<10K,readthrough</td><td>CCCGGACACTTCCGAGGGGGCCATCACCGCCTGTGTATATAACGTTTCCG*TTGAGCAGCTGAACAGAGGCCATGCCGGGGCACTCCGAGGCCTGAGACGA</td><td>UTR/UTR</td></tr>
+<tr><td>SERF1A</td><td>5:70901933:+</td><td>SMN1</td><td>5:70938839:+</td><td>9</td><td>banned,known,adjacent,bodymap2,hpa,chimer4seq,m0,multi,1K<gap<10K,readthrough,exon-exon</td><td>AGAGGAAAGAGGATAGCTTGACTGCCTCTCAGAGAAAGCAGAG*AGCGATGATTCTGACATTTGGGATGATACAGCACTGATAAAAG</td><td>out-of-frame</td></tr>
+<tr><td>SERF1A</td><td>5:70917048:+</td><td>SMN1</td><td>5:70938839:+</td><td>3</td><td>banned,known,adjacent,bodymap2,hpa,chimer4seq,m0,multi,1K<gap<10K,readthrough,exon-exon</td><td>GGGAGAATCCTTGCTTTCCTCTTCCAGCTGCTGGTGGCTCCAG*AGCGATGATTCTGACATTTGGGATGATACAGCACTGATAAAAG</td><td>out-of-frame</td></tr>
+<tr><td>WASH3P</td><td>15:101967252:+</td><td>WASH5P</td><td>19:65317:-</td><td>2</td><td>pseudogene,m2,reciprocal</td><td>GACTTCACTCAGTGTTTATCTAACATGAGTGAGTGAATGGTGTTTGCTGT*TTTTTTTGGTAAAGGTCCCAGGGGTTGTCGGGTACACAGGTCCTGTCTTT</td><td>intronic/exonic(no-known-CDS)</td></tr>
+<tr><td>WASH5P</td><td>19:66346:-</td><td>WASH3P</td><td>15:101972901:+</td><td>12</td><td>pseudogene,m2,exon-exon,reciprocal</td><td>CCCTGCAGTACCTGCAGAAGGTCTCTGGAGACATCTTCAGCAG*GTGTTCTCCAGTGCCAAGTACCCTGCTCCAGAGCGCCTGCAGG</td><td>exonic(no-known-CDS)/exonic(no-known-CDS)</td></tr>
+<tr><td>WASH5P</td><td>19:70928:-</td><td>WASH3P</td><td>15:101972901:+</td><td>6</td><td>pseudogene,m2,exon-exon,reciprocal</td><td>AGCGGCGGCGGGAGCTTCCGGGAGGGCGGCTCGCAG*GTGTTCTCCAGTGCCAAGTACCCTGCTCCAGAGCGCCTGCAGG</td><td>exonic(no-known-CDS)/exonic(no-known-CDS)</td></tr>
+<tr><td>WASH5P</td><td>19:70928:-</td><td>WASH3P</td><td>15:101972596:+</td><td>2</td><td>pseudogene,m2,exon-exon,reciprocal</td><td>AGCGGCGGCGGGAGCTTCCGGGAGGGCGGCTCGCAG*GTAGAGCAGAGCCGGAGCCAGGTGCAGGCCATTGGAGAGAAGG</td><td>exonic(no-known-CDS)/exonic(no-known-CDS)</td></tr>
+<tr><td>NPEPPS</td><td>17:47592545:+</td><td>TBC1D3</td><td>17:38191030:-</td><td>18</td><td>banned,known,oncogene,bodymap2,hpa,gtex,18cancers,tumor,m0,multi,mitelman,exon-exon</td><td>AACATGTATTTAACCAAGTTCCAACAAAAGAATGCTGCCACAG*GATGGACGTGGTAGAGGTCGCGGGCAGTTGGTGGGCACAAGAG</td><td>CDS(complete)/UTR</td></tr>
+<tr><td>LAPTM5</td><td>1:30735192:-</td><td>EEF1A1</td><td>6:73519172:-</td><td>1</td><td>oncogene,cancer,m3</td><td>CGGTGCTACAGATTGATCAAGTGCATGAACTCGGTGGAGGAGAAGAGAAA*CTCCAAGAATGGGCAGACCCGAGAGCATGCCCTTCTGGCTTACACACTGG</td><td>in-frame</td></tr>
+<tr><td>RHOA</td><td>3:49411820:-</td><td>QRICH1</td><td>3:49077038:-</td><td>6</td><td>known,oncogene,chimer4seq,cancer,tumor,ccle,t2,exon-exon</td><td>CGTCCCCGGCGCGAAGAGGCTGGACTCGGATTCGTTGCCTGAG*GAACCCTAAGGACTCTGCAATATGAATAATTCCCTAGAGAACA</td><td>UTR/UTR</td></tr>
+<tr><td>RHOA</td><td>3:49411820:-</td><td>QRICH1</td><td>3:49057890:-</td><td>4</td><td>known,oncogene,chimer4seq,cancer,tumor,ccle,t2,exon-exon</td><td>CGTCCCCGGCGCGAAGAGGCTGGACTCGGATTCGTTGCCTGAG*GTCCAGGTGCAGGTACAGCAGTCTCCGCAACAGGTCTCGGCTC</td><td>UTR/CDS(truncated)</td></tr>
+<tr><td>AC092490.2</td><td>12:8668831:+</td><td>RIMKLB</td><td>12:8713811:+</td><td>7</td><td>lncrna,ribosomal,m3,cortex,t3,10K<gap<100K</td><td>GCACCAGCTAACACCTTGATGACAGCCTTATGAGATACCCTGAGCCAAAG*GTAGACGTTACATCCAAGAGGAAATAATCCAGGCAAGGAAGCACAAGCTG</td><td>exonic(no-known-CDS)/CDS(truncated)</td></tr>
+<tr><td>HERC3</td><td>4:88708259:+</td><td>FAM13A-AS1</td><td>4:88710109:+</td><td>2</td><td>banned,known,adjacent,lncrna,healthy,hpa,18cancers,t1,gap<1K,readthrough</td><td>AACCTTCCTCATCATGGAGTAAGAAAATTCTACATGATTAAAGAATCCAT*CCCTTTACAGAAAACAACTGACCAATCCTTATGAGACCAGACTTGCAAAA</td><td>UTR/exonic(no-known-CDS)</td></tr>
+<tr><td>OAZ1</td><td>19:2269744:+</td><td>PTMA</td><td>2:231711348:+</td><td>5</td><td>banned,known,oncogene,hpa,cancer,t2,exon-exon</td><td>CGCTCCTAAGCCTGCACAGCCGCGGCGGCAGCAGCAGTGAGAG*GACTTAAAGGAGAAGAAGGAAGTTGTGGAAGAGGCAGAAAATG</td><td>in-frame</td></tr>
+<tr><td>AC133555.6</td><td>16:29613648:-</td><td>SLC7A5</td><td>16:87869429:-</td><td>2</td><td>lncrna</td><td>ACAATCCTCGCTCGGCTGCGGCTCTCGGGTGTCCCAGGCCCGGCCGGTAA*GCAGAGCATGGCGGGTGCGGGCCCGAAGCGGCGCGCGCTAGCGGCGCCGG</td><td>exonic(no-known-CDS)/UTR</td></tr>
+<tr><td>CBWD5</td><td>9:65707152:+</td><td>CHST11</td><td>12:104618052:+</td><td>3</td><td>m2</td><td>TGGGTTCAAGCGATTCTCCTGCTTCACCCTCCGAGTAGCTGGGATTACAG*GTGTGCACCACCACGCCCAGCTAATTTTTGTATTTTTAGTAGAGACGGGT</td><td>UTR/intronic</td></tr>
+<tr><td>KAT8</td><td>16:31121115:+</td><td>GIT2</td><td>12:109985313:-</td><td>3</td><td>short_repeats,sr1.00</td><td>GTATTCAGCTAAATGGTTTTTGTGTGTGTGTGTGTGTGTGTGTGTGTGTG*TGGGTTTTTTGTTTTTTGTTTTTTTTTCCTTGCCAGAGTTTTAAAAAATT</td><td>UTR/intronic</td></tr>
+<tr><td>MDM4</td><td>1:204553145:+</td><td>TTBK2</td><td>15:42830434:-</td><td>2</td><td>oncogene,cancer,t4,reciprocal</td><td>CTCCTGACCTCAGGTCATCCACCCACCTCAGCCTCGCAAAGTGCTGAGAT*AGGTGGATCACCTGAGGTCAGGAGTTCGAGACCAGCCTGACCAACATGGT</td><td>UTR/intronic</td></tr>
+<tr><td>PTPRG</td><td>3:62292556:+</td><td>C3ORF14</td><td>3:62320460:+</td><td>4</td><td>adjacent,chimer4seq,cancer,tcga2,mitelman,t1,10K<gap<100K,readthrough,exon-exon</td><td>AAAAATGATCAATCTTATGAGGCCTGGAGTATTCACAGACATT*CTTTGATTAAAGATGACTTCCTTGTTTGCTCAAGAAATTCGCC</td><td>CDS(truncated)/UTR</td></tr>
+<tr><td>THAP11</td><td>16:67842944:+</td><td>ATXN3</td><td>14:92071034:-</td><td>4</td><td>banned,known,hpa,m2,cortex,short_repeats,sr1.58</td><td>AGCAACAGCAGCAGCAGCAGCAACAGCAGCAGCAGCAGCAGCAGCAG*CAGCAGCAGCAGCAGCAGCAGCAGGGGGACCTATCAGGACAGAGTTCACA</td><td>in-frame</td></tr>
+<tr><td>YPEL5</td><td>2:30147062:+</td><td>LBH</td><td>2:30234405:+</td><td>7</td><td>t2,10K<gap<100K,exon-exon</td><td>AGCGACAAGCCGCTGGCAGCCGCGGATCTCACCGCCGCTCAGG*CCCCGACTATCTGAGATCGGCCAAGATGACTGAGGTGATGATG</td><td>UTR/CDS(truncated)</td></tr>
+<tr><td>AC069281.2</td><td>7:100575705:-</td><td>LPAR2</td><td>19:19627284:-</td><td>3</td><td>lncrna</td><td>AGAATGTGGAGAGTTTTCTAGAAGCCTGTCGAAAAATGGGGGTGCCTGAG*ATGGTCATCATGGGCCAGTGCTACTACAACGAGACCATCGGCTTCTTCTA</td><td>exonic(no-known-CDS)/CDS(complete)</td></tr>
+<tr><td>ANKRD10</td><td>13:110914725:-</td><td>ING1</td><td>13:110719229:+</td><td>6</td><td>chimer4seq,tumor,t1,exon-exon</td><td>CTATGGCTGGACGCCCGTGCACTGGGCCGCGCATTTCGGCAAG*AGATCCTGAAGGAGCTAGACGAGTGCTACGAGCGCTTCAGTCG</td><td>out-of-frame</td></tr>
+<tr><td>ATP5MC3</td><td>2:175179057:-</td><td>ATF2</td><td>2:175151158:-</td><td>2</td><td>adjacent,cancer,t1,1K<gap<10K,readthrough,exon-exon</td><td>GTATTGGAACAGTCTTTGGCAGCCTTATCATTGGTTATGCCAG*GGTACTAGATGGAAACTTGAGAAAGGACTGCTTATTGATAACA</td><td>CDS(truncated)/UTR</td></tr>
+<tr><td>BAIAP2L2</td><td>22:38085116:-</td><td>SLC16A8</td><td>22:38083188:-</td><td>3</td><td>banned,known,adjacent,healthy,hpa,18cancers,t1,gap<1K,readthrough</td><td>CCACCCCGGCAGCCTGAGCAGCTCCAAAGCACTGGCTTGGGGTCCGAGAC*CTGCTCCACTTCCCGACGCCTTCCACCTGAGGCCCTGAGGGGCCAGCAGT</td><td>UTR/UTR</td></tr>
+<tr><td>CLEC2D</td><td>12:9692931:+</td><td>LINC02390</td><td>12:9708872:+</td><td>2</td><td>adjacent,lncrna,1K<gap<10K,readthrough,exon-exon</td><td>GCCAACCATGGAAATGGATAAATGGTACTGAATGGACAAGACA*AATGGGCAACCAGTTCTCTTCACCACTTCCAGCTTATACTCCT</td><td>CDS(truncated)/exonic(no-known-CDS)</td></tr>
+<tr><td>CLEC2D</td><td>12:9693115:+</td><td>LINC02390</td><td>12:9708872:+</td><td>2</td><td>adjacent,lncrna,1K<gap<10K,readthrough,exon-exon</td><td>AAAGGTTTCACAAGTTCCTCGAATGAATCCAAGACCTGTCATG*AATGGGCAACCAGTTCTCTTCACCACTTCCAGCTTATACTCCT</td><td>CDS(truncated)/exonic(no-known-CDS)</td></tr>
+<tr><td>COQ8B</td><td>19:40691592:-</td><td>NUMBL</td><td>19:40686995:-</td><td>2</td><td>banned,known,adjacent,healthy,bodymap2,hpa,mitelman,tcga3,gap<1K,readthrough</td><td>CTCCAACAGCTGCCTTCTCCCGGGTTCCAGCCTCTCAGTGTGTTGGAGAG*GGCGGACCCCGGAGGCCTGAGCGGCACCTGCCCCCAGCCCCCTGTGGGGC</td><td>UTR/CDS(truncated)</td></tr>
+<tr><td>CXCR4</td><td>2:136118046:-</td><td>YWHAZ</td><td>8:100948900:-</td><td>2</td><td>oncogene,exon-exon</td><td>CACCGCATCTGGAGAACCAGCGGTTACCATGGAGGGGATCAGT*AACATCCAGTCATGGATAAAAATGAGCTGGTTCAGAAGGCCAA</td><td>CDS(truncated)/UTR</td></tr>
+<tr><td>EIF4G2</td><td>11:10808705:-</td><td>DDX5</td><td>17:64504842:-</td><td>2</td><td>cancer,exon-exon</td><td>TGAGGAGGCAGCTGCGGTGGCAGCTGCTGAGTTCTCGGTGAAG*GTTTGGTGCACCTCGATTTGGAGGAAGTAGGGCAGGGCCCTTA</td><td>UTR/CDS(truncated)</td></tr>
+<tr><td>HNRNPA2B1</td><td>7:26200572:-</td><td>DDX5</td><td>17:64504842:-</td><td>5</td><td>cancer,mitelman,pcawg,exon-exon</td><td>GGCTGCGGGAAATCGGGCTGAAGCGACTGAGTCCGCGATGGAG*GTTTGGTGCACCTCGATTTGGAGGAAGTAGGGCAGGGCCCTTA</td><td>out-of-frame</td></tr>
+<tr><td>HNRNPK</td><td>9:83980503:-</td><td>HMGB1</td><td>13:30463694:-</td><td>5</td><td>cancer,exon-exon</td><td>ACCTCGACGTCTTGCCTGTGTCCCACTTGTTCGCGGCCTATAG*AAAAATAACTAAACATGGGCAAAGGAGATCCTAAGAAGCCGAG</td><td>UTR/UTR</td></tr>
+<tr><td>HNRNPU</td><td>1:244863674:-</td><td>ZBTB18</td><td>1:244053788:+</td><td>4</td><td>mitelman,exon-exon</td><td>GTGGCGCCGCCCGGGGCGAGGCAGGGCCAGCAGCAGGCGGGAG*GTTATGAAGACAGTATGGAGTTTCCAGACCATAGTAGACATTT</td><td>in-frame</td></tr>
+<tr><td>LRCH4</td><td>7:100575705:-</td><td>LPAR2</td><td>19:19627284:-</td><td>5</td><td>exon-exon</td><td>GGAGAGTTTTCTAGAAGCCTGTCGAAAAATGGGGGTGCCTGAG*ATGGTCATCATGGGCCAGTGCTACTACAACGAGACCATCGGCT</td><td>in-frame</td></tr>
+<tr><td>MID1IP1</td><td>X:38802947:+</td><td>ANAPC1</td><td>2:111821752:-</td><td>3</td><td>m2</td><td>GCCACCACGCCCGGCTAATTTTTGTATTTTTAGTAGAGACCGGGTTTCAC*CATGTTGGCCAGGCTGGTCTGGAACCCCTGGCCTCGGGTGATCCGCCCAC</td><td>UTR/UTR</td></tr>
+<tr><td>NIBAN3</td><td>19:17552661:+</td><td>DYNC1H1</td><td>14:101991049:+</td><td>2</td><td>t3</td><td>TCTTTGACTAAATTGAACTTACAAATAAGTTTATTATGGCCAGGCGTGGC*GGTGCACGCCTGTGGTCCCGGCTACTTGAGGGGCTGAGGCGGGAGGATTG</td><td>UTR/intronic</td></tr>
+<tr><td>NR2C1</td><td>12:95021327:-</td><td>ZNF470</td><td>19:56579151:+</td><td>4</td><td>cortex</td><td>GTGCCTGGCCTACTGCTGTCTTTGAAAATAATAGAGACTAGCCAGGTGTA*GTGGCTCATGCCTGTAGTCCCAGCACTTTGGGAGGCTGAGGCAGGCAGAT</td><td>UTR/UTR</td></tr>
+<tr><td>PDGFRA</td><td>4:54229415:+</td><td>CCNG2</td><td>4:77158533:+</td><td>2</td><td>known,oncogene,cancer,tumor,t1,exon-exon</td><td>CCATGTGTGGGACATTCATTGCGGAATAACATCGGAGGAGAAG*ATGAAGGATTTGGGGGCAGAGCACTTGGCAGGTCATGAAGGGG</td><td>UTR/CDS(complete)</td></tr>
+<tr><td>PFAS</td><td>17:8268856:+</td><td>RANGRF</td><td>17:8288779:+</td><td>3</td><td>non_cancer_tissues,ccle3,10K<gap<100K</td><td>GCGAGGGATGGAGGGCGCCGTGCTGCCCGTGTGGAGTGCGCACGGGGAAG*CCTCAGACCCATGGAGCCCACGAGAGACTGCCCGCTGTTCGGGGGCGCCT</td><td>CDS(truncated)/UTR</td></tr>
+<tr><td>PFKP</td><td>10:3067707:+</td><td>KLF6</td><td>10:3782214:-</td><td>4</td><td>oncogene,cancer,t1,exon-exon</td><td>GGCAAGGCCATCGGCGTGCTGACCAGCGGCGGGGATGCTCAAG*ACCTGCCTAGAGCTGGAACGTTACCTCCAGAGCGAGCCCTGCT</td><td>out-of-frame</td></tr>
+<tr><td>PTMA</td><td>2:231708751:+</td><td>RBM38</td><td>20:57407543:+</td><td>2</td><td>oncogene,cancer,t2,exon-exon,reciprocal</td><td>GTCAGACGCAGCCGTAGACACCAGCTCCGAAATCACCACCAAG*GCTGACCCCGCACTACATCTACCCACCAGCCATCGTGCAGCCC</td><td>out-of-frame</td></tr>
+<tr><td>RBM38</td><td>20:57392777:+</td><td>PTMA</td><td>2:231711348:+</td><td>2</td><td>oncogene,cancer,t2,exon-exon,reciprocal</td><td>AACCTGGCATATCTGGGCGCCAAGCCGCGGAGCCTCCAGACGG*GACTTAAAGGAGAAGAAGGAAGTTGTGGAAGAGGCAGAAAATG</td><td>in-frame</td></tr>
+<tr><td>RNF126</td><td>19:663047:-</td><td>SBNO2</td><td>19:1154402:-</td><td>3</td><td>mitelman,t1,exon-exon</td><td>CTTCTGCCACTGCTGCTCCGTGGAGATCGTCCCGCGCCTGCCG*ATCATGATGCTGCCGCCACCGCCGCCACCACGGAGCGAGAAGC</td><td>CDS(truncated)/UTR</td></tr>
+<tr><td>SMC4</td><td>3:160399749:+</td><td>TIPARP</td><td>3:156677657:+</td><td>3</td><td>exon-exon</td><td>ACACAACCGTCTCCAGCCTTGGTCTGAGTGGACTGTCCTGCAG*GATTTTTAGACTCTGAGGAGCAGTTGGAGCTAATCCACATTAT</td><td>UTR/UTR</td></tr>
+<tr><td>SOGA1</td><td>20:36793249:-</td><td>DSN1</td><td>20:36766841:-</td><td>5</td><td>adjacent,chimer4seq,tcga2,mitelman,ccle,1K<gap<10K,readthrough,exon-exon</td><td>TGTCCTCCGGGACGGAGATGGAGCCGTGGTCCTTCCCAATGAG*TTCTCTATTCAGAAACTTGAACCTTTCCTAAGGGACACTAAGG</td><td>in-frame</td></tr>
+<tr><td>SORBS3</td><td>8:22571821:+</td><td>PDLIM2</td><td>8:22580603:+</td><td>4</td><td>adjacent,chimer4seq,tcga2,mitelman,tcga3,t1,tcga-oesophagus,1K<gap<10K,readthrough,exon-exon</td><td>TGGGGACCTCCTCTCCTAACACCTCTCAGATACACTGGACCCC*GTATGGCGTTGACGGTGGATGTGGCCGGGCCAGCGCCCTGGGG</td><td>in-frame</td></tr>
+<tr><td>SORBS3</td><td>8:22571818:+</td><td>PDLIM2</td><td>8:22580600:+</td><td>3</td><td>adjacent,chimer4seq,tcga2,mitelman,tcga3,t1,tcga-oesophagus,1K<gap<10K,readthrough,exon-exon</td><td>ACCTGGGGACCTCCTCTCCTAACACCTCTCAGATACACTGGAC*CAGGTATGGCGTTGACGGTGGATGTGGCCGGGCCAGCGCCCTG</td><td>CDS(truncated)/UTR</td></tr>
+<tr><td>ST3GAL1</td><td>8:133571693:-</td><td>NDRG1</td><td>8:133284327:-</td><td>2</td><td>banned,known,tcga,hpa,chimer4seq,cancer,mitelman,t1,100K<gap<200K</td><td>ACCCCTTCATGCCCAAATCCCGGAAACTCCAGCGTGTCTCCAGCCGTG*AGGTGACAGCAGGGACATGTCTCGGGAGATGCAGGATGTAGACCTCGCTG</td><td>UTR/CDS(truncated)</td></tr>
+<tr><td>ST3GAL1</td><td>8:133571693:-</td><td>NDRG1</td><td>8:133284329:-</td><td>2</td><td>banned,known,tcga,hpa,chimer4seq,cancer,mitelman,t1,100K<gap<200K,exon-exon</td><td>TTCATGCCCAAATCCCGGAAACTCCAGCGTGTCTCCAGCCGTG*GCAGGTGACAGCAGGGACATGTCTCGGGAGATGCAGGATGTAG</td><td>UTR/CDS(truncated)</td></tr>
+<tr><td>SYNE3</td><td>14:95427803:-</td><td>CARS1</td><td>11:3028354:-</td><td>3</td><td>cancer,tumor</td><td>GGAGACGAGAGATTGTAGAAATAAAGACACAAGACAAAGAGATAAAAGAA*AAGACAGCTGGGCCCGGGGGACCACTACCACCAAGACGCGGAGACCGGTA</td><td>intronic/UTR</td></tr>
+<tr><td>TTC7B</td><td>14:90530084:-</td><td>UBXN7</td><td>3:196352808:-</td><td>5</td><td>m2,t2,reciprocal</td><td>ACCACGCCTGGCTAATTTTTTGCATTTTTAGTAGAGACGGGGTTTCGCCG*TGTTGGCCAGGATGGTCTCGATCTCTTGATCTCGTGTTCCGCCCACCTCG</td><td>UTR/UTR</td></tr>
+<tr><td>UBXN7</td><td>3:196352845:-</td><td>TTC7B</td><td>14:90530119:-</td><td>2</td><td>m2,t2,reciprocal</td><td>GAAAAGATACAATTACCTTTTTTAATAGGTGAGCGCCACCACGCCCGGCT*ATTTTTTGCATTTTTAGTAGAGACGGGGTTTCGCCGTGTTGGCCAGGATG</td><td>UTR/UTR</td></tr>
+<tr><td>VHL</td><td>3:10153601:+</td><td>AC009065.8</td><td>16:2240516:+</td><td>3</td><td>lncrna,cancer,tumor,t3,short_repeats,sr1.42</td><td>AATGTATTAAATATATCGCTCTTAAGAGACGGTGAAGTTCCTATTTCAAG*TTTTTTTTGTTTTGTTTTGTTTTTAAAGAGACAGGATATTCTCTGTCGCC</td><td>UTR/exonic(no-known-CDS)</td></tr>
+<tr><td>YWHAZ</td><td>8:100951929:-</td><td>KLF10</td><td>8:102652397:-</td><td>4</td><td>oncogene,mitelman,ccle,exon-exon</td><td>GCTGAGCCCGTCCGTCCGCCGCCACCACCCACTCCGGACACAG*GAGGAAAGAATGGAAATGATTTCTGAAAGGCCAAAAGAGAGTA</td><td>UTR/CDS(truncated)</td></tr>
+<tr><td>Z94721.1</td><td>6:166998918:-</td><td>RNASET2</td><td>6:166952548:-</td><td>6</td><td>adjacent,lncrna,cancer,10K<gap<100K,readthrough,exon-exon</td><td>CGACGTAGTTAAAGCCCACTAGCCTAAAGCCGGGCGGACTGCG*TGACAACCATGAGTGGAAAAAACTAATTATGGTTCAGCACTGG</td><td>exonic(no-known-CDS)/CDS(truncated)</td></tr>
+<tr><td>AFDN</td><td>6:167827237:+</td><td>PHF10</td><td>6:169721111:-</td><td>2</td><td>oncogene,ccle2,chimer4seq,cancer,tumor,tcga2,mitelman,exon-exon</td><td>CGCCAACCGGCTGGACCTGTTCGAGATCAGCCAGCCGACCGAG*GATGATAATGAAGATAATTCAAATGATGGGACCCAGCCATCCA</td><td>in-frame</td></tr>
+<tr><td>AL591378.1</td><td>X:33725628:-</td><td>DMD</td><td>X:32699293:-</td><td>2</td><td>adjacent,lncrna,readthrough,exon-exon</td><td>AAGATTTCTTTATGTACATTGCTGGATGCTGAAGAGGACAGAG*ATGTTGATACCACCTATCCAGATAAGAAGTCCATCTTAATGTA</td><td>exonic(no-known-CDS)/CDS(truncated)</td></tr>
+<tr><td>ARID5A</td><td>2:96536830:+</td><td>PTMA</td><td>2:231711348:+</td><td>3</td><td>oncogene,cancer,t1,exon-exon</td><td>GAGGGTCTCGGGGCGGGCGCCGCGGGACCTCTCCGGGCCATGG*GACTTAAAGGAGAAGAAGGAAGTTGTGGAAGAGGCAGAAAATG</td><td>in-frame</td></tr>
+<tr><td>ARL8B</td><td>3:5174414:+</td><td>EDEM1</td><td>3:5195209:+</td><td>2</td><td>adjacent,rt_circ_rna,ccle,t1,1K<gap<10K,readthrough,exon-exon</td><td>ATTTGCTGCTATTCAATTTCTTGCAAAGAAAAGGATAATATAG*TTCAAATCTGAACATCAATGATGTACTAGGGAACTACTCATTG</td><td>out-of-frame</td></tr>
+<tr><td>ATAT1</td><td>6:30643011:+</td><td>TCHP</td><td>12:109916591:+</td><td>2</td><td>tumor,exon-exon</td><td>CTGCTGACCCTGGGGGCAGCCCAGCTCAACGTCGTCGCACCAG*CCTTACGGACATCCAAAAATTGCTTGGAACTGACTTCATGGGT</td><td>out-of-frame</td></tr>
+<tr><td>B2M</td><td>15:44711613:+</td><td>ANXA2</td><td>15:60364523:-</td><td>2</td><td>chimer4seq,cancer,ccle,exon-exon</td><td>GTGCTCGCGCTACTCTCTCTTTCTGGCCTGGAGGCTATCCAGC*GTGTGGATGAGGTCACCATTGTCAACATTTTGACCAACCGCAG</td><td>in-frame</td></tr>
+<tr><td>BPTF</td><td>17:67826337:+</td><td>LRRC37A2</td><td>17:46517362:+</td><td>6</td><td>banned,known,hpa,m0,multi,t1,exon-exon</td><td>GAAAGCAGCTTCAGGAGCCATAGTACCTACAGCAGCACTCCAG*AAATTTCCAAGGAAACTATATTTCTTACATTGATGGAAATGTA</td><td>out-of-frame</td></tr>
+<tr><td>BPTF</td><td>17:67826337:+</td><td>LRRC37A2</td><td>17:46511511:+</td><td>5</td><td>banned,known,hpa,m0,multi,t1,exon-exon</td><td>GAAAGCAGCTTCAGGAGCCATAGTACCTACAGCAGCACTCCAG*GCTGAAGTGCAATGTTGTGATCTCGGCTCACTGCAACCTCTGC</td><td>CDS(truncated)/UTR</td></tr>
+<tr><td>CEP170</td><td>1:243255040:-</td><td>ATF3</td><td>1:212615018:+</td><td>6</td><td>oncogene,cancer,exon-exon</td><td>GCGCCCCGCCTCCCCCGTCCGGTCCCTCTCTCCACGGTAAGGG*CAAAATGATGCTTCAACACCCAGGCCAGGTCTCTGCCTCGGAA</td><td>UTR/CDS(no-known-start-or-end)</td></tr>
+<tr><td>CEP83</td><td>12:94308783:-</td><td>AC073655.2</td><td>12:94282115:-</td><td>3</td><td>adjacent,lncrna,10K<gap<100K,readthrough,exon-exon</td><td>TTCCGGAGAATGATGTTCTTGGAGAACAGGCAGATCAAAAGAG*GGCTCTGATGTTTCAAACCACTTCTTCCCTGATAAGCCTGGAA</td><td>UTR/exonic(no-known-CDS)</td></tr>
+<tr><td>CHST11</td><td>12:104601991:+</td><td>UBC</td><td>12:124913774:-</td><td>2</td><td>exon-exon</td><td>GGGGTCCCGAAGCCCCCTGCAGGAACTCTACAACCCAATCCAG*ACAATGCAGATCTTCGTGAAGACTCTGACTGGTAAGACCATCA</td><td>CDS(truncated)/UTR</td></tr>
+<tr><td>CTDP1</td><td>18:79718016:+</td><td>SLC66A2</td><td>18:79904183:-</td><td>2</td><td>banned,known,tcga,hpa,gtex,non_cancer_tissues,chimer4seq,mitelman,exon-exon</td><td>CCTCCAGCTCCCTACCCATCCGCCAGGAGCCCTCTTCCTTCAG*CATCAAGATGGTGCTCATGTGGACCAGTGGTGACGCCTTCAAG</td><td>in-frame</td></tr>
+<tr><td>CXCR4</td><td>2:136118046:-</td><td>DDX5</td><td>17:64504842:-</td><td>4</td><td>oncogene,cancer,mitelman,t1,exon-exon</td><td>CACCGCATCTGGAGAACCAGCGGTTACCATGGAGGGGATCAGT*GTTTGGTGCACCTCGATTTGGAGGAAGTAGGGCAGGGCCCTTA</td><td>out-of-frame</td></tr>
+<tr><td>CXCR4</td><td>2:136118046:-</td><td>GNAS</td><td>20:58895612:+</td><td>3</td><td>oncogene,cancer,tumor,mitelman,pcawg,exon-exon</td><td>CACCGCATCTGGAGAACCAGCGGTTACCATGGAGGGGATCAGT*GTGCTGGAGAATCTGGTAAAAGCACCATTGTGAAGCAGATGAG</td><td>in-frame</td></tr>
+<tr><td>CXCR4</td><td>2:136118046:-</td><td>KLF6</td><td>10:3782214:-</td><td>3</td><td>oncogene,cancer,exon-exon</td><td>CACCGCATCTGGAGAACCAGCGGTTACCATGGAGGGGATCAGT*ACCTGCCTAGAGCTGGAACGTTACCTCCAGAGCGAGCCCTGCT</td><td>in-frame</td></tr>
+<tr><td>CXCR4</td><td>2:136118046:-</td><td>TLK1</td><td>2:171117857:-</td><td>2</td><td>oncogene,exon-exon</td><td>CACCGCATCTGGAGAACCAGCGGTTACCATGGAGGGGATCAGT*GTGCAATGGATGAGCTTCATAGTCTGGATCCAAGAAGGCAAGA</td><td>out-of-frame</td></tr>
+<tr><td>CYTH1</td><td>17:78782202:-</td><td>ARID5A</td><td>2:96547402:+</td><td>2</td><td>cancer,exon-exon</td><td>GCGGAGCCCGGCTCCCGCACCATGGAGGAGGACGACAGCTACG*CAGCCCCTGTCAAAGGGAACAGGAAGCAGTCCACGGAGGGTGA</td><td>in-frame</td></tr>
+<tr><td>CYTH1</td><td>17:78782202:-</td><td>ZNF511</td><td>10:133312788:+</td><td>3</td><td>exon-exon</td><td>GCGGAGCCCGGCTCCCGCACCATGGAGGAGGACGACAGCTACG*AATACCCTCTACCATCTGCTTTGGTCAGGGTGCCGCTCGAGGA</td><td>out-of-frame</td></tr>
+<tr><td>DGKD</td><td>2:233354674:+</td><td>PTMA</td><td>2:231711348:+</td><td>3</td><td>oncogene,cancer,exon-exon</td><td>GCTCATCCGCAAGGTGTCCACGTCGGGTCAGATCCGACAGAAG*GACTTAAAGGAGAAGAAGGAAGTTGTGGAAGAGGCAGAAAATG</td><td>in-frame</td></tr>
+<tr><td>DNAJC8</td><td>1:28228922:-</td><td>SRSF4</td><td>1:29154910:-</td><td>3</td><td>exon-exon</td><td>GACCCGTCCTGGTTCCTCTTACTTCAATTTGAACCCATTTGAG*GATTATATGCGTCAGGCAGGAGAAGTGACTTATGCAGATGCTC</td><td>in-frame</td></tr>
+<tr><td>DOT1L</td><td>19:2194577:+</td><td>REXO1</td><td>19:1828631:-</td><td>2</td><td>exon-exon</td><td>GAAGTGGATGAAATGGTATGGAAAAAAGCATGCAGAATACACA*GGCTGGGTTACGACCCCTACAACCCTGAGCTGCCCAAGCCCCC</td><td>out-of-frame</td></tr>
+<tr><td>DOT1L</td><td>19:2194577:+</td><td>SF1</td><td>11:64776626:-</td><td>2</td><td>t1,exon-exon</td><td>GAAGTGGATGAAATGGTATGGAAAAAAGCATGCAGAATACACA*ACTTCCCAAGTAAGAAGCGGAAGAGGAGCCGCTGGAACCAAGA</td><td>out-of-frame</td></tr>
+<tr><td>DRAXIN</td><td>1:11715208:+</td><td>AGTRAP</td><td>1:11745803:+</td><td>4</td><td>adjacent,non_cancer_tissues,18cancers,10K<gap<100K,readthrough,exon-exon</td><td>GGCCTCAACAACAAATGCTTCGATGACTGCATGTGTGTGGAAG*GTGATTCTCCTAGGTCACTGGCTGCTGACAACCTGGGGCTGCA</td><td>out-of-frame</td></tr>
+<tr><td>FBXO31</td><td>16:87383405:-</td><td>MAP1LC3B</td><td>16:87402175:+</td><td>3</td><td>ensembl_partially_overlapping,ucsc_fully_overlapping,ucsc_partially_overlapping,gencode_partially_overlapping,cancer,t2,exon-exon</td><td>ATCCTCCACACCGACACCATCTGGAGGAGGCGTTGCCGTGAGG*GTGATAATAGAACGATACAAGGGTGAGAAGCAGCTTCCTGTTC</td><td>out-of-frame</td></tr>
+<tr><td>FOXN3</td><td>14:89411934:-</td><td>CALM1</td><td>14:90400065:+</td><td>2</td><td>exon-exon</td><td>ATTGAATAAGTGTTTTAAGAAAGTGGACAAAGAGAGGAGTCAG*GCTGATCAGCTGACCGAAGAACAGATTGCTGAATTCAAGGAAG</td><td>in-frame</td></tr>
+<tr><td>GAPVD1</td><td>9:125299106:+</td><td>PPP6C</td><td>9:125171180:-</td><td>2</td><td>exon-exon</td><td>CGAAGCAACAGAGAATCAATTTGGATCGGCTTATCATAACCAG*CGGCTATGTGACTACGTTTGTGACCTCCTCTTAGAAGAGTCAA</td><td>out-of-frame</td></tr>
+<tr><td>GINS3</td><td>16:58392787:+</td><td>CSNK2A2</td><td>16:58196844:-</td><td>2</td><td>oncogene,cancer,exon-exon</td><td>GGAGCGGAGCGCAGGCGCCGAGACTGACAACGCGGTCCCACAG*TAATCAAGATGATTACCAACTGGTTCGAAAACTTGGTCGGGGA</td><td>out-of-frame</td></tr>
+<tr><td>GRK2</td><td>11:67266812:+</td><td>CFL1</td><td>11:65856242:-</td><td>2</td><td>t1,exon-exon</td><td>CGGCCGCGCGCGCCAGCAAGAAGATCCTGCTGCCCGAGCCCAG*GCCTCCGGTGTGGCTGTCTCTGATGGTGTCATCAAGGTGTTCA</td><td>out-of-frame</td></tr>
+<tr><td>HACL1</td><td>3:15563358:-</td><td>COLQ</td><td>3:15489637:-</td><td>3</td><td>banned,known,adjacent,healthy,cacg,hpa,1000genomes,chimer4seq,mitelman,ccle3,t1,10K<gap<100K,readthrough,exon-exon</td><td>TATCAACATCATGATTGAGCCACAAGCCACACGGAAGGCCCAG*CCCTTCCCAGCCTGGATCAGAAGAAGCGTGGTGGCCACAAAGC</td><td>out-of-frame</td></tr>
+<tr><td>HMGB2</td><td>4:173334272:-</td><td>CCNG2</td><td>4:77158533:+</td><td>3</td><td>t2,exon-exon</td><td>GGTCCGGCCGCTCTGCGGGACTCTGAGGAAAAGCTCGCACCAG*ATGAAGGATTTGGGGGCAGAGCACTTGGCAGGTCATGAAGGGG</td><td>UTR/CDS(complete)</td></tr>
+<tr><td>HNRNPH1</td><td>5:179623595:-</td><td>EEF2</td><td>19:3979436:-</td><td>2</td><td>exon-exon</td><td>AGGTGAGTCGCGGTGGGTCCTCGCTTGCAGTTCAGCGACCACG*TGCATCATCGAGGAGTCGGGAGAGCATATCATCGCGGGCGCCG</td><td>UTR/CDS(truncated)</td></tr>
+<tr><td>INPP5D</td><td>2:233198376:+</td><td>ATG16L1</td><td>2:233256102:+</td><td>2</td><td>banned,known,adjacent,hpa,t1,1K<gap<10K,readthrough,exon-exon</td><td>CAACAGCAAACCGGGGTCTCCCTCCCAGGACACAGGAGTCAAG*ATAACAAATTGCTGGAAAAGTCAGATCTTCATTCAGTGTTGGC</td><td>in-frame</td></tr>
+<tr><td>INPP5D</td><td>2:233195495:+</td><td>ATG16L1</td><td>2:233256102:+</td><td>2</td><td>banned,known,adjacent,hpa,t1,1K<gap<10K,readthrough,exon-exon</td><td>TCACCAGCCACGACCCCATGAAGCAGTGGGAAGTCACTAGCAG*ATAACAAATTGCTGGAAAAGTCAGATCTTCATTCAGTGTTGGC</td><td>in-frame</td></tr>
+<tr><td>IRF8</td><td>16:85903189:+</td><td>FUS</td><td>16:31189123:+</td><td>3</td><td>oncogene,cancer,tumor,exon-exon</td><td>CAAGCAAGATTATAATCAGGAAGTGGATGCCTCCATTTTTAAG*AACAGGATAATTCAGACAACAACACCATCTTTGTGCAAGGCCT</td><td>out-of-frame</td></tr>
+<tr><td>JARID2</td><td>6:15246584:+</td><td>HMGB1</td><td>13:30463694:-</td><td>3</td><td>cancer,exon-exon</td><td>GAGCAAGGAAAGACCCAAGAGGAATATCATTCAGAAGAAATAC*AAAAATAACTAAACATGGGCAAAGGAGATCCTAAGAAGCCGAG</td><td>CDS(truncated)/UTR</td></tr>
+<tr><td>KATNAL1</td><td>13:30307331:-</td><td>HMGB1</td><td>13:30463694:-</td><td>2</td><td>cancer,t2,100K<gap<200K,exon-exon</td><td>TCTGGACCGCATCGCTGAATGTGCCCGGACCTGCGCCTTCTGG*AAAAATAACTAAACATGGGCAAAGGAGATCCTAAGAAGCCGAG</td><td>UTR/UTR</td></tr>
+<tr><td>KLF2</td><td>19:16324998:+</td><td>OAZ1</td><td>19:2271782:+</td><td>2</td><td>banned,known,oncogene,hpa,non_cancer_tissues,mitelman,exon-exon</td><td>CTCCACTTTCGCCAGCCCGTGCCGCGAGCGCGGCCTGCAGGAG*GATGATCGGCTGAATGTAACAGAGGAACTAACGTCCAACGACA</td><td>in-frame</td></tr>
+<tr><td>KLF2</td><td>19:16324998:+</td><td>PTMA</td><td>2:231711348:+</td><td>2</td><td>oncogene,cancer,exon-exon</td><td>CTCCACTTTCGCCAGCCCGTGCCGCGAGCGCGGCCTGCAGGAG*GACTTAAAGGAGAAGAAGGAAGTTGTGGAAGAGGCAGAAAATG</td><td>in-frame</td></tr>
+<tr><td>LAPTM5</td><td>1:30757659:-</td><td>ADAM19</td><td>5:157497089:-</td><td>2</td><td>cancer,exon-exon</td><td>CAATGTCCGCATCGCAACCACCGCCCTGGCCATCTACCATGTG*CTGTTGGCTCCTGGGACCCTGTGCCGCGAGCAGGCCAGGCAGT</td><td>in-frame</td></tr>
+<tr><td>LAPTM5</td><td>1:30757659:-</td><td>RBM38</td><td>20:57407543:+</td><td>4</td><td>cancer,exon-exon</td><td>CAATGTCCGCATCGCAACCACCGCCCTGGCCATCTACCATGTG*GCTGACCCCGCACTACATCTACCCACCAGCCATCGTGCAGCCC</td><td>out-of-frame</td></tr>
+<tr><td>LAPTM5</td><td>1:30757659:-</td><td>WBP1</td><td>2:74459438:+</td><td>3</td><td>cancer,t1,exon-exon</td><td>CAATGTCCGCATCGCAACCACCGCCCTGGCCATCTACCATGTG*ACTGATTCTTGCTATTCCAAATCCTCTTCCACGTTGACAGCCC</td><td>CDS(truncated)/UTR</td></tr>
+<tr><td>LINC00513</td><td>7:130862202:+</td><td>NR3C1</td><td>5:143314168:-</td><td>7</td><td>lncrna,t2,exon-exon</td><td>GCCTCCTGCCATGATTCTGAGGCTTCCCCAGCCATGTGGAACT*CCCCAGCATGAGACCAGATGTAAGCTCTCCTCCATCCAGCTCC</td><td>exonic(no-known-CDS)/CDS(truncated)</td></tr>
+<tr><td>LINC01534</td><td>19:36685440:-</td><td>ZNF461</td><td>19:36664786:-</td><td>2</td><td>adjacent,lncrna,t1,10K<gap<100K,readthrough,exon-exon</td><td>CCTCCAGGACCTTATGGGCACATGGGTTCCTATCATTTCACGG*CAACACCTTCTTTGGATTGAGTTTCTTCCAGAGGGAACGAAGA</td><td>exonic(no-known-CDS)/UTR</td></tr>
+<tr><td>MAML3</td><td>4:140152860:-</td><td>B3GALNT2</td><td>1:235494828:-</td><td>2</td><td>exon-exon</td><td>GGAGGCTGCCTCGGCGGAGCAGAGGAACCACACGCTGATCATG*ATCAGTTGGCCTTATTTCCTCAGTGGAAATCTACTCACTATGA</td><td>out-of-frame</td></tr>
+<tr><td>MAN2B2</td><td>4:6578498:+</td><td>MRFAP1</td><td>4:6641730:+</td><td>2</td><td>adjacent,t1,10K<gap<100K,readthrough,exon-exon</td><td>GAGGCTGTGACGCACCTTGATGACCAGATCCTGCAGCTCACAG*GTTTCCAGCCAATGGATTCTGGTCAACTGGTGGAGATTGGCTG</td><td>CDS(truncated)/UTR</td></tr>
+<tr><td>MATR3</td><td>5:139293772:+</td><td>FEM1C</td><td>5:115543683:-</td><td>3</td><td>t1,exon-exon</td><td>GGGGGATTGTGGGAGTCTCCGCGTCCCGCTCGCTGGGAGAGAG*TTTGGTGCCCTGGTTGTCAGATGTTGGAAAGCAGTAGGACGGA</td><td>UTR/UTR</td></tr>
+<tr><td>MATR3</td><td>5:139293772:+</td><td>YWHAZ</td><td>8:100948900:-</td><td>2</td><td>oncogene,t2,exon-exon</td><td>GGGGGATTGTGGGAGTCTCCGCGTCCCGCTCGCTGGGAGAGAG*AACATCCAGTCATGGATAAAAATGAGCTGGTTCAGAAGGCCAA</td><td>UTR/UTR</td></tr>
+<tr><td>MED8</td><td>1:43386589:-</td><td>ELOVL1</td><td>1:43365623:-</td><td>2</td><td>banned,known,adjacent,conjoing,healthy,cacg,bodymap2,hpa,1000genomes,mitelman,pcawg,ccle3,t1,10K<gap<100K,readthrough,exon-exon</td><td>CTGGAGAAAATCAGCAAAGAGGAGCGAGAATCAGAGAGTGGAG*AGTCCTTAGCCAGGATGGAGGCTGTTGTGAACTTGTACCAAGA</td><td>CDS(truncated)/UTR</td></tr>
+<tr><td>MEF2A</td><td>15:99633173:+</td><td>RNF111</td><td>15:59030804:+</td><td>2</td><td>t1,exon-exon</td><td>GAAAATACAAATCACACGCATAATGGATGAAAGGAACCGACAG*GCTTTCCTTAAAGTTTCCCATGTCTCAATGGACTCCTGAATAT</td><td>CDS(truncated)/CDS(no-known-start-or-end)</td></tr>
+<tr><td>MOB1B</td><td>4:70902550:+</td><td>GRSF1</td><td>4:70836314:-</td><td>2</td><td>exon-exon,short_repeats,sr1.96</td><td>CCGAGCCTGCAGCCTGCCCCGCGGCCAACATGAGCTTCTTGTT*GAGTCCAAAACTACTTACCTGGAAGACCTTCCACCACCCCCTG</td><td>out-of-frame</td></tr>
+<tr><td>MPRIP</td><td>17:17042971:+</td><td>UBB</td><td>17:16381902:+</td><td>3</td><td>known,ccle,exon-exon</td><td>GCCCCGCGAGTCGCATCTGCTCAACGACGAGGACCTGACGCAG*GTCAAAATGCAGATCTTCGTGAAAACCCTTACCGGCAAGACCA</td><td>CDS(truncated)/UTR</td></tr>
+<tr><td>MTG1</td><td>10:133402773:+</td><td>SCART1</td><td>10:133456237:+</td><td>2</td><td>banned,known,adjacent,healthy,hpa,18cancers,t1,10K<gap<100K,readthrough,exon-exon</td><td>CTGACTACCTGCTGTACACCCTCAACAAACACCAGCGCTTTGG*GTGGACCAGGTGCTCTGAGGCTGGCGTACAGACACAGCACGTG</td><td>out-of-frame</td></tr>
+<tr><td>MTSS1</td><td>8:124555742:-</td><td>TATDN1</td><td>8:124523002:-</td><td>2</td><td>banned,known,adjacent,hpa,chimer4seq,tumor,mitelman,10K<gap<100K,readthrough,exon-exon</td><td>ACAACCACCCCCTGCTGCTCTGAGGACACCATCCCTTCCCAAG*ATATTGGTATCAACTTGACTGACCCTATGTTCAGAGGAATTTA</td><td>in-frame</td></tr>
+<tr><td>NFATC3</td><td>16:68191775:+</td><td>PLA2G15</td><td>16:68249290:+</td><td>5</td><td>banned,known,adjacent,healthy,bodymap2,hpa,chimer4seq,cancer,mitelman,ccle3,10K<gap<100K,readthrough,exon-exon</td><td>AACTTTGCAACCATTGGTCTGCAGGACATCACTTTAGATGATG*TCCCTGGTGATTTGGGTAACCAACTGGAAGCCAAGCTGGACAA</td><td>in-frame</td></tr>
+<tr><td>NFATC3</td><td>16:68191775:+</td><td>PLA2G15</td><td>16:68259146:+</td><td>3</td><td>banned,known,adjacent,healthy,bodymap2,hpa,chimer4seq,cancer,mitelman,ccle3,10K<gap<100K,readthrough,exon-exon</td><td>AACTTTGCAACCATTGGTCTGCAGGACATCACTTTAGATGATG*GAGACAACAACCGGATCCCAGTCATCGGGCCCCTGAAGATCCG</td><td>in-frame</td></tr>
+<tr><td>OAZ1</td><td>19:2269744:+</td><td>DAZAP1</td><td>19:1434737:+</td><td>2</td><td>mitelman,pcawg,exon-exon</td><td>CGCTCCTAAGCCTGCACAGCCGCGGCGGCAGCAGCAGTGAGAG*CAGGTTACGGGCAGGACTTGAGTGGCTTCGGACAGGGCTTCTC</td><td>out-of-frame</td></tr>
+<tr><td>OGT</td><td>X:71538072:+</td><td>XPO1</td><td>2:61533903:-</td><td>2</td><td>exon-exon</td><td>AGGGGCAGTACAAGCTTACGTCTCTGCTCTTCAGTACAATCCT*TAATCTATGCCAGCAATTATGACAATGTTAGCAGACCATGCAG</td><td>CDS(truncated)/UTR</td></tr>
+<tr><td>P2RX5</td><td>17:3690427:-</td><td>PTMA</td><td>2:231711348:+</td><td>3</td><td>oncogene,cancer,exon-exon,reciprocal</td><td>AGATCTTTGCCTGGTGCCCGTTGGAGACAAGCTCCAGGCCGGA*GACTTAAAGGAGAAGAAGGAAGTTGTGGAAGAGGCAGAAAATG</td><td>in-frame</td></tr>
+<tr><td>PCIF1</td><td>20:45934804:+</td><td>RBM38</td><td>20:57407543:+</td><td>5</td><td>exon-exon</td><td>AGCAGAACGTGTAGCCGCGTCCCCTCCAGTCCGCTCCGGGCAG*GCTGACCCCGCACTACATCTACCCACCAGCCATCGTGCAGCCC</td><td>UTR/CDS(truncated)</td></tr>
+<tr><td>PDK3</td><td>X:24465561:+</td><td>USP9X</td><td>X:41123471:+</td><td>3</td><td>exon-exon</td><td>TTTTCGCCGTCGCCGCTCTCCATCAAACAATTCCTGGACTTCG*GTTATGCAATGGTCTCTGCAAGATGGTTTATTCTTGAATTGGA</td><td>CDS(truncated)/UTR</td></tr>
+<tr><td>PFKP</td><td>10:3067707:+</td><td>ATP6V0C</td><td>16:2519218:+</td><td>2</td><td>exon-exon</td><td>GGCAAGGCCATCGGCGTGCTGACCAGCGGCGGGGATGCTCAAG*CCCTGGGCGCTGCCTATGGCACAGCCAAGAGCGGTACCGGCAT</td><td>in-frame</td></tr>
+<tr><td>PGGT1B</td><td>5:115262712:-</td><td>FEM1C</td><td>5:115543683:-</td><td>2</td><td>exon-exon</td><td>TCCAGGTTTTGCCGGAGCGCTATTCTTCACTCGAGACAAGCAG*TTTGGTGCCCTGGTTGTCAGATGTTGGAAAGCAGTAGGACGGA</td><td>CDS(truncated)/UTR</td></tr>
+<tr><td>PSPC1</td><td>13:19759323:-</td><td>ZMYM5</td><td>13:19852190:-</td><td>2</td><td>banned,known,healthy,bodymap2,hpa,chimer4seq,rt_circ_rna,mitelman,10K<gap<100K,exon-exon</td><td>GCTTGCCAGAGAAGCTGATGCAGAAAACTCAACAATATCATAA*GTTCATTGGCATGGAAAAATGTTCAGTGGGAGGATTAGAGTTG</td><td>CDS(truncated)/UTR</td></tr>
+<tr><td>PTDSS2</td><td>11:479152:+</td><td>UBE2I</td><td>16:1314020:+</td><td>2</td><td>t1,exon-exon</td><td>GAGTGTGGTCTACGAGCTGTTTCTCATCTTTATACTCTTCCAG*GGACTTTGAACATGTCGGGGATCGCCCTCAGCAGACTCGCCCA</td><td>CDS(truncated)/UTR</td></tr>
+<tr><td>PTMA</td><td>2:231708751:+</td><td>HMGB1</td><td>13:30463694:-</td><td>2</td><td>oncogene,non_cancer_tissues,cancer,exon-exon</td><td>GTCAGACGCAGCCGTAGACACCAGCTCCGAAATCACCACCAAG*AAAAATAACTAAACATGGGCAAAGGAGATCCTAAGAAGCCGAG</td><td>CDS(truncated)/UTR</td></tr>
+<tr><td>PTMA</td><td>2:231708751:+</td><td>P2RX5</td><td>17:3681978:-</td><td>2</td><td>oncogene,cancer,exon-exon,reciprocal</td><td>GTCAGACGCAGCCGTAGACACCAGCTCCGAAATCACCACCAAG*GGTGCTTTCTTCTGCGACCTGGTACTCATCTACCTCATCAAAA</td><td>in-frame</td></tr>
+<tr><td>PTMA</td><td>2:231708751:+</td><td>TRABD</td><td>22:50193027:+</td><td>2</td><td>oncogene,cancer,exon-exon</td><td>GTCAGACGCAGCCGTAGACACCAGCTCCGAAATCACCACCAAG*GCTCCCCACAGGTGCAGGAAGCCGCCGCCCAGCCATGGACGGG</td><td>CDS(truncated)/UTR</td></tr>
+<tr><td>RAPGEF3</td><td>12:47738022:-</td><td>ENDOU</td><td>12:47718194:-</td><td>4</td><td>known,t1,1K<gap<10K,exon-exon</td><td>TCCCACCTCCACGAGGACAGCCAGGTGGCGAGGATTTCCACAT*AGGACCACAAAGAGTCAGAGCCATTGCCACAGCTGGAGGAAGA</td><td>in-frame</td></tr>
+<tr><td>RAPGEF3</td><td>12:47738022:-</td><td>ENDOU</td><td>12:47717655:-</td><td>2</td><td>known,t1,1K<gap<10K,exon-exon</td><td>TCCCACCTCCACGAGGACAGCCAGGTGGCGAGGATTTCCACAT*ACTTGTACTCGGCACCCACCTCCTGCCAGGGCCGCTGCTACGA</td><td>in-frame</td></tr>
+<tr><td>RGS12</td><td>4:3370321:+</td><td>UBC</td><td>12:124913774:-</td><td>2</td><td>t1,exon-exon</td><td>GAAAGAGTTGTCAAACGAAACCCATGTTTCTAATGACCAGCAG*ACAATGCAGATCTTCGTGAAGACTCTGACTGGTAAGACCATCA</td><td>CDS(truncated)/UTR</td></tr>
+<tr><td>RNF125</td><td>18:32066009:+</td><td>RNF138</td><td>18:32111754:+</td><td>3</td><td>banned,known,paralogs,adjacent,cacg,hpa,gtex,chimer4seq,rt_circ_rna,mitelman,tcga3,10K<gap<100K,readthrough,exon-exon</td><td>ACATCTGCAAGTTAGTCACACTTTGTTTTATGATGATTTCATA*TTTCTGTAGAAAATGTTTCCTGACTGCAATGAGGGAAAGCGGA</td><td>out-of-frame</td></tr>
+<tr><td>RPARP-AS1</td><td>10:102452187:+</td><td>RHOA</td><td>3:49368548:-</td><td>13</td><td>lncrna,oncogene,cancer,tumor,t2,exon-exon</td><td>AGCGATTCTCCCACCTCAGCCTCCCGAGGAGCTGGGATTACAG*GTAGAGTTGGCTTTGTGGGACACAGCTGGGCAGGAAGATTATG</td><td>exonic(no-known-CDS)/CDS(truncated)</td></tr>
+<tr><td>RPN1</td><td>3:128622164:-</td><td>DDX5</td><td>17:64504842:-</td><td>2</td><td>cancer,exon-exon</td><td>GCAGTCCAGGCTGAAGACAGAGGGCTCTGATCTGTGCGACAGA*GTTTGGTGCACCTCGATTTGGAGGAAGTAGGGCAGGGCCCTTA</td><td>out-of-frame</td></tr>
+<tr><td>RPN1</td><td>3:128622164:-</td><td>KLHL24</td><td>3:183643480:+</td><td>3</td><td>cancer,exon-exon</td><td>GCAGTCCAGGCTGAAGACAGAGGGCTCTGATCTGTGCGACAGA*GTGTGGAAATTAAAAGAACACACATATTTTGACTGGGGCTTTG</td><td>CDS(truncated)/UTR</td></tr>
+<tr><td>SACS</td><td>13:23365166:-</td><td>ENO1</td><td>1:8865482:-</td><td>2</td><td>cancer,exon-exon</td><td>GGAACAGAGACTCTTTGGTCAAAAGATATGGCGCCATATCAGG*GCCTGGAGCTGCTGAAGACTGCTATTGGGAAAGCTGGCTACAC</td><td>in-frame</td></tr>
+<tr><td>SLC12A7</td><td>5:1057471:-</td><td>RBM38</td><td>20:57407543:+</td><td>4</td><td>t1,exon-exon</td><td>ACACCAGCCTATCTGGTTTCAAAGACCTCTTCAGCATGAAGCC*GCTGACCCCGCACTACATCTACCCACCAGCCATCGTGCAGCCC</td><td>in-frame</td></tr>
+<tr><td>SMURF1</td><td>7:99042118:-</td><td>FUS</td><td>16:31189123:+</td><td>3</td><td>oncogene,cancer,tumor,exon-exon</td><td>TATTTACATGTTGCAAATAAATCCGGATTCTTCAATCAACCCC*AACAGGATAATTCAGACAACAACACCATCTTTGTGCAAGGCCT</td><td>out-of-frame</td></tr>
+<tr><td>SREBF2</td><td>22:41833358:+</td><td>PTMA</td><td>2:231711348:+</td><td>4</td><td>oncogene,cancer,exon-exon</td><td>CTCACGGAGCTGGGCGACGAGCTGACCCTGGGAGACATCGACG*GACTTAAAGGAGAAGAAGGAAGTTGTGGAAGAGGCAGAAAATG</td><td>in-frame</td></tr>
+<tr><td>STX16</td><td>20:58673711:+</td><td>NPEPL1</td><td>20:58691724:+</td><td>4</td><td>banned,known,adjacent,conjoing,healthy,hpa,1K<gap<10K,readthrough,exon-exon</td><td>GTCCTGTATCAAAACTGAAGATGGTTTGAAACAGCTTCACAAG*GCTGGTTATGAAGAAGAAACTCAAAATAACAGGAGTGGCTTAT</td><td>CDS(truncated)/UTR</td></tr>
+<tr><td>STX16</td><td>20:58671297:+</td><td>NPEPL1</td><td>20:58691724:+</td><td>2</td><td>banned,known,adjacent,conjoing,healthy,hpa,1K<gap<10K,readthrough,exon-exon</td><td>GAATGAAATATTCAGGGACTTAGGGGCGATGATTGTAGAACAG*GCTGGTTATGAAGAAGAAACTCAAAATAACAGGAGTGGCTTAT</td><td>CDS(truncated)/UTR</td></tr>
+<tr><td>SYNCRIP</td><td>6:85642797:-</td><td>PNRC1</td><td>6:89083753:+</td><td>2</td><td>exon-exon</td><td>GATACCATCGGACAGGATTTCTCCGCCTCAGCCCAACGGGGAG*GTTTTAAAATCAAAGATGGGAAAATCGGAGAAAATTGCCCTTC</td><td>UTR/CDS(truncated)</td></tr>
+<tr><td>TPM4</td><td>19:16076697:+</td><td>KLF2</td><td>19:16326856:+</td><td>3</td><td>known,oncogene,chimer4seq,cancer,t1,exon-exon</td><td>CCTGCAGCGGGAGCTGGACGGCGAGCGCGAGCGGCGCGAGAAA*GTGAGAAGCCCTACCACTGCAACTGGGACGGCTGCGGCTGGAA</td><td>in-frame</td></tr>
+<tr><td>TRIM52</td><td>5:181260001:-</td><td>RACK1</td><td>5:181242345:-</td><td>4</td><td>banned,known,adjacent,hpa,non_cancer_tissues,cancer,m1,multi,1K<gap<10K,readthrough,exon-exon</td><td>GCACAGCGTGCTGCCTTTGGAGGAGGTGGTGCAGGAGTACCAG*ATAAGACCATCATCATGTGGAAACTGACCAGGGATGAGACCAA</td><td>out-of-frame</td></tr>
+<tr><td>TTYH3</td><td>7:2632278:+</td><td>MAFK</td><td>7:1539149:+</td><td>3</td><td>chimer4seq,cancer,mitelman,exon-exon</td><td>CACTAGCAGCCAGTTCCGGCCCGAGGACACCGACTACCAGCAG*CTACGAGTTCCAGGGAGCTCTGTCCTGGTGACCGTGCCCGGGT</td><td>CDS(truncated)/UTR</td></tr>
+<tr><td>TXLNG</td><td>X:16786589:+</td><td>RBBP7</td><td>X:16869220:-</td><td>2</td><td>ensembl_partially_overlapping,ucsc_fully_overlapping,ucsc_partially_overlapping,refseq_partially_overlapping,gencode_partially_overlapping,chimer4seq,cancer,rt_circ_rna,exon-exon</td><td>TGAGGCCGGACGGGGCGGACGGCGACGCAGCCCGCGGCAGAAG*TGTTTGAAGATACTGTGGAGGAGCGTGTCATCAATGAAGAATA</td><td>out-of-frame</td></tr>
+<tr><td>USP12</td><td>13:27171592:-</td><td>HMGB1</td><td>13:30463694:-</td><td>2</td><td>cancer,t2,exon-exon</td><td>AATCCTAATGACAGTCTCCAAATTCGCCTCCATCTGTACCATG*AAAAATAACTAAACATGGGCAAAGGAGATCCTAAGAAGCCGAG</td><td>CDS(truncated)/UTR</td></tr>
+<tr><td>CLCN7</td><td>16:1459107:-</td><td>CRAMP1</td><td>16:1652496:+</td><td>2</td><td>known,mitelman,exon-exon</td><td>CTTCCTCAACGGGGTGAAGATCCCCCACGTGGTGCGGCTCAAG*GGCCACCACTGTACGTTACAAAGGGCGGAACCTGCGGATCAAA</td><td>out-of-frame</td></tr>
+<tr><td>DDIT3</td><td>12:57520418:-</td><td>MARS1</td><td>12:57511698:+</td><td>2</td><td>known,ensembl_partially_overlapping,similar_reads,oncogene,ucsc_partially_overlapping,refseq_partially_overlapping,ambiguous,gencode_partially_overlapping,cancer,tumor,exon-exon</td><td>GCAGCGACAGAGCCAAAATCAGAGCTGGAACCTGAGGAGAGAG*CTGGAGAAGCGACTGGAGGAGTGGTTGGGGAGGACATTGCCTG</td><td>UTR/CDS(truncated)</td></tr>
+<tr><td>FBXO25</td><td>8:435707:+</td><td>FAM157B</td><td>9:138243620:+</td><td>3</td><td>banned,known,pseudogene,bodymap2,hpa,m0,multi,exon-exon</td><td>AAGTGCAATTCAAGATATCCGAAGGTTCAATTATGTGGTCAAA*ATGATGATTATTCCCCACCTTCTAAGAGACAAAGACCAACGAG</td><td>CDS(truncated)/exonic(no-known-CDS)</td></tr>
+<tr><td>FOXO1</td><td>13:40665583:-</td><td>LINC00598</td><td>13:40350302:-</td><td>2</td><td>banned,known,adjacent,lncrna,oncogene,ucsc_fully_overlapping,ucsc_partially_overlapping,ucsc_same_strand_overlapping,chimer4seq,cancer,tumor,10K<gap<100K,readthrough,exon-exon</td><td>CTTCAAGGATAAGGGTGACAGCAACAGCTCGGCGGGCTGGAAG*AATACCATCGGAGCTCCTCTGGAACATGTCCTTGTCTTCTCAG</td><td>CDS(truncated)/exonic(no-known-CDS)</td></tr>
+<tr><td>PBXIP1</td><td>1:154945572:-</td><td>PMVK</td><td>1:154932415:-</td><td>3</td><td>banned,known,adjacent,healthy,bodymap2,hpa,chimer4seq,mitelman,1K<gap<10K,readthrough,exon-exon</td><td>TCATCTTCAGCCACTTCTTTGGAGACAAAGCACTGAAGAAGAG*ACTTGGAGCTGATGTCTGTGCTGTCCTCCGGCTCTCTGGTCCA</td><td>in-frame</td></tr>
+<tr><td>PCNX1</td><td>14:70978648:+</td><td>RAD51B</td><td>14:67835080:+</td><td>2</td><td>known,tcga,chimer4seq,cancer,tcga-cancer,tcga2,mitelman,ccle,exon-exon</td><td>GTTGCATTTCCTGAAGGGGAAGAGCAAGATGCAGTCAGTGGAG*GCTTATGGGATAAAAGCACAAAGGTCTGCTGATTTCTCACCAG</td><td>out-of-frame</td></tr>
+<tr><td>PIM3</td><td>22:49961032:+</td><td>TRABD</td><td>22:50197241:+</td><td>2</td><td>banned,known,oncogene,hpa,chimer4seq,cancer,tumor,exon-exon</td><td>CCCGGCGGCGTGGACCACCTCCCGGTGAAGATCCTGCAGCCAG*AACGGGCTCATGTCGGGGCTGATGCAGATGCTGCTGCTGAAGG</td><td>out-of-frame</td></tr>
+<tr><td>PIM3</td><td>22:49961811:+</td><td>TRABD</td><td>22:50197241:+</td><td>2</td><td>banned,known,oncogene,hpa,chimer4seq,cancer,tumor,exon-exon</td><td>TCGGGTGCGCTGCTCAAGGACACGGTCTACACCGACTTCGACG*AACGGGCTCATGTCGGGGCTGATGCAGATGCTGCTGCTGAAGG</td><td>out-of-frame</td></tr>
+<tr><td>SF1</td><td>11:64776498:-</td><td>HNRNPH3</td><td>10:68339140:+</td><td>2</td><td>known,exon-exon</td><td>ATTCCCCCTGGACTTACTCGAGAACAAGAAAGAGCTTATATAG*GTTATGGAGGTTTTGATGACTATGGTGGCTATAATAATTACGG</td><td>in-frame</td></tr>
+<tr><td>SLC29A1</td><td>6:44232428:+</td><td>HSP90AB1</td><td>6:44248630:+</td><td>2</td><td>banned,known,adjacent,healthy,tcga,bodymap2,hpa,18cancers,chimer4seq,cancer,mitelman,pcawg,10K<gap<100K,readthrough,exon-exon</td><td>CTTTGACTGGTTGGGCCGGAGCCTCACAGCTGTATTCATGTGG*ATGCCTGAGGAAGTGCACCATGGAGAGGAGGAGGTGGAGACTT</td><td>in-frame</td></tr>
+<tr><td>TGFB1</td><td>19:41332128:-</td><td>HNRNPUL1</td><td>19:41268223:+</td><td>2</td><td>known,ensembl_partially_overlapping,oncogene,cacg,ucsc_fully_overlapping,ucsc_partially_overlapping,ambiguous,gencode_partially_overlapping,cancer,mitelman,ccle3,exon-exon</td><td>GCCCTGCCCCTACATTTGGAGCCTGGACACGCAGTACAGCAAG*ATGCCATGGACAATATTACCAGGCAGAACCAATTCTACGATAC</td><td>in-frame</td></tr>
+<tr><td>TTYH3</td><td>7:2632278:+</td><td>PDGFA</td><td>7:512455:-</td><td>2</td><td>known,oncogene,cancer,exon-exon</td><td>CACTAGCAGCCAGTTCCGGCCCGAGGACACCGACTACCAGCAG*GGAGTGAGGATTCTTTGGACACCAGCCTGAGAGCTCACGGGGT</td><td>out-of-frame</td></tr>
+<tr><td>VPS45</td><td>1:150110627:+</td><td>PLEKHO1</td><td>1:150150912:+</td><td>2</td><td>banned,known,adjacent,pair_pseudo_genes,healthy,hpa,18cancers,tumor,mitelman,1K<gap<10K,readthrough,exon-exon</td><td>TGAGGATTGTCCTGGGAGGCACCACAGTGCACAACACGAAAAG*GGACCTCAGGATGGAAACCAGCAGCCTGCACCGCCCGAGAAGG</td><td>out-of-frame</td></tr>
+</tbody>
+</table>
+
+        
+
+
+        <script>
+            $(document).ready(function() {
+                $('.my-table-class').not('.no-sort').DataTable();
+            });
+        </script>
+    </body>
+    </html>
+    

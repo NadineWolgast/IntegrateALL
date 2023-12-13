@@ -4,6 +4,7 @@ channels:
   - r
   - defaults
 dependencies:
+  - mamba
   - _libgcc_mutex=0.1=conda_forge
   - _openmp_mutex=4.5=2_gnu
   - _r-mutex=1.0.1=anacondar_1

@@ -149,7 +149,6 @@ rule multiqc_file:
 
 rule install_all:
     input: []
-    output: "all_installations_complete.txt"
     shell:
         """
             snakemake --cores 2 download_star_ref &&
@@ -160,14 +159,13 @@ rule install_all:
             snakemake --cores 2 install_ctat_mutations &&
             snakemake --use-singularity --cores 2 run_ctat_genome_lib_builder &&
             snakemake --use-conda --cores 2 install_rnaseq_cnv &&
-            snakemake --cores 2 install_fusioncatcher &&
-            touch {output}
+            snakemake --cores 2 install_fusioncatcher
         """
 
 
 rule install_fusioncatcher:
-    output:
-        "fusioncatcher_installed.txt"
+    params:
+        data_directory=config["rna_fusion_data_directory"]
     shell:
         """
             conda config --add channels defaults &&
@@ -175,8 +173,8 @@ rule install_fusioncatcher:
             conda config --add channels conda-forge &&
             conda create -n fusioncatcher fusioncatcher &&
             source activate fusioncatcher &&
-            download-human-db.sh
-            touch {output}
+            download-human-db.sh &&
+            mv human_v102 {params.data_directory}
         """
 
 

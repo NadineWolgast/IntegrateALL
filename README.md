@@ -67,6 +67,8 @@ snakemake --use-conda --use-singularity --cores all install_all
 
 <details>
   <summary>Install only selected tools</summary>
+  
+  ### Install only selected tools
   If you don't want to install all tools and references for the pipeline because you already have some of them you can select the missing ones and install them individually:
 
   ### CTAT mutations
@@ -146,8 +148,6 @@ snakemake --use-conda --use-singularity --cores all install_all
   Now you have all needed reference files and tools to run the pipeline. 
 </details>
 
-## Install only selected tools
-If you don't want to install all tools and references for the pipeline because you already have some of them you can select the missing ones and install them individually:
 
 
 

@@ -65,83 +65,90 @@ And install all required pipeline tools with:
 snakemake --use-conda --use-singularity --cores all install_all
 ```
 
+<details>
+  <summary>Install only selected tools</summary>
+  If you don't want to install all tools and references for the pipeline because you already have some of them you can select the missing ones and install them individually:
+
+  ### CTAT mutations
+
+  To install CTAT mutations genome library edit in the config.yaml the path
+  
+  ```yaml
+  ctat_genome_lib_build_dir: /path/where/the/ctat_genome_library_shall_be_installed # You need the absolute path here
+  ```
+
+  and run the following commands:
+  
+  ```bash
+  snakemake --cores 1 pull_ctat_mutations_singularity_image
+  snakemake --cores 1 install_ctat_mutations
+  snakemake --cores 1 run_ctat_genome_lib_builder
+  ```
+  This will install the Plug-n-Play genome library needed for running CTAT mutations. Keep in mind, that this will need at least 78 GB space. 
+  If you already have a CTAT mutations Genome library installed, you can adjust the path ctat_genome_lib_build_dir in the config.yaml with the actual path and skip this installation. 
+  
+  ### ALLCatchR
+  Install the ALLCatchR with the command:
+  ```bash
+  snakemake --cores 1 install_allcatchr
+  ```
+  
+  ## RNASeqCNV 
+  Install RNASeqCnv with the command:
+  ```bash
+  snakemake --use-conda --cores 1 install_rnaseq_cnv
+  ```
+  
+  
+  ### Fusioncatcher
+  See: https://github.com/ndaniel/fusioncatcher for more information or install and download the fusioncatcher db with:
+  ```bash
+  conda config --add channels defaults
+  conda config --add channels bioconda
+  conda config --add channels conda-forge
+  conda create -n fusioncatcher fusioncatcher
+  source activate fusioncatcher
+  download-human-db.sh
+  ```
+  Now adjust in config.yaml the rna_fusion_data_directory with the installed path to the downloaded human_v102 directory.
+  ```yaml
+  rna_fusion_data_directory: /path/to/fusioncatcher/data/human_v102
+  ```
+  
+  ### ARRIBA draw fusions
+  In order to produce arribas publication-quality visualizations of the transcripts involved in predicted fusions it needs to be installed with the command
+  ```bash
+  snakemake --cores 1 --use-conda install_arriba_draw_fusions
+  ```
+  This will download and install arrbia version 2.4.0 and its' database in the same directory as the pipeline.  
+  
+  ### STAR reference files
+  You can download your STAR reference and gtf file or use the pipeline to get them. You only need to adjust the paths inside the config.yaml to point where they are or should be stored.
+  
+  If you want the pipeline to download them, you need to edit the path in config.yaml for star_files to the path where the reference files should be downloadet and stored.
+  Then run 
+  
+  ```bash
+    snakemake --cores 1 download_star_ref
+  ```
+  
+  Adjust now the paths of star_ref and star_gtf in the config.yaml to point to the actual files.
+  ```yaml
+  star_ref: /path/to/STAR_indexfiles/GRCh38.primary_assembly.genome.fa
+  star_gtf: /path/to/STAR_indexfiles/gencode.v32.annotation.gtf
+  ```
+  
+  Generate the STAR genome_index with
+  
+  ```bash
+    snakemake --cores all index
+  ```
+  Now you have all needed reference files and tools to run the pipeline. 
+</details>
+
 ## Install only selected tools
 If you don't want to install all tools and references for the pipeline because you already have some of them you can select the missing ones and install them individually:
-### CTAT mutations
 
-To install CTAT mutations genome library edit in the config.yaml the path
-
-```yaml
-ctat_genome_lib_build_dir: /path/where/the/ctat_genome_library_shall_be_installed # You need the absolute path here
-```
-
-and run the following commands:
-
-```bash
-snakemake --cores 1 pull_ctat_mutations_singularity_image
-snakemake --cores 1 install_ctat_mutations
-snakemake --cores 1 run_ctat_genome_lib_builder
-```
-This will install the Plug-n-Play genome library needed for running CTAT mutations. Keep in mind, that this will need at least 78 GB space. 
-If you already have a CTAT mutations Genome library installed, you can adjust the path ctat_genome_lib_build_dir in the config.yaml with the actual path and skip this installation. 
-
-### ALLCatchR
-Install the ALLCatchR with the command:
-```bash
-snakemake --cores 1 install_allcatchr
-```
-
-## RNASeqCNV 
-Install RNASeqCnv with the command:
-```bash
-snakemake --use-conda --cores 1 install_rnaseq_cnv
-```
-
-
-### Fusioncatcher
-See: https://github.com/ndaniel/fusioncatcher for more information or install and download the fusioncatcher db with:
-```bash
-conda config --add channels defaults
-conda config --add channels bioconda
-conda config --add channels conda-forge
-conda create -n fusioncatcher fusioncatcher
-source activate fusioncatcher
-download-human-db.sh
-```
-Now adjust in config.yaml the rna_fusion_data_directory with the installed path to the downloaded human_v102 directory.
-```yaml
-rna_fusion_data_directory: /path/to/fusioncatcher/data/human_v102
-```
-
-### ARRIBA draw fusions
-In order to produce arribas publication-quality visualizations of the transcripts involved in predicted fusions it needs to be installed with the command
-```bash
-snakemake --cores 1 --use-conda install_arriba_draw_fusions
-```
-This will download and install arrbia version 2.4.0 and its' database in the same directory as the pipeline.  
-
-### STAR reference files
-You can download your STAR reference and gtf file or use the pipeline to get them. You only need to adjust the paths inside the config.yaml to point where they are or should be stored.
-
-If you want the pipeline to download them, you need to edit the path in config.yaml for star_files to the path where the reference files should be downloadet and stored.
-Then run 
-
-```bash
-  snakemake --cores 1 download_star_ref
-```
-
-Adjust now the paths of star_ref and star_gtf in the config.yaml to point to the actual files.
-```yaml
-star_ref: /path/to/STAR_indexfiles/GRCh38.primary_assembly.genome.fa
-star_gtf: /path/to/STAR_indexfiles/gencode.v32.annotation.gtf
-```
-
-Generate the STAR genome_index with
-
-```bash
-  snakemake --cores all index
-```
-Now you have all needed reference files and tools to run the pipeline. 
 
 
 ## Run examples

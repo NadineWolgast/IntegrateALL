@@ -151,7 +151,7 @@ Now you have all needed reference files and tools to run the pipeline.
 
 
 ## Run examples
-Change the samples.csv file to point to your actual samples and change the sample_id names. for example:
+Copy or move your FASTQ files into one directory and change the samples.csv file to point to your actual samples and change the sample_id names. For example:
 
 | sample_id   |      left     |  right |
 |----------|:-------------:|------:|
@@ -161,7 +161,7 @@ Change the samples.csv file to point to your actual samples and change the sampl
 
 Inside the config.yaml file change this line to point to your actual FASTQ samples directory:
 ```yaml
-ctat_input_directory: /path/to/your/samples/directory # You need the absolute path here!
+ctat_input_directory: /absolute/path/to/your/samples/directory # You need the absolute path here!
 ```
 **Don't** put an extra slash after the directory or CTAT will throw an error.
 

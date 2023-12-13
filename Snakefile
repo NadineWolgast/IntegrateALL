@@ -159,7 +159,24 @@ rule install_all:
             snakemake --cores 1 pull_ctat_mutations_singularity_image &&
             snakemake --cores 2 install_ctat_mutations &&
             snakemake --use-singularity --cores 2 run_ctat_genome_lib_builder &&
-            snakemake --use-conda --cores 2 install_rnaseq_cnv
+            snakemake --use-conda --cores 2 install_rnaseq_cnv &&
+            snakemake --cores 2 install_fusioncatcher &&
+            touch {output}
+        """
+
+
+rule install_fusioncatcher:
+    output:
+        "fusioncatcher_installed.txt"
+    shell:
+        """
+            conda config --add channels defaults &&
+            conda config --add channels bioconda &&
+            conda config --add channels conda-forge &&
+            conda create -n fusioncatcher fusioncatcher &&
+            source activate fusioncatcher &&
+            download-human-db.sh
+            touch {output}
         """
 
 

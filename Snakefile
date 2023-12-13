@@ -159,7 +159,7 @@ rule install_all:
             snakemake --cores 1 pull_ctat_mutations_singularity_image &&
             snakemake --cores 2 install_ctat_mutations &&
             snakemake --use-singularity --cores 2 run_ctat_genome_lib_builder &&
-            snakemake --use-conda install_rnaseq_cnv
+            snakemake --use-conda --cores 2 install_rnaseq_cnv
         """
 
 

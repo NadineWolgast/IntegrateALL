@@ -1,0 +1,5 @@
+Chromosome count	Karyotype	Subtype
+24-30 	near haploid	Near haploid
+31-39 	low hypodiploid	Low hypodiploid
+51-58 	high hyperdiploid	Hyperdiploid
+59-78	near triploid	Low hypodiploid

@@ -71,6 +71,21 @@ And install all required pipeline tools with:
 ```bash
 snakemake --use-conda --use-singularity --cores all install_all
 ```
+
+## Install Fusioncatcher
+You need to install and download the fusioncatcher db with:
+```bash
+conda config --add channels defaults
+conda config --add channels bioconda
+conda config --add channels conda-forge
+conda create -n fusioncatcher fusioncatcher
+source activate fusioncatcher
+download-human-db.sh
+```
+Now adjust in config.yaml the rna_fusion_data_directory with the installed path to the downloaded human_v102 directory.
+```yaml
+rna_fusion_data_directory: /path/to/fusioncatcher/data/human_v102
+```
 ## Install only selected tools
 If you don't want to install all tools and references for the pipeline because you already have some of them you can select the missing ones and install them individually:
 ### CTAT mutations

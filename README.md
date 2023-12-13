@@ -156,9 +156,9 @@ Copy or move your FASTQ files into one directory and change the samples.csv file
 
 | sample_id   |      left     |  right |
 |----------|:-------------:|------:|
-| sample_XYZ |  absolute/path/to/your/sample_XYZ_R1_fastq.gz | absolute/path/to/your/sample_XYZ_R2_fastq.gz |
-| another_sample |  absolute/path/to/your/another_sample_R1_fastq.gz | absolute/path/to/your/another_sample_R2_fastq.gz |
-| example_sample |  absolute/path/to/your/example_sample_R1_fastq.gz | absolute/path/to/your/example_sample_R2_fastq.gz |
+| sample_XYZ |  /absolute/path/to/your/sample_XYZ_R1_fastq.gz | /absolute/path/to/your/sample_XYZ_R2_fastq.gz |
+| another_sample |  /absolute/path/to/your/another_sample_R1_fastq.gz | /absolute/path/to/your/another_sample_R2_fastq.gz |
+| example_sample |  /absolute/path/to/your/example_sample_R1_fastq.gz | /absolute/path/to/your/example_sample_R2_fastq.gz |
 
 Inside the config.yaml file change this line to point to your actual FASTQ samples directory:
 ```yaml

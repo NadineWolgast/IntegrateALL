@@ -11,13 +11,6 @@ Includes the following rules:
 
 ##  Prerequisites
 
-For the pipeline to run, we need
-
-    snakemake
-    conda / miniconda / anaconda / mamba (highly recommended to use mamba, see below)
-
-to be available.
-
 The pipeline currently requires at least snakemake-minimal >= 7.3 and mamba, to be able to use mamba for dependency management.
 In cluster environments, versions are often outdated, or tools not even available. Hence the recommendation to simply install your own miniconda locally for your user. Use wget to obtain the binary (probably you want the generic linux one), and execute it to install locally, log out, log in again to activate it, and also get mamba with:
 ```bash

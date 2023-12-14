@@ -47,11 +47,10 @@ You need to adjust the config.yaml file and install the missing genome librarys
 
 
 ## TL:DR
-Change the paths in config.yaml file to point to the pipeline and where your samples are
+Change the path in config.yaml file to point to the absolute pat where you've installed/downloaded the pipeline:
 
 ```yaml
 absolute_path: /absolute/path/to/Blast-o-Matic-Fusioninator   # For example: /home/Blast-o-Matic-Fusioninator
-ctat_input_directory: absolute/path/to/your/FASTQ/files       # For example: /home/Blast-o-Matic-Fusioninator/data/samples
 ```
 And install all required pipeline tools with:
 
@@ -146,23 +145,19 @@ snakemake --use-conda --use-singularity --cores all install_all
 
 
 ## Run examples
-Copy or move your FASTQ files into one directory and change the samples.csv file to point to your actual samples and change the sample_id names. You can also test the pipeline with the provided samples in data/samples
+Copy or move your FASTQ files into **ONE** directory and change the samples.csv file to point to your actual samples and change the sample_id names. You can also test the pipeline with the provided samples in the directory data/samples:
 
 | sample_id   |      left     |  right |
 |----------|:-------------:|------:|
 | test1 |  /home/Blast-o-Matic-Fusioninator/data/samples/reads_1.fq.gz	 | /home/Blast-o-Matic-Fusioninator/data/samples/reads_2.fq.gz |
 | test2 |  /home/Blast-o-Matic-Fusioninator/data/samples/test-reads-A01_R1_001.fastq.gz | /home/Blast-o-Matic-Fusioninator/data/samples/test-reads-A01_R2_001.fastq.gz |
-| more_samples | ........ | ....... |
-
-
 
 
 Inside the config.yaml file change this line to point to your actual FASTQ samples directory:
 ```yaml
-ctat_input_directory: /absolute/path/to/your/samples/directory # You need the absolute path here!
+ctat_input_directory: /absolute/path/to/your/samples/directory # You need the absolute path here!   # For example: /home/Blast-o-Matic-Fusioninator/data/samples
 ```
 **Don't** put an extra slash after the directory or CTAT will throw an error.
-
 
 To test and see the pipelines execution jobs before running the pipeline you can run the command:
 ```bash

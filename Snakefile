@@ -316,8 +316,8 @@ rule run_arriba:
     input:
         # STAR BAM containing chimeric alignments from 'run_star_aligner'
         bam="STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",
-        genome=config["star_ref"],       # Path to reference genome
-        annotation=config["star_gtf"],   # Path to annotation GTF
+        genome=absolute_path + "/refs/STAR/Homo_sapiens.GRCh38.dna.primary_assembly.fa",
+        annotation=absolute_path + "/refs/STAR/Homo_sapiens.GRCh38.94.gtf",
         custom_blacklist=[]
     output:
         # Approved gene fusions
@@ -354,7 +354,7 @@ rule run_draw_arriba_fusion:
         fusions = "fusions/{sample_id}.tsv",
         bam="STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",
         bai="STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam.bai",
-        annotation=config["star_gtf"] ,  # Path to annotation GTF
+        annotation=absolute_path + "/refs/STAR/Homo_sapiens.GRCh38.94.gtf",
         r_script="scripts/draw_fusions.R"
 
     output:
@@ -379,7 +379,7 @@ rule run_draw_arriba_fusion:
 rule run_fusioncatcher:
     input:
         fastq_directory = config["ctat_input_directory"],
-        data_directory = config["rna_fusion_data_directory"],
+        data_directory= absolute_path + "/refs/fusioncatcher/fusioncatcher-master/data/human_v102",
         left= lambda wildcards: samples[wildcards.sample_id][0],
         right= lambda wildcards: samples[wildcards.sample_id][1]
 
@@ -405,16 +405,15 @@ rule run_fusioncatcher:
         -o {output.dir}'''
 
 
-#Create merged reads for running final ALLCatchR on all counts
-input_directory = 'STAR_output'
-output_file = 'data/combined_counts/merged_reads_per_gene.tsv'
-merge_reads_per_gene_files(input_directory,output_file)
 
 
 rule install_allcatchr:
     shell:
         "Rscript -e 'devtools::install_github(\"ThomasBeder/ALLCatchR\")'"
 
+
+#Create merged reads for running final ALLCatchR on all counts
+merge_reads_per_gene_files('STAR_output','data/combined_counts/merged_reads_per_gene.tsv')
 
 # Rule to run ALLCatchR
 rule run_allcatchr:
@@ -478,7 +477,7 @@ rule install_ctat_mutations:
     params:
         software_url="https://github.com/NCIP/ctat-mutations/archive/refs/tags/CTAT-Mutations-v3.2.0.tar.gz",
         genome_lib_url="https://data.broadinstitute.org/Trinity/CTAT_RESOURCE_LIB/__genome_libs_StarFv1.10/GRCh38_gencode_v37_CTAT_lib_Mar012021.plug-n-play.tar.gz",
-        genome_lib_build_dir= config["ctat_genome_lib_build_dir"],
+        genome_lib_build_dir=absolute_path + "/refs/ctat/",
         mutation_lib_supplement_url="https://data.broadinstitute.org/Trinity/CTAT_RESOURCE_LIB/MUTATION_LIB_SUPPLEMENT/GRCh38.mutation_lib_supplement.Jul272020.tar.gz",
         rna_editing_url="https://data.broadinstitute.org/Trinity/CTAT_RESOURCE_LIB/MUTATION_LIB_SUPPLEMENT/rna_editing/GRCh38.RNAediting.vcf.gz",
         cravat_url = "https://data.broadinstitute.org/Trinity/CTAT_RESOURCE_LIB/MUTATION_LIB_SUPPLEMENT/cravat_lib/cravat.GRCh38.tar.bz2"
@@ -506,9 +505,9 @@ rule install_ctat_mutations:
 
 rule run_ctat_genome_lib_builder:
     input:
-        genome_lib = config["ctat_genome_lib_build_dir"]
+        genome_lib = absolute_path + "/refs/ctat/"
     params:
-        genome_lib_build_dir= config["ctat_genome_lib_build_dir"]
+        genome_lib_build_dir= absolute_path + "/refs/ctat/"
 
     shell:
         '''
@@ -527,11 +526,12 @@ rule run_ctat_mutations:
 
     params:
         sample_id= lambda wildcards: wildcards.sample_id,
-        genome_lib_build_dir= config["ctat_genome_lib_build_dir"],
+        genome_lib_build_dir= absolute_path + "/refs/ctat/",
         left= lambda wildcards: samples_test[sample_id]['left'],
         right= lambda wildcards: samples_test[sample_id]['right'],
         input_directory= config["ctat_input_directory"],
-        threads= config['threads']
+        threads= config['threads'],
+        out_dir= "ctat_output_directory/{sample_id}/"
 
     benchmark:
         "benchmarks/{sample_id}.ctat_mutations.benchmark.txt"
@@ -552,7 +552,7 @@ rule run_ctat_mutations:
         --left /ctat_input/{params.left} \
         --right /ctat_input/{params.right} \
         --sample_id {params.sample_id} \
-        --output {output.directory} \
+        --output {params.out_dir} \
         --cpu {config[threads]} \
         --genome_lib_dir /ctat_genome_lib_dir \
         --boosting_method none \

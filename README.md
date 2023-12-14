@@ -151,7 +151,7 @@ Copy or move your FASTQ files into one directory and change the samples.csv file
 | sample_id   |      left     |  right |
 |----------|:-------------:|------:|
 | test1 |  /home/Blast-o-Matic-Fusioninator/data/samples/reads_1.fq.gz	 | /home/Blast-o-Matic-Fusioninator/data/samples/reads_2.fq.gz |
-| test2 |  /home/Blast-o-Matic-Fusioninator/data/samples/test-reads-A01_R1_001.fastq.gz | /absolute/path/to/your/example_sample_R2_fastq.gz |
+| test2 |  /home/Blast-o-Matic-Fusioninator/data/samples/test-reads-A01_R1_001.fastq.gz | /home/Blast-o-Matic-Fusioninator/data/samples/test-reads-A01_R2_001.fastq.gz |
 | more_samples | ........ | ....... |
 
 

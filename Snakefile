@@ -28,6 +28,9 @@ def creatingfolders(specificfolder: str) -> str:
 
 creatingfolders('STAR_output')
 creatingfolders('data/combined_counts')
+creatingfolders('refs/fusioncatcher')
+creatingfolders('refs/STAR')
+creatingfolders('refs/ctat')
 
 # Get data from input sample sheet for the rules:
 sample_file = config["sample_file"]
@@ -44,9 +47,10 @@ fastq_dataframe = create_sample_dataframe(sample_file)
 
 #Get FASTQ's without path for CTAT
 samples_test = get_ctat_input_files(sample_file)
-
 #Create config.txt and meta.txt for RNASeqCNV
-generate_files(sample_file, 'data/')
+generate_files(sample_file,'data/')
+
+absolute_path = config["absolute_path"]
 
 rule all:
     input:
@@ -162,60 +166,63 @@ rule install_all:
             snakemake --cores 2 install_fusioncatcher
         """
 
-
 rule install_fusioncatcher:
     params:
-        data_directory=config["rna_fusion_data_directory"]
+        data_directory=absolute_path + "/refs/fusioncatcher"
+
     shell:
         """
+        cd  {params.data_directory} &&
         wget 'https://github.com/ndaniel/fusioncatcher/archive/refs/heads/master.zip' && 
         unzip master.zip && 
         cd fusioncatcher-master/data && 
-        ./download-human-db.sh && 
-        mv human_v102 {params.data_directory}
+        ./download-human-db.sh
         """
 
 
 
 rule download_star_ref:
     input:
-        star_directory= config["star_files"]
+        star_directory = absolute_path + "/refs/STAR"
 
     shell:
-        "cd {input.star_directory} && "
+        "mkdir -p {input.star_directory} && cd {input.star_directory} && "
         "wget 'https://ftp.ensembl.org/pub/release-110/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz' && "
         "gunzip Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz && "
         "wget 'https://ftp.ensembl.org/pub/release-94/gtf/homo_sapiens/Homo_sapiens.GRCh38.94.gtf.gz' && "
         "gunzip Homo_sapiens.GRCh38.94.gtf.gz "
 
-#conda install star=2.7.1a
+
 
 rule index:
-        input:
-            fa = config['star_ref'], # provide your reference FASTA file
-            gtf = config['star_gtf'] # provide your GTF file
-        output:
-            directory(config["genome_index"])
+    input:
+        fa= absolute_path + "/refs/STAR/Homo_sapiens.GRCh38.dna.primary_assembly.fa",
+        gtf= absolute_path + "/refs/STAR/Homo_sapiens.GRCh38.94.gtf"
 
-        threads: config['threads']
+    output:
+        directory(absolute_path + "/refs/STAR/ensembl_94_100")
 
-        shell:
-            'STAR --runThreadN {threads} '
-            '--runMode genomeGenerate '
-            '--genomeDir {output} '
-            '--genomeFastaFiles {input.fa} '
-            '--sjdbGTFfile {input.gtf} '
-            '--sjdbOverhang 100'
+    threads: config['threads']
+
+    shell:
+        'STAR --runThreadN {threads} '
+        '--runMode genomeGenerate '
+        '--genomeDir {output} '
+        '--genomeFastaFiles {input.fa} '
+        '--sjdbGTFfile {input.gtf} '
+        '--sjdbOverhang 100'
+
+
 
 rule run_star_aligner:
     input:
-        fastq1 = lambda wildcards: samples[wildcards.sample_id][0],  # Path to left FASTQ from sample sheet
-        fastq2 = lambda wildcards: samples[wildcards.sample_id][1]  # Path to right FASTQ from sample sheet
-
+        fastq1=lambda wildcards: samples[wildcards.sample_id][0],# Path to left FASTQ from sample sheet
+        fastq2=lambda wildcards: samples[wildcards.sample_id][1],  # Path to right FASTQ from sample sheet
+        genome_directory= absolute_path + "/refs/STAR/ensembl_94_100"
     output:
-        directory = directory("STAR_output/{sample_id}"),
-        bam = "STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",
-        reads = "STAR_output/{sample_id}/ReadsPerGene.out.tab",
+        directory=directory("STAR_output/{sample_id}"),
+        bam="STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",
+        reads="STAR_output/{sample_id}/ReadsPerGene.out.tab",
         log_out="STAR_output/{sample_id}/Log.final.out"
 
     benchmark:
@@ -230,11 +237,11 @@ rule run_star_aligner:
         threads=config['threads'],
         mem=config['star_mem']
     shell:
-        'mkdir {output.directory} && '
+        'mkdir -p {output.directory} && '
         'sleep .10;'
         'STAR --runThreadN {config[threads]} '
         '--runMode alignReads '
-        '--genomeDir {config[genome_index]} '
+        '--genomeDir {input.genome_directory} '
         '--readFilesIn {input.fastq1} {input.fastq2} '
         '--outFileNamePrefix  {output.directory}/ '
         '--quantMode GeneCounts '
@@ -247,6 +254,7 @@ rule run_star_aligner:
         '--chimSegmentMin 10 '
         '--readFilesCommand zcat && '
         'rm -r {output.directory}/_STARgenome {output.directory}/_STARpass1 '
+
 
 
 rule samtools_index:
@@ -269,12 +277,13 @@ rule pysamstat:
     input:
         bam="STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",
         fa= config['star_ref']
+ params:
+        out_dir="pysamstats_output_dir/{sample_id}/"
 
     benchmark:
         "benchmarks/{sample_id}.pysamstat.benchmark.txt"
 
     output:
-        directory("pysamstats_output_dir/{sample_id}/"),
         ikzf1="pysamstats_output_dir/{sample_id}/{sample_id}_IKZF1.tsv",
         pax5="pysamstats_output_dir/{sample_id}/{sample_id}_PAX5.tsv",
         coverage="pysamstats_output_dir/{sample_id}/example.coverage.txt"
@@ -284,8 +293,23 @@ rule pysamstat:
         """
         pysamstats --type variation --chromosome 7 -u --start 50382594 --end 50382595 -f {input.fa} {input.bam} > {output.ikzf1} &&
         pysamstats --type variation --chromosome 9 -u --start 37015167 --end 37015168 -f {input.fa} {input.bam} > {output.pax5} &&
-        pysamstats --type coverage --chromosome 7 -u --start 50382594 --end 50382595 {input.bam} > {output.coverage}
+        python scripts/run_pysamstats.py  {input.bam} {input.fa} {wildcards.sample_id} {params.out_dir} 
         """
+
+
+rule get_Hotspots:
+    input:
+        pysamstats_output_dir="pysamstats_output_dir/{sample_id}/",
+        r_script="scripts/Get_Amino_for_Hotspot.R",
+        ctat_file="ctat_output_directory/{sample_id}/{sample_id}.filtered.vcf"
+    output:
+        hotspot_output_dir=directory("pysamstats_output_dir/{sample_id}/Hotspots")  # Ändere den Ausgabepfad, um eindeutig zu sein
+    shell:
+        """
+        mkdir -p {output.hotspot_output_dir} &&
+        Rscript {input.r_script} {input.pysamstats_output_dir} {input.ctat_file} {output.hotspot_output_dir}
+        """
+
 
 
 rule run_arriba:

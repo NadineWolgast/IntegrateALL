@@ -1,2 +1,3 @@
 sample_id,left,right
-test42,/path/to/left.fastq.gz,/path/to/right.fastq.gz
+test1,/Blast-o-Matic-Fusioninator/data/samples/reads_1.fq.gz,/Blast-o-Matic-Fusioninator/data/samples/reads_2.fq.gz
+test2,/Blast-o-Matic-Fusioninator/data/samples/test-reads-A01_R1_001.fastq.gz,/Blast-o-Matic-Fusioninator/data/samples/test-reads-A01_R2_001.fastq.gz

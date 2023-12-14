@@ -47,7 +47,7 @@ You need to adjust the config.yaml file and install the missing genome librarys
 
 
 ## TL:DR
-Change the path in config.yaml file to point to the absolute pat where you've installed/downloaded the pipeline:
+Change the path in config.yaml file to point to the absolute path where you've installed the pipeline:
 
 ```yaml
 absolute_path: /absolute/path/to/Blast-o-Matic-Fusioninator   # For example: /home/Blast-o-Matic-Fusioninator

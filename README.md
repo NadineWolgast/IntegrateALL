@@ -46,18 +46,12 @@ but keep it activated if you want to execute the next steps.
 You need to adjust the config.yaml file and install the missing genome librarys
 
 
-
 ## TL:DR
-Change the paths in config.yaml file to absolute paths where you want the references installed:
+Change the paths in config.yaml file to point to the pipeline and where your samples are
+
 ```yaml
-rna_fusion_data_directory: /refs/fusioncatcher/data/human_v102
-star_files: /refs/STAR/
-star_ref: /refs/STAR/GRCh38.primary_assembly.genome.fa
-star_gtf: /refs/STAR/gencode.v32.annotation.gtf
-genome_index: /refs/STAR/ensembl_94_100
-star_tmp_directory: /refs/STAR/STAR_tmp
-genome_lib:  /refs/ctat/ctat_genome_lib_build_dir/GRCh38_gencode_v37_CTAT_lib_Mar012021.plug-n-play/ctat_genome_lib_build_dir
-ctat_genome_lib_build_dir: /refs/ctat/
+absolute_path: /absolute/path/to/Blast-o-Matic-Fusioninator   # For example: /home/Blast-o-Matic-Fusioninator
+ctat_input_directory: absolute/path/to/your/FASTQ/files       # For example: /home/Blast-o-Matic-Fusioninator/data/samples
 ```
 And install all required pipeline tools with:
 
@@ -152,7 +146,7 @@ snakemake --use-conda --use-singularity --cores all install_all
 
 
 ## Run examples
-Copy or move your FASTQ files into one directory and change the samples.csv file to point to your actual samples and change the sample_id names. For example:
+Copy or move your FASTQ files into one directory and change the samples.csv file to point to your actual samples and change the sample_id names. You can also test the pipeline with the provided samples in data/samples
 
 | sample_id   |      left     |  right |
 |----------|:-------------:|------:|

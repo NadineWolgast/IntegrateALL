@@ -9,7 +9,7 @@ outfile_cpm <- args[3]
 counts <- fread(reads_per_gene_file, skip = 4, header = FALSE, select = 1:2, col.names = c("Gene", "Count"))
 
 # Lade die Gesamtanzahl der zugeordneten Reads
-total_reads <- fread("annotation/cds_length.tsv", header = TRUE)
+total_reads <- fread("data/annotation/cds_length.tsv", header = TRUE)
 total_reads <- as.data.frame(total_reads)
 which(is.na(counts$Gene))
 ma <- match(counts$Gene, total_reads$ESNG)

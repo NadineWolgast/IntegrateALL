@@ -137,15 +137,22 @@ check_subtype_and_chromosome <- function(Subtype, Chromosome_number,arriba_file,
                     result_text <- paste(result_text, "fusions confirmed by Arriba:")
                 }
 
-                # Construct fusion_text with found fusions
-                fusion_text <- character()
-
                 if (length(fusioncatcher_found) > 0) {
-                    #fusion_text <- c(fusion_text, "Fusion (FusionCatcher):")
-                    for (i in 1:length(fusioncatcher_found)) {
-                        fusion_text <- c(paste(fusioncatcher_found[[i]]$Gene_1_symbol.5end_fusion_partner., fusioncatcher_found[[i]]$Gene_2_symbol.3end_fusion_partner., collapse = " "))
-                    }
+                    print("fusioncatcher_found")
+                    print(outfile)
+                    print(fusioncatcher_found)
+                    fusion_pairs <- unique(do.call(rbind, fusioncatcher_found))
+                    print("fusion_pairs")
+                    print(fusion_pairs)
+                    #unique_fusion_pairs <- unique(apply(fusion_pairs, 1, function(x) paste(sort(x), collapse = " ")))
+                    fusion_text <- paste(fusion_pairs, collapse = " ")
+                    #fusion_text <- paste(apply(fusion_pairs, 1, function(x) paste(sort(x), collapse = " ")), collapse = "; ")
+                    fusion_text <- gsub('["c()]', '', fusion_text)
+                    fusion_text <- gsub(', ', ':', fusion_text)
+                    fusion_text <- gsub(' ', '; ', fusion_text)
                 }
+
+
 
                 if (length(arriba_found) > 0) {
                     #fusion_text <- c(fusion_text, "Fusion (Arriba):")
@@ -177,7 +184,7 @@ output_text <- paste("Based on the gene expression profile, the sample", sample_
 
 
 # Write the output text to a CSV file
-output_file <- "out.csv"
+#output_file <- "out.csv"
 write.csv(data.frame(Output=output_text), file=outfile, row.names=FALSE, quote=FALSE)
 
 # Print a message to indicate that the process is complete

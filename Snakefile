@@ -1,4 +1,4 @@
-configfile: "config_adjusted.yaml"
+configfile: "config.yaml"
 
 # Import custom Python scripts
 from scripts.create_sample_dataframe import create_sample_dataframe
@@ -8,26 +8,12 @@ from scripts.validate_input import validate_input
 from scripts.get_ctat_input_files import get_ctat_input_files
 
 
-
 def creatingfolders(specificfolder: str) -> str:
     """
     As the name suggest it will create a folder if the folder do not exist. it will also check if the end is '/' and add
      it if not there. it will return the folder it created
 
-    :param specificfolder: The folder needs to be created
-    :return: will not return anything. Either it will create if the folder do not exist or not return anything
-    """
-    import os
-    if specificfolder != '':
-        if specificfolder[-1] != '/':
-            specificfolder = specificfolder + '/'
 
-        specificfolder = os.path.expanduser(specificfolder)
-        if not os.path.exists(specificfolder):
-            os.makedirs(specificfolder)
-    return specificfolder
-
-creatingfolders('Test_output')
 
 # Get data from input sample sheet for the rules:
 sample_file = config["sample_file"]
@@ -48,6 +34,8 @@ samples_test = get_ctat_input_files(sample_file)
 #Create config.txt and meta.txt for RNASeqCNV
 generate_files(sample_file, 'data/')
 
+absolute_path = config["absolute_path"]
+
 rule all:
     input:
         "check_samples.txt",
@@ -61,7 +49,6 @@ rule all:
         #expand("data/tpm/{sample_id}.tsv", sample_id=list(samples.keys())),
         #expand("data/cpm/{sample_id}.tsv", sample_id=list(samples.keys())),
         #expand("pysamstats_output_dir/{sample_id}/", sample_id=list(samples.keys())),
-        expand("pysamstats_output_dir/{sample_id}/Hotspots", sample_id=list(samples.keys())),
         #expand("comparison/{sample_id}.csv", sample_id= samples.keys()),
         #expand("data/single_counts/{sample_id}.txt", sample_id=samples.keys()),
         #expand("data/vcf_files/{sample_id}.tsv",sample_id=samples.keys()),
@@ -70,7 +57,7 @@ rule all:
         #expand("interactive_output/{sample}/output_report_{sample}.html",  sample=list(samples.keys()))
 
 
-#/media/nadine/Alina/
+
 rule check_samples:
     input:
         samples_csv= "samples.csv"
@@ -236,42 +223,26 @@ rule samtools_index:
     wrapper:
         "v2.6.0/bio/samtools/index"
 
-
+#TODO: Thomas fragen, wie die variation analyse richtig ausgeführt wird. Bis jetzte ist das Ergebnis immer leer...
 rule pysamstat:
     input:
         bam="STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",
-        fa= "data/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
+        #fa = "data/GCF_000001405.39_GRCh38.p13_genomic.fna"
+        fa= "data/GRCh38.primary_assembly.genome.fa",
+
+    benchmark:
+        "benchmarks/{sample_id}.pysamstat.benchmark.txt"
+
     output:
-        directory("pysamstats_output_dir/{sample_id}/"),
-        ikzf1="pysamstats_output_dir/{sample_id}/{sample_id}_IKZF1.csv",
-        #pax5="pysamstats_output_dir/{sample_id}/{sample_id}_PAX5.csv",
-        coverage="pysamstats_output_dir/{sample_id}/example.coverage.txt",
-    #params:
-    #    mutations=mutations
+        directory("pysamstats_output_dir/{sample_id}/")
+
     shell:
-        """
-        pysamstats --type variation --chromosome 7 -u --start 50382593 --end 50382596 -f {input.fa} {input.bam} > {output.ikzf1} &&
-        pysamstats --type coverage --chromosome 7 -u --start 50382594 --end 50382595 {input.bam} > {output.coverage} &&
-        python scripts/run_pysamstats.py  {input.bam} {input.fa} {wildcards.sample_id} {output.ikzf1} 
-        """
-
-#        pysamstats --type variation --chromosome 9 -u --start 37015167 --end 37015170 -f {input.fa} {input.bam} > {output.pax5} &&
-rule get_Hotspots:
-    input:
-        pysamstats_output_dir= "pysamstats_output_dir/{sample_id}/",
-        r_script="scripts/Get_Amino_for_Hotspot.R",
-        ctat_file = "ctat_output_directory/{sample_id}/{sample_id}.filtered.vcf"
-    output:
-        directory("pysamstats_output_dir/{sample_id}/Hotspots")
-    shell:
-        """
-        mkdir {output} &&
-        Rscript {input.r_script} {input.pysamstats_output_dir} {input.ctat_file} {output}
-        """
+        "mkdir 'pysamstats_output_dir/{sample_id}/' && "
+        "pysamstats --type variation --chromosome 7 --start 50382594 --end 50382594 -f {input.fa} {input.bam} > pysamstats_output_dir/{sample_id}/{sample_id}_IKZF1.tsv && "
+        "pysamstats --type variation --chromosome 9 -u -s 37015168 -e 37015168 -f {input.fa} {input.bam} >  pysamstats_output_dir/{sample_id}/{sample_id}_PAX5.tsv && "
+        "pysamstats --type coverage --chromosome 7 --start 50300000 --end 50410000 {input.bam}  > pysamstats_output_dir/{sample_id}/example.coverage.txt"
 
 
-#J32978,data/samples/rnaseq_1.fastq.gz,data/samples/rnaseq_2.fastq.gz
-#J35871,data/samples/rnaseq_1.fastq.gz,data/samples/rnaseq_2.fastq.gz
 
 rule run_arriba:
     input:
@@ -312,13 +283,12 @@ rule install_arriba_draw_fusions:
         ./download_references.sh hs37d5viral+GENCODE19
         """
 
-
 rule run_draw_arriba_fusion:
     input:
         fusions = "fusions/{sample_id}.tsv",
         bam="STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",
         bai="STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam.bai",
-        annotation=config["star_gtf"] ,  # Path to annotation GTF
+        annotation=absolute_path + "/refs/STAR/Homo_sapiens.GRCh38.94.gtf",
         r_script="scripts/draw_fusions.R"
 
     output:
@@ -334,27 +304,16 @@ rule run_draw_arriba_fusion:
         --alignments={input.bam} \
         --output={output.pdf} \
         --annotation={input.annotation}\
-        --cytobands=$CONDA_PREFIX/var/lib/arriba/cytobands_hg19_hs37d5_GRCh37_v2.4.0.tsv \
-        --proteinDomains=$CONDA_PREFIX/var/lib/arriba/protein_domains_hg19_hs37d5_GRCh37_v2.4.0.gff3
+        --cytobands=arriba_v2.4.0/database/cytobands_hg19_hs37d5_GRCh37_v2.4.0.tsv \
+        --proteinDomains=arriba_v2.4.0/database/protein_domains_hg19_hs37d5_GRCh37_v2.4.0.gff3
         '''
-
-#    shell:
-#        '''
-#        Rscript {input.r_script} \
-#        --fusions={input.fusions} \
-#        --alignments={input.bam} \
-#        --output={output.pdf} \
-#        --annotation={input.annotation}\
-#        --cytobands=arriba_v2.4.0/database/cytobands_hg19_hs37d5_GRCh37_v2.4.0.tsv \
-#        --proteinDomains=arriba_v2.4.0/database/protein_domains_hg19_hs37d5_GRCh37_v2.4.0.gff3
-#        '''
 
 
 
 rule run_fusioncatcher:
     input:
         fastq_directory = config["ctat_input_directory"],
-        data_directory = config["rna_fusion_data_directory"],
+        data_directory= absolute_path + "/refs/fusioncatcher/fusioncatcher-master/data/human_v102",
         left= lambda wildcards: samples[wildcards.sample_id][0],
         right= lambda wildcards: samples[wildcards.sample_id][1]
 
@@ -390,6 +349,9 @@ rule install_allcatchr:
     shell:
         "Rscript -e 'devtools::install_github(\"ThomasBeder/ALLCatchR\")'"
 
+
+#Create merged reads for running final ALLCatchR on all counts
+merge_reads_per_gene_files('STAR_output','data/combined_counts/merged_reads_per_gene.tsv')
 
 # Rule to run ALLCatchR
 rule run_allcatchr:
@@ -446,7 +408,8 @@ rule run_allcatchr_on_single_count_files:
 
 rule pull_ctat_mutations_singularity_image:
     shell:
-        '''wget "https://data.broadinstitute.org/Trinity/CTAT_SINGULARITY/CTAT_MUTATIONS/__archived_releases/ctat_mutations.v3.2.0.simg"'''
+        '''singularity pull docker://trinityctat/ctat_mutations:3.2.0'''
+
 
 rule install_ctat_mutations:
     params:
@@ -675,71 +638,17 @@ rule interactive_report:
             prediction_file = "allcatch_output/{sample}/predictions.tsv",
             fusioncatcher_file = "fusioncatcher_output/{sample}/final-list_candidate-fusion-genes.txt",
             arriba_file = "fusions/{sample}.tsv",
-            arriba_file_fusion = "fusions/{sample}.pdf",
             rna_seq_cnv_log2foldchange_file = "RNAseqCNV_output/{sample}/log2_fold_change_per_arm.tsv",
-            rna_seq_cnv_plot= "RNAseqCNV_output/{sample}/{sample}/{sample}_CNV_main_fig.png",
             rna_seq_cnv_manual_an_table_file = "RNAseqCNV_output/{sample}/manual_an_table.tsv",
             star_log_final_out_file = "STAR_output/{sample}/Log.final.out",
             multiqc_fqc_right = "multiqc/{sample}_right/multiqc_report.html",
             multiqc_fqc_left = "multiqc/{sample}_left/multiqc_report.html",
-            comparison_file = "comparison/{sample}.csv",
-            pysamstats_files_IKZF1= "pysamstats_output_dir/{sample}/{sample}_IKZF1.csv",
-            pysamstats_files_PAX5= "pysamstats_output_dir/{sample}/{sample}_PAX5.csv",
-            pysamstats_files_coverage= "pysamstats_output_dir/{sample}/example.coverage.txt",
-            hotspots = "pysamstats_output_dir/{sample}/Hotspots/"
-
+            aggregated_output = "aggregated_output/{sample}.csv"
 
     output:
-        html="interactive_output/{sample}/output_report_{sample}.html"
+        html="interactive_output/output_report_{sample}.html"
 
     shell:
         """
-        mkdir interactive_output/{wildcards.sample}/fusions &&
-        cp {input.arriba_file_fusion} interactive_output/{wildcards.sample}/fusions &&
-        
-        mkdir interactive_output/{wildcards.sample}/multiqc_right &&
-        cp {input.multiqc_fqc_right} interactive_output/{wildcards.sample}/multiqc_right &&
-        
-        mkdir interactive_output/{wildcards.sample}/multiqc_left &&
-        cp {input.multiqc_fqc_left} interactive_output/{wildcards.sample}/multiqc_left &&
-        
-        mkdir interactive_output/{wildcards.sample}/RNAseqCNV &&
-        cp {input.rna_seq_cnv_plot} interactive_output/{wildcards.sample}/RNAseqCNV &&
-        
-        python scripts/generate_report.py  {input.prediction_file} {input.fusioncatcher_file} {input.arriba_file} {input.rna_seq_cnv_log2foldchange_file} {input.rna_seq_cnv_manual_an_table_file} {input.star_log_final_out_file}  {input.comparison_file} {input.pysamstats_files_IKZF1} {input.pysamstats_files_PAX5} {input.pysamstats_files_coverage} {input.hotspots} {wildcards.sample} {output.html}
+        python scripts/generate_report.py  {input.prediction_file} {input.fusioncatcher_file} {input.arriba_file} {input.rna_seq_cnv_log2foldchange_file} {input.rna_seq_cnv_manual_an_table_file} {input.star_log_final_out_file} {input.multiqc_fqc_right} {input.multiqc_fqc_left} {input.aggregated_output} {output.html}
         """
-
-#mkdir interactive_output/{wildcards.sample}/hotspots &&
-#cp -r {input.hotspots} interactive_output/{wildcards.sample}/hotspots &&
-'''
-Inhaltlich offene Punkte:
-Integration von karytype und gene expressionsprofil -> machine learning classifier
-Definition einer Mutations-Positiv-Liste: CTAT vs. Pysamstat
-'''
-
-'''
-            echo -e "Output" > {output.csv}
-            awk -F'\t' '{{if (NR == 1) next; printf "%s\\t%s\\n", $1, $2}}' {input.comparison_file} >> {output.csv}
-            uniquely_mapped_reads=$(awk -F'\t' '/Uniquely mapped reads number/ {{print $2}}\\n' {input.star_log_final_out_file})
-            echo "The transcriptome sequencing of {wildcards.sample} produced $uniquely_mapped_reads uniquely aligned sequencing reads, enabling quantification of protein coding genes." >> {output.csv}
-            echo -e "\\nQuality metrics (fastQC / MultiQC) indicated:" >> {output.csv}
-            echo -e "Filename\tTotal Sequences\tSequences flagged as poor quality\tSequence length\t%GC\ttotal_deduplicated_percentage\tavg_sequence_length\tmedian_sequence_length\tbasic_statistics\tper_base_sequence_quality\tper_sequence_quality_scores\tper_base_sequence_content\tper_sequence_gc_content\tper_base_n_content\tsequence_length_distribution\tsequence_duplication_levels\toverrepresented_sequences\tadapter_content" >> {output.csv}
-            awk -F'\t' '{{if (NR == 1) next; printf "%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\n", $2, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20}}' {input.multiqc_fqc_left} >> {output.csv}
-            awk -F'\t' '{{if (NR == 1) next; printf "%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\n", $2, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20}}' {input.multiqc_fqc_right} >> {output.csv}
-            echo -e "\\nALLCatchR allocated for sample {wildcards.sample} the following molecular subtype:" >> {output.csv}
-            echo -e "subtype prediction\tscore\tconfidence" >> {output.csv}
-            awk -F'\t' '{{if (NR == 1) next; printf "%s\\t%s\\t%s\\n", $3, $2, $4}}' {input.prediction_file} >> {output.csv}
-            echo -e "\\nfusioncatcher / ARRIBA identified the following driver fusion candidates:" >> {output.csv}
-            echo -e "\\nFusioncatcher:" >> {output.csv}
-            echo -e "5’ gene name\t5’ chr.position\t3’ gene name\t3’chr. position\tfusion unique spanning reads"  >> {output.csv}
-            awk -F'\t' '{{if (NR == 1) next; printf "%s\\t%s\\t%s\\t%s\\t%s\\n", $1, $9, $2, $10, $6}}' {input.fusioncatcher_file} >> {output.csv}
-            echo -e "\\nARRIBA:" >> {output.csv}
-            echo -e "5’ gene name\t5’ chr.position\t3’ gene name\t3’chr. position\tdiscordant_mates"  >> {output.csv}
-            awk -F'\t' '{{if (NR == 1) next; printf "%s\\t%s\\t%s\\t%s\\t%s\\n", $1, $5, $2, $6, $12}}' {input.arriba_file} >> {output.csv}
-            echo -e "\\nRNASeqCNV identified the following karyotype:" >> {output.csv}
-            echo -e "gender	chrom_n	alterations	status	comments"  >> {output.csv}
-            awk -F'\t' '{{if (NR == 1) next; printf "%s\\t%s\\t%s\\t%s\\t%s\\n", $2, $3, $4, $5, $6}}' {input.rna_seq_cnv_manual_an_table_file} >> {output.csv}
-            echo -e "Chromosome arm calls" >> {output.csv}
-            echo -e "chr\tarm\tlog2FC per arm"  >> {output.csv}
-            awk -F'\t' '{{if (NR == 1) next; printf "%s\\t%s\\t%s\\n", $1, $2, $3}}' {input.rna_seq_cnv_log2foldchange_file} >> {output.csv}
-'''

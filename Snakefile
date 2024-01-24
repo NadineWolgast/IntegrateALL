@@ -1,4 +1,4 @@
-configfile: "config.yaml"
+configfile: "config_adjusted.yaml"
 
 # Import custom Python scripts
 from scripts.create_sample_dataframe import create_sample_dataframe
@@ -13,12 +13,30 @@ def creatingfolders(specificfolder: str) -> str:
     As the name suggest it will create a folder if the folder do not exist. it will also check if the end is '/' and add
      it if not there. it will return the folder it created
 
+    :param specificfolder: The folder needs to be created
+    :return: will not return anything. Either it will create if the folder do not exist or not return anything
+    """
+    import os
+    if specificfolder != '':
+        if specificfolder[-1] != '/':
+            specificfolder = specificfolder + '/'
 
+        specificfolder = os.path.expanduser(specificfolder)
+        if not os.path.exists(specificfolder):
+            os.makedirs(specificfolder)
+    return specificfolder
 
-# Get data from input sample sheet for the rules:
+creatingfolders('STAR_output')
+creatingfolders('Variants_RNA_Seq_Reads')
+creatingfolders('data/combined_counts')
+creatingfolders('refs/fusioncatcher')
+creatingfolders('refs/STAR')
+creatingfolders('refs/ctat')
+creatingfolders('refs/GATK')
+
 sample_file = config["sample_file"]
 samples = {}
-with open(sample_file, "r") as f:
+with open(sample_file,"r") as f:
     next(f)
     for line in f:
         sample_id, left, right = line.strip().split(",")
@@ -55,7 +73,7 @@ rule all:
         #expand("allcatch_output/{sample_id}/predictions.tsv", sample_id= samples.keys()),
         #expand("aggregated_output/{sample}.csv", sample=list(samples.keys())),
         #expand("interactive_output/{sample}/output_report_{sample}.html",  sample=list(samples.keys()))
-
+        "refs/GATK/dbSNP.vcf"
 
 
 rule check_samples:
@@ -134,27 +152,40 @@ rule multiqc_file:
         "multiqc {input} -o {params.output_dir} --force"
 
 
+rule install_all:
+    input: []
+    shell:
+        """
+            snakemake --cores 10 download_gatk_dbSNP &&
+            snakemake --cores all index &&
+            snakemake --cores 1 install_arriba_draw_fusions &&
+            snakemake --cores 2 install_allcatchr &&
+            snakemake --cores 1 pull_ctat_mutations_singularity_image &&
+            snakemake --cores 2 install_ctat_mutations &&
+            snakemake --use-singularity --cores 2 run_ctat_genome_lib_builder &&
+            snakemake --use-conda --cores 2 install_rnaseq_cnv &&
+            snakemake --cores 2 install_fusioncatcher
+        """
 
 
-rule download_star_ref:
+rule download_gatk_dbSNP:
     input:
-        star_directory= config["star_files"]
+        star_directory = absolute_path + "/refs/GATK"
+    output:
+        vcf= "refs/GATK/GRCH38/dbSNP.vcf",
+        ref= "refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
 
     shell:
         "cd {input.star_directory} && "
-        "wget 'https://ftp.ensembl.org/pub/release-110/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz' && "
-        "gunzip Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz && "
-        "wget 'https://ftp.ensembl.org/pub/release-94/gtf/homo_sapiens/Homo_sapiens.GRCh38.94.gtf.gz' && "
-        "gunzip Homo_sapiens.GRCh38.94.gtf.gz "
-
-#conda install star=2.7.1a
+        "wget 'http://141.2.194.197/rnaeditor_annotations/GRCH38.tar.gz' && "
+        "tar -xzf GRCH38.tar.gz "
 
 rule index:
         input:
-            fa = config['star_ref'], # provide your reference FASTA file
-            gtf = config['star_gtf'] # provide your GTF file
+            fa = absolute_path + "/refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa",
+            gtf = absolute_path + "/refs/GATK/GRCH38/Homo_sapiens.GRCh38.83.gtf"
         output:
-            directory(config["genome_index"])
+            directory(absolute_path + "/refs/GATK/STAR/ensembl_94_100")
 
         threads: config['threads']
 
@@ -166,10 +197,102 @@ rule index:
             '--sjdbGTFfile {input.gtf} '
             '--sjdbOverhang 100'
 
+
+
+rule install_arriba_draw_fusions:
+    shell:
+        """
+        wget 'https://github.com/suhrig/arriba/releases/download/v2.4.0/arriba_v2.4.0.tar.gz' &&
+        tar -xzf arriba_v2.4.0.tar.gz &&
+        cd arriba_v2.4.0 &&
+        ./download_references.sh hs37d5viral+GENCODE19
+        """
+
+
+rule install_allcatchr:
+    shell:
+        "Rscript -e 'devtools::install_github(\"ThomasBeder/ALLCatchR\")'"
+
+
+
+rule pull_ctat_mutations_singularity_image:
+    shell:
+        '''wget "https://data.broadinstitute.org/Trinity/CTAT_SINGULARITY/CTAT_MUTATIONS/__archived_releases/ctat_mutations.v3.2.0.simg"'''
+
+
+rule install_ctat_mutations:
+    params:
+        software_url="https://github.com/NCIP/ctat-mutations/archive/refs/tags/CTAT-Mutations-v3.2.0.tar.gz",
+        genome_lib_url="https://data.broadinstitute.org/Trinity/CTAT_RESOURCE_LIB/__genome_libs_StarFv1.10/GRCh38_gencode_v37_CTAT_lib_Mar012021.plug-n-play.tar.gz",
+        genome_lib_build_dir=absolute_path + "/refs/ctat/",
+        mutation_lib_supplement_url="https://data.broadinstitute.org/Trinity/CTAT_RESOURCE_LIB/MUTATION_LIB_SUPPLEMENT/GRCh38.mutation_lib_supplement.Jul272020.tar.gz",
+        rna_editing_url="https://data.broadinstitute.org/Trinity/CTAT_RESOURCE_LIB/MUTATION_LIB_SUPPLEMENT/rna_editing/GRCh38.RNAediting.vcf.gz",
+        cravat_url="https://data.broadinstitute.org/Trinity/CTAT_RESOURCE_LIB/MUTATION_LIB_SUPPLEMENT/cravat_lib/cravat.GRCh38.tar.bz2"
+
+    shell:
+        "mkdir -p {params.genome_lib_build_dir} && cd {params.genome_lib_build_dir} && "
+
+        "wget {params.genome_lib_url} && "
+        "tar xvf GRCh38_gencode_v37_CTAT_lib_Mar012021.plug-n-play.tar.gz && "
+
+        "wget {params.software_url} && "
+        "tar xvf CTAT-Mutations-v3.2.0.tar.gz && "
+
+        "cd {params.genome_lib_build_dir}/GRCh38_gencode_v37_CTAT_lib_Mar012021.plug-n-play/ctat_genome_lib_build_dir && "
+        "wget {params.mutation_lib_supplement_url} && "
+        "tar xvf GRCh38.mutation_lib_supplement.Jul272020.tar.gz && "
+
+        "wget {params.rna_editing_url} && "
+        "gunzip GRCh38.RNAediting.vcf.gz && "
+
+        "wget {params.cravat_url} && "
+        "tar xvf cravat.GRCh38.tar.bz2"
+
+
+rule run_ctat_genome_lib_builder:
+    input:
+        genome_lib = absolute_path + "/refs/ctat/"
+    params:
+        genome_lib_build_dir= absolute_path + "/refs/ctat/"
+
+    shell:
+        '''
+        singularity exec -e -B {params.genome_lib_build_dir}/GRCh38_gencode_v37_CTAT_lib_Mar012021.plug-n-play/ctat_genome_lib_build_dir \
+        -B {params.genome_lib_build_dir}/ctat-mutations-CTAT-Mutations-v3.2.0/mutation_lib_prep \
+        ctat_mutations.v3.2.0.simg \
+        {params.genome_lib_build_dir}/ctat-mutations-CTAT-Mutations-v3.2.0/mutation_lib_prep/ctat-mutation-lib-integration.py \
+        --genome_lib_dir {params.genome_lib_build_dir}/GRCh38_gencode_v37_CTAT_lib_Mar012021.plug-n-play/ctat_genome_lib_build_dir \
+        '''
+
+
+rule install_rnaseq_cnv:
+    conda:
+        "envs/rnaseqcnv.yaml"
+
+    shell:
+        "Rscript -e 'devtools::install_github(\"honzee/RNAseqCNV\")'"
+
+
+rule install_fusioncatcher:
+    input:
+        data_directory=absolute_path + "/refs/fusioncatcher"
+    output:
+        directory(absolute_path + "/refs/fusioncatcher/fusioncatcher-master/data/human_v102")
+    shell:
+        """
+        cd  {input.data_directory} &&
+        wget 'https://github.com/ndaniel/fusioncatcher/archive/refs/heads/master.zip' && 
+        unzip master.zip && 
+        cd fusioncatcher-master/data && 
+        ./download-human-db.sh
+        """
+
+
 rule run_star_aligner:
     input:
         fastq1 = lambda wildcards: samples[wildcards.sample_id][0],  # Path to left FASTQ from sample sheet
-        fastq2 = lambda wildcards: samples[wildcards.sample_id][1]  # Path to right FASTQ from sample sheet
+        fastq2 = lambda wildcards: samples[wildcards.sample_id][1],  # Path to right FASTQ from sample sheet
+        genome_index = absolute_path + "/refs/GATK/STAR/ensembl_94_100"
 
     output:
         directory = directory("STAR_output/{sample_id}"),
@@ -193,7 +316,7 @@ rule run_star_aligner:
         'sleep .10;'
         'STAR --runThreadN {config[threads]} '
         '--runMode alignReads '
-        '--genomeDir {config[genome_index]} '
+        '--genomeDir {input.genome_index} '
         '--readFilesIn {input.fastq1} {input.fastq2} '
         '--outFileNamePrefix  {output.directory}/ '
         '--quantMode GeneCounts '
@@ -223,24 +346,41 @@ rule samtools_index:
     wrapper:
         "v2.6.0/bio/samtools/index"
 
-#TODO: Thomas fragen, wie die variation analyse richtig ausgeführt wird. Bis jetzte ist das Ergebnis immer leer...
+
 rule pysamstat:
     input:
         bam="STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",
-        #fa = "data/GCF_000001405.39_GRCh38.p13_genomic.fna"
-        fa= "data/GRCh38.primary_assembly.genome.fa",
-
-    benchmark:
-        "benchmarks/{sample_id}.pysamstat.benchmark.txt"
+        fa= absolute_path + "/refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa",
+    params:
+        out_dir="pysamstats_output_dir/{sample_id}/"
 
     output:
-        directory("pysamstats_output_dir/{sample_id}/")
+        pysamstats_output_dir = directory("pysamstats_output_dir/{sample_id}/"),
+        #ikzf1="pysamstats_output_dir/{sample_id}/{sample_id}_IKZF1.csv",
+        #PAX5="pysamstats_output_dir/{sample_id}/{sample_id}_PAX5_P80R.tsv",
+        #coverage="pysamstats_output_dir/{sample_id}/example.coverage.txt",
 
     shell:
-        "mkdir 'pysamstats_output_dir/{sample_id}/' && "
-        "pysamstats --type variation --chromosome 7 --start 50382594 --end 50382594 -f {input.fa} {input.bam} > pysamstats_output_dir/{sample_id}/{sample_id}_IKZF1.tsv && "
-        "pysamstats --type variation --chromosome 9 -u -s 37015168 -e 37015168 -f {input.fa} {input.bam} >  pysamstats_output_dir/{sample_id}/{sample_id}_PAX5.tsv && "
-        "pysamstats --type coverage --chromosome 7 --start 50300000 --end 50410000 {input.bam}  > pysamstats_output_dir/{sample_id}/example.coverage.txt"
+        """
+        python scripts/run_pysamstats.py  {input.bam} {input.fa} {wildcards.sample_id} {params.out_dir} 
+        """
+#         pysamstats --type variation --chromosome 7 -u --start 50382593 --end 50382596 -f {input.fa} {input.bam} > {output.ikzf1} &&
+#        pysamstats --type coverage --chromosome 7 -u --start 50382594 --end 50382595 {input.bam} > {output.coverage} &&
+
+
+
+rule get_Hotspots:
+    input:
+        pysamstats_output_dir="pysamstats_output_dir/{sample_id}/",
+        r_script="scripts/Get_Amino_for_Hotspot.R",
+        ctat_file="ctat_output_directory/{sample_id}/{sample_id}.filtered.vcf.gz"
+    output:
+        hotspot_output_dir=directory("pysamstats_output_dir/{sample_id}/Hotspots")  # Ändere den Ausgabepfad, um eindeutig zu sein
+    shell:
+        """
+        Rscript {input.r_script} {input.pysamstats_output_dir} {input.ctat_file} {output.hotspot_output_dir}
+        """
+#        mkdir -p {output.hotspot_output_dir} &&
 
 
 
@@ -248,8 +388,8 @@ rule run_arriba:
     input:
         # STAR BAM containing chimeric alignments from 'run_star_aligner'
         bam="STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",
-        genome=config["star_ref"],       # Path to reference genome
-        annotation=config["star_gtf"],   # Path to annotation GTF
+        genome=absolute_path + "/refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa",       # Path to reference genome
+        annotation=absolute_path + "/refs/GATK/GRCH38/Homo_sapiens.GRCh38.83.gtf",   # Path to annotation GTF
         custom_blacklist=[]
     output:
         # Approved gene fusions
@@ -270,18 +410,6 @@ rule run_arriba:
     wrapper:
         "v2.6.0/bio/arriba"
 
-
-rule install_arriba_draw_fusions:
-    conda:
-        "envs/arriba_draw_fusions.yaml"
-
-    shell:
-        """
-        wget 'https://github.com/suhrig/arriba/releases/download/v2.4.0/arriba_v2.4.0.tar.gz' &&
-        tar -xzf arriba_v2.4.0.tar.gz &&
-        cd arriba_v2.4.0 &&
-        ./download_references.sh hs37d5viral+GENCODE19
-        """
 
 rule run_draw_arriba_fusion:
     input:
@@ -345,9 +473,6 @@ output_file = 'data/combined_counts/merged_reads_per_gene.tsv'
 merge_reads_per_gene_files(input_directory,output_file)
 
 
-rule install_allcatchr:
-    shell:
-        "Rscript -e 'devtools::install_github(\"ThomasBeder/ALLCatchR\")'"
 
 
 #Create merged reads for running final ALLCatchR on all counts
@@ -403,58 +528,6 @@ rule run_allcatchr_on_single_count_files:
     shell:
         "Rscript {input.r_script} {input.input_file} {output};"
         "mv predictions.tsv {output}"
-
-
-
-rule pull_ctat_mutations_singularity_image:
-    shell:
-        '''singularity pull docker://trinityctat/ctat_mutations:3.2.0'''
-
-
-rule install_ctat_mutations:
-    params:
-        software_url="https://github.com/NCIP/ctat-mutations/archive/refs/tags/CTAT-Mutations-v3.2.0.tar.gz",
-        genome_lib_url="https://data.broadinstitute.org/Trinity/CTAT_RESOURCE_LIB/__genome_libs_StarFv1.10/GRCh38_gencode_v37_CTAT_lib_Mar012021.plug-n-play.tar.gz",
-        genome_lib_build_dir= config["ctat_genome_lib_build_dir"],
-        mutation_lib_supplement_url="https://data.broadinstitute.org/Trinity/CTAT_RESOURCE_LIB/MUTATION_LIB_SUPPLEMENT/GRCh38.mutation_lib_supplement.Jul272020.tar.gz",
-        rna_editing_url="https://data.broadinstitute.org/Trinity/CTAT_RESOURCE_LIB/MUTATION_LIB_SUPPLEMENT/rna_editing/GRCh38.RNAediting.vcf.gz",
-        cravat_url = "https://data.broadinstitute.org/Trinity/CTAT_RESOURCE_LIB/MUTATION_LIB_SUPPLEMENT/cravat_lib/cravat.GRCh38.tar.bz2"
-
-    shell:
-        "mkdir -p {params.genome_lib_build_dir} && cd {params.genome_lib_build_dir} && "
-
-        "wget {params.genome_lib_url} && "
-        "tar xvf GRCh38_gencode_v37_CTAT_lib_Mar012021.plug-n-play.tar.gz && "
-
-        "wget {params.software_url} && "
-        "tar xvf CTAT-Mutations-v3.2.0.tar.gz && "
-        
-        "cd {params.genome_lib_build_dir}/GRCh38_gencode_v37_CTAT_lib_Mar012021.plug-n-play/ctat_genome_lib_build_dir && "
-        "wget {params.mutation_lib_supplement_url} && "
-        "tar xvf GRCh38.mutation_lib_supplement.Jul272020.tar.gz && "
-        
-        "wget {params.rna_editing_url} && "
-        "gunzip GRCh38.RNAediting.vcf.gz && "
-        
-        "wget {params.cravat_url} && "
-        "tar xvf cravat.GRCh38.tar.bz2"
-
-
-
-rule run_ctat_genome_lib_builder:
-    input:
-        genome_lib = config["ctat_genome_lib_build_dir"]
-    params:
-        genome_lib_build_dir= config["ctat_genome_lib_build_dir"]
-
-    shell:
-        '''
-        singularity exec -e -B {params.genome_lib_build_dir}/GRCh38_gencode_v37_CTAT_lib_Mar012021.plug-n-play/ctat_genome_lib_build_dir \
-        -B {params.genome_lib_build_dir}/ctat-mutations-CTAT-Mutations-v3.2.0/mutation_lib_prep \
-        ctat_mutations.v3.2.0.simg \
-        {params.genome_lib_build_dir}/ctat-mutations-CTAT-Mutations-v3.2.0/mutation_lib_prep/ctat-mutation-lib-integration.py \
-        --genome_lib_dir {params.genome_lib_build_dir}/GRCh38_gencode_v37_CTAT_lib_Mar012021.plug-n-play/ctat_genome_lib_build_dir \
-        '''
 
 
 # Rule to run ctat-mutations
@@ -542,13 +615,6 @@ rule calculate_tpm_and_cpm:
    
         
 
-
-rule install_rnaseq_cnv:
-    conda:
-        "envs/rnaseqcnv.yaml"
-
-    shell:
-        "Rscript -e 'devtools::install_github(\"honzee/RNAseqCNV\")'"
 
 
 # TODO: Check if all the cancer.vcf files need to skip 263 lines. Needs maybe a modified skript

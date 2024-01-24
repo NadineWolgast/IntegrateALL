@@ -158,3 +158,19 @@ cython_debug/
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
+/data/samples/11132933_S10_R1_001.fastq.gz
+/data/samples/11132933_S10_R2_001.fastq.gz
+/data/samples/I29838-L1_S69_L002_R1_001.fastq.gz
+/data/samples/I29838-L1_S69_L002_R2_001.fastq.gz
+/data/samples/I29888-L1_S112_L002_R1_001.fastq.gz
+/data/samples/I29888-L1_S112_L002_R2_001.fastq.gz
+/data/samples/J00708-L1_S217_L004_R1_001.fastq.gz
+/data/samples/J00708-L1_S217_L004_R2_001.fastq.gz
+/data/samples/J35903-S1-L1_S124_L004_R1_001.fastq.gz
+/data/samples/J35903-S1-L1_S124_L004_R2_001.fastq.gz
+/data/samples/reads_1.fq.gz
+/data/samples/reads_2.fq.gz
+/data/samples/rnaseq_1.fastq.gz
+/data/samples/rnaseq_2.fastq.gz
+/data/samples/test-reads-A01_R1_001.fastq.gz
+/data/samples/test-reads-A01_R2_001.fastq.gz

@@ -4,7 +4,7 @@ Snakemake diagnostic RNA-Seq Fusion Pipeline for ALL
 
 ![Blast-o-Matic-Fusionator](Pipeline_Workflow.png?raw=true)
 
-
+![Blast-o-Matic-Fusionator-Flowchart](pipeline_rule_flowchart.png?raw=true)
 ##  Prerequisites
 
 The pipeline currently requires at least snakemake-minimal >= 7.3 and mamba, to be able to use mamba for dependency management.

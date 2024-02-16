@@ -50,10 +50,11 @@ absolute_path: /absolute/path/to/Blast-o-Matic-Fusioninator   # For example: /ho
 fastq_directory: /absolute/path/to/your/FASTQ/directory      #For example: /home/Blast-o-Matic-Fusioninator/data/samples
 ```
 And install all required pipeline tools and references with:
-
+**This will need ~60 GB of space**
 ```bash
 snakemake --use-conda --use-singularity --cores all install_all
-```
+``` 
+
 
 <details>
   <summary>Install only selected tools</summary>

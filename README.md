@@ -43,12 +43,13 @@ You need to adjust the config.yaml file and install the missing genome librarys
 
 
 ## TL:DR
-Change the path in config.yaml file to point to the absolute path where you've installed the pipeline:
+Change the path in config.yaml file to point to the absolute path where you've installed the pipeline and where your samples are:
 
 ```yaml
 absolute_path: /absolute/path/to/Blast-o-Matic-Fusioninator   # For example: /home/Blast-o-Matic-Fusioninator
+fastq_directory: /absolute/path/to/your/FASTQ/directory      #For example: /home/Blast-o-Matic-Fusioninator/data/samples
 ```
-And install all required pipeline tools with:
+And install all required pipeline tools and references with:
 
 ```bash
 snakemake --use-conda --use-singularity --cores all install_all
@@ -59,24 +60,6 @@ snakemake --use-conda --use-singularity --cores all install_all
   
   ### Install only selected tools
   If you don't want to install all tools and references for the pipeline because you already have some of them you can select the missing ones and install them individually:
-
-  ### CTAT mutations
-
-  To install CTAT mutations genome library edit in the config.yaml the path
-  
-  ```yaml
-  ctat_genome_lib_build_dir: /path/where/the/ctat_genome_library_shall_be_installed # You need the absolute path here
-  ```
-
-  and run the following commands:
-  
-  ```bash
-  snakemake --cores 1 pull_ctat_mutations_singularity_image
-  snakemake --cores 1 install_ctat_mutations
-  snakemake --cores 1 run_ctat_genome_lib_builder
-  ```
-  This will install the Plug-n-Play genome library needed for running CTAT mutations. Keep in mind, that this will need at least 78 GB space. 
-  If you already have a CTAT mutations Genome library installed, you can adjust the path ctat_genome_lib_build_dir in the config.yaml with the actual path and skip this installation. 
   
   ### ALLCatchR
   Install the ALLCatchR with the command:
@@ -113,27 +96,6 @@ snakemake --use-conda --use-singularity --cores all install_all
   ```
   This will download and install arrbia version 2.4.0 and its' database in the same directory as the pipeline.  
   
-  ### STAR reference files
-  You can download your STAR reference and gtf file or use the pipeline to get them. You only need to adjust the paths inside the config.yaml to point where they are or should be stored.
-  
-  If you want the pipeline to download them, you need to edit the path in config.yaml for star_files to the path where the reference files should be downloadet and stored.
-  Then run 
-  
-  ```bash
-    snakemake --cores 1 download_star_ref
-  ```
-  
-  Adjust now the paths of star_ref and star_gtf in the config.yaml to point to the actual files.
-  ```yaml
-  star_ref: /path/to/STAR_indexfiles/GRCh38.primary_assembly.genome.fa
-  star_gtf: /path/to/STAR_indexfiles/gencode.v32.annotation.gtf
-  ```
-  
-  Generate the STAR genome_index with
-  
-  ```bash
-    snakemake --cores all index
-  ```
   Now you have all needed reference files and tools to run the pipeline. 
 </details>
 
@@ -151,9 +113,9 @@ Copy or move your FASTQ files into **ONE** directory and change the samples.csv 
 
 Inside the config.yaml file change this line to point to your actual FASTQ samples directory:
 ```yaml
-ctat_input_directory: /absolute/path/to/your/samples/directory # You need the absolute path here!   # For example: /home/Blast-o-Matic-Fusioninator/data/samples
+fastq_directory: /absolute/path/to/your/samples/directory # You need the absolute path here!   # For example: /home/Blast-o-Matic-Fusioninator/data/samples
 ```
-**Don't** put an extra slash after the directory or CTAT will throw an error.
+**Don't** put an extra slash after the directory or it will throw an error.
 
 To test and see the pipelines execution jobs before running the pipeline you can run the command:
 ```bash
@@ -161,7 +123,7 @@ To test and see the pipelines execution jobs before running the pipeline you can
 ```
 This will list the resulting jobs and reasons for them. If you agree with them, you can run them with:
 ```bash
-  snakemake --use-singularity --use-conda --cores 1
+  snakemake --use-singularity --use-conda --cores 10
 ```
 You can adjust the amount of cores to your available amount with **--cores all**. This will allow parallelization and faster execution for multiple jobs. 
 This command will invoke the whole analysis for all samples in your samples.csv.
@@ -182,7 +144,6 @@ But you will need to adjust the **rule all** in the Snakemake file like this:
         #expand("STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",sample_id=list(samples.keys())),
         #expand("multiqc/{sample}/multiqc_data/multiqc_fastqc.txt", sample=fastq_dataframe['sample_id']),
         expand("fusioncatcher_output/{sample_id}/final-list_candidate-fusion-genes.txt",sample_id=list(samples.keys())),
-        #expand("ctat_output_directory/{sample_id}/{sample_id}.filtered.vcf.gz",sample_id=samples_test.keys()),
         #expand("RNAseqCNV_output/{sample_id}",sample_id=samples.keys()),
         #expand("data/tpm/{sample_id}.tsv", sample_id=list(samples.keys())),
         #expand("data/cpm/{sample_id}.tsv", sample_id=list(samples.keys())),
@@ -198,22 +159,22 @@ But you will need to adjust the **rule all** in the Snakemake file like this:
 This will run only the analysis Fusioncatcher for all samples in your samples.csv file.
 
 You can also run a single analysis for only one of your samples.
-For example, if you want the CTAT mutations output for only one sample you can change **YOUR_SAMPLE_ID** to one of your 
+For example, if you want the STAR Alignment output for only one sample you can change **YOUR_SAMPLE_ID** to one of your 
 actual sample_ids from the samples.csv file and run the following command:
 ```bash
-  snakemake --use-singularity --use-conda --cores 1 ctat_output_directory/YOUR_SAMPLE_ID/
+  snakemake --use-conda --cores 1 STAR_output/YOUR_SAMPLE_ID/Aligned.sortedByCoord.out.bam
 ```
 You don't need to adjust the Snakemake file for this.
 
 If you want to run the pipeline on a cluster with slurm you can change the command to match your available resources and run it with:
 ```bash
-  srun -c 10 --mem 100G snakemake --use-singularity --use-conda --cores 10 --resources threads=100 -j 10
+  srun -c 10 --mem 100G snakemake --use-conda --cores 10 --resources threads=100 -j 10
 ```
 
 The pipeline will output an interactive report for each of your samples in the folder `/path/to/the/pipeline/interactive_output/**YOUR_SAMPLE_ID**/output_report_YOUR_SAMPLE_ID.html` with the necessary result files. 
 If you want to process the output further you will find all produced data in the individual output folders:
-* ctat_output_directory/YOUR_SAMPLE_ID
-* allcatch_output/YOUR_SAMPLE_ID
+* Variants_RNA_Seq_Reads/YOUR_SAMPLE_ID (This contains the output generated by GATK)
+* allcatch_output/YOUR_SAMPLE_ID/predictions.tsv
 * fastqc/YOUR_SAMPLE_ID_left and fastqc/YOUR_SAMPLE_ID_right
 * fusions/YOUR_SAMPLE_ID.tsv and YOUR_SAMPLE_ID.pdf (This contains the output generated by ARRIBA)
 * fusioncatcher_output/YOUR_SAMPLE_ID
@@ -221,11 +182,13 @@ If you want to process the output further you will find all produced data in the
 * pysamstats_output_dir/YOUR_SAMPLE_ID
 * RNAseqCNV_output/YOUR_SAMPLE_ID
 * STAR_output/YOUR_SAMPLE_ID
-*  aggregated_output/YOUR_SAMPLE_ID.csv (contains a summary of the above results)
+* aggregated_output/YOUR_SAMPLE_ID.csv (contains a summary of the above results)
+* * Hotspots/YOUR_SAMPLE_ID
 
 Furthermore, the pipline produces the following files for your downstream analysis:   
 * data/tpm/YOUR_SAMPLE_ID.tsv
 * data/cpm/YOUR_SAMPLE_ID.tsv
 * data/vcf_files/YOUR_SAMPLE_ID.tsv
 * data/counts/YOUR_SAMPLE_ID.tsv
+* data/reads_per_gene/YOUR_SAMPLE_IDReadsPerGene.out.tab
 

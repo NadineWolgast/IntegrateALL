@@ -1,13 +1,9 @@
 # Blast-o-Matic-Fusioninator
 
-Snakemake diagnostic RNA-Seq Fusion Pipline for ALL
+Snakemake diagnostic RNA-Seq Fusion Pipeline for ALL
 
 ![Blast-o-Matic-Fusionator](Pipeline_Workflow.png?raw=true)
 
-
-Includes the following rules:
-
-![Rulegraph](rulegraph.svg?raw=true)
 
 ##  Prerequisites
 

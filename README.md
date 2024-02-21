@@ -1,6 +1,6 @@
 # Blast-o-Matic-Fusioninator
 
-Snakemake diagnostic RNA-Seq Fusion Pipeline for ALL
+Snakemake diagnostic RNA-Seq Fusion Pipeline for Acute lymphoblastic leukemia samples.
 
 ![Blast-o-Matic-Fusionator](Pipeline_Workflow.png?raw=true)
 
@@ -8,7 +8,7 @@ Snakemake diagnostic RNA-Seq Fusion Pipeline for ALL
 ##  Prerequisites
 
 The pipeline currently requires at least snakemake-minimal >= 7.3 and mamba, to be able to use mamba for dependency management.
-In cluster environments, versions are often outdated, or tools not even available. Hence the recommendation to simply install your own miniconda locally for your user. Use wget to obtain the binary (probably you want the generic linux one), and execute it to install locally, log out, log in again to activate it, and also get mamba with:
+Install miniconda locally and install mamba using the following commands:
 ```bash
 cd ~/path/to/my/software
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
@@ -20,9 +20,11 @@ Then, download the gihub repository of Blast-o-Matic-Fusioninator with the comma
 ```bash
 git clone https://github.com/NadineKraft/Blast-o-Matic-Fusioninator.git 
 ```
+
 or download and unpack the zip from https://github.com/NadineKraft/Blast-o-Matic-Fusioninator/archive/refs/heads/main.zip
 into the directory from where you want it to run - this can be a different directory as the one where your data is stored.
-Snakemake will be installed with all dependencies needed to run it in an isolated software environment via
+
+Snakemake will be installed with all its dependencies in an isolated software environment via
 
 ```bash
 cd /path/to/Blast-o-Matic-Fusioninator
@@ -39,17 +41,13 @@ conda deactivate
 but keep it activated if you want to execute the next steps.
 
 ## Before you can run the pipeline:
-You need to adjust the config.yaml file and install the missing genome librarys
-
-
-## TL:DR
-Change the path in config.yaml file to point to the absolute path where you've installed the pipeline and where your samples are:
+Change the paths in config.yaml file to point to the **absolute path** where you've installed the pipeline and where your samples are:
 
 ```yaml
 absolute_path: /absolute/path/to/Blast-o-Matic-Fusioninator   # For example: /home/Blast-o-Matic-Fusioninator
 fastq_directory: /absolute/path/to/your/FASTQ/directory      #For example: /home/Blast-o-Matic-Fusioninator/data/samples
 ```
-And install all required pipeline tools and references with:
+And install all required pipeline tools and references with the command:
 
 ```bash
 snakemake --use-conda --use-singularity --cores all install_all

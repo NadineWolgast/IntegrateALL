@@ -100,19 +100,25 @@ snakemake --use-conda --use-singularity --cores all install_all
 
 
 
-
-## Run examples
-Copy or move your FASTQ files into **ONE** directory and change the samples.csv file to point to your actual samples and change the sample_id names. You can also test the pipeline with the provided samples in the directory data/samples:
+## Test and run the pipeline
+Copy or move your FASTQ files into **ONE** directory and change the samples.csv file to point to your actual samples and change the sample_id names. 
+You can also test the pipeline with the provided samples (sub1_new.fq.gz and sub2_new.fq.gz) in the directory data/samples:
 
 | sample_id   |      left     |  right |
 |----------|:-------------:|------:|
-| test1 |  /home/Blast-o-Matic-Fusioninator/data/samples/reads_1.fq.gz	 | /home/Blast-o-Matic-Fusioninator/data/samples/reads_2.fq.gz |
-| test2 |  /home/Blast-o-Matic-Fusioninator/data/samples/test-reads-A01_R1_001.fastq.gz | /home/Blast-o-Matic-Fusioninator/data/samples/test-reads-A01_R2_001.fastq.gz |
+| test1 |  /home/Blast-o-Matic-Fusioninator/data/samples/sub1_new.fq.gz	 | /home/Blast-o-Matic-Fusioninator/data/samples/sub2_new.fq.gz |
+| test2 |  ...                                                           | ...                                                          |
 
 
-Inside the config.yaml file change this line to point to your actual FASTQ samples directory:
+Adjust your config.yaml:
+
 ```yaml
+absolute_path: /absolute/path/to/the/pipeline # You need the absolute path here!   # For example: /home/Blast-o-Matic-Fusioninator
 fastq_directory: /absolute/path/to/your/samples/directory # You need the absolute path here!   # For example: /home/Blast-o-Matic-Fusioninator/data/samples
+star_mem: 80000 # Adjust the amount
+threads: 20 # Adjust if neccessary
+
+
 ```
 **Don't** put an extra slash after the directory or it will throw an error.
 
@@ -122,7 +128,7 @@ To test and see the pipelines execution jobs before running the pipeline you can
 ```
 This will list the resulting jobs and reasons for them. If you agree with them, you can run them with:
 ```bash
-  snakemake --use-singularity --use-conda --cores 10
+  snakemake --use-singularity --use-conda --cores 20
 ```
 You can adjust the amount of cores to your available amount with **--cores all**. This will allow parallelization and faster execution for multiple jobs. 
 This command will invoke the whole analysis for all samples in your samples.csv.
@@ -132,7 +138,7 @@ If you want to run only a selection of the pipeline analysis methods you can cha
 ```bash
   snakemake --use-conda --cores 1 allowed_rules run_fusioncatcher
 ```
-But you will need to adjust the **rule all** in the Snakemake file like this: 
+But you will need to adjust the **rule all** inside the Snakemake file like this: 
 
 ```python
   rule all:
@@ -167,7 +173,7 @@ You don't need to adjust the Snakemake file for this.
 
 If you want to run the pipeline on a cluster with slurm you can change the command to match your available resources and run it with:
 ```bash
-  srun -c 10 --mem 100G snakemake --use-conda --cores 10 --resources threads=100 -j 10
+  srun -c 20 --mem 100G snakemake --use-conda --cores 20 --resources threads=200 -j 20
 ```
 
 The pipeline will output an interactive report for each of your samples in the folder `/path/to/the/pipeline/interactive_output/**YOUR_SAMPLE_ID**/output_report_YOUR_SAMPLE_ID.html` with the necessary result files. 

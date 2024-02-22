@@ -2,8 +2,10 @@
 
 The Blast-o-Matic-Fusioninator is a diagnostic RNA-Seq Fusion Pipeline for acute lymphoblastic leukemia samples. It provides the user with an interactiv report, containing subtype prediction, virtual karyotype, fusions, quality control, single nucleotide variants using a snakemake workflow management system. 
 
+## Overview
 ![Blast-o-Matic-Fusionator](Pipeline_Workflow.png?raw=true)
 
+## Rule Flowchart
 ![Blast-o-Matic-Fusionator-Flowchart](pipeline_rule_flowchart.png?raw=true)
 ##  Prerequisites
 

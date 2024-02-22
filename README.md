@@ -109,7 +109,7 @@ You can also test the pipeline with the provided samples (sub1_new.fq.gz and sub
 | sample_id   |      left     |  right |
 |----------|:-------------:|------:|
 | test1 |  /home/Blast-o-Matic-Fusioninator/data/samples/sub1_new.fq.gz	 | /home/Blast-o-Matic-Fusioninator/data/samples/sub2_new.fq.gz |
-| test2 |  ...                                                           | ...                                                          |
+| your_sample_ID |  /home/Blast-o-Matic-Fusioninator/data/samples/your_sample_1.fq.gz| /home/Blast-o-Matic-Fusioninator/data/samples/your_sample_2.fq.gz|
 
 
 Adjust your config.yaml:

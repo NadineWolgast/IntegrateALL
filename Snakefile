@@ -163,24 +163,22 @@ rule install_all:
             snakemake --cores 10 index_ref &&
             snakemake --cores all index_star &&
             snakemake --cores 1 install_arriba_draw_fusions &&
-            snakemake --cores 2 install_allcatchr &&
+            snakemake --use-conda --cores 2 install_allcatchr &&
             snakemake --use-conda --cores 2 install_rnaseq_cnv &&
             snakemake --cores 2 install_fusioncatcher
         """
 
 
-#rule download_ref:
-#    input:
-#        star_directory = absolute_path + "/refs/GATK"
-#    output:
-#    	#directory("/refs/GATK"),
-#        vcf= "refs/GATK/GRCH38/dbSNP.vcf",
-#        ref= "refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
-
-#    shell:
-#        "cd {input.star_directory} && "
-#        "wget 'http://141.2.194.197/rnaeditor_annotations/GRCH38.tar.gz' && "
-#        "tar -xzf GRCH38.tar.gz "
+rule download_ref:
+    input:
+        star_directory = absolute_path + "/refs/GATK"
+    output:
+        vcf= "refs/GATK/GRCH38/dbSNP.vcf",
+        ref= "refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
+    shell:
+        "cd {input.star_directory} && "
+        "wget 'http://141.2.194.197/rnaeditor_annotations/GRCH38.tar.gz' && "
+        "tar -xzf GRCH38.tar.gz "
 
 
 rule index_ref:

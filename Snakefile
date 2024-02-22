@@ -43,9 +43,6 @@ with open(sample_file,"r") as f:
 # Get FASTQs for QC
 fastq_dataframe = create_sample_dataframe(sample_file)
 
-#Get FASTQ's without path for CTAT
-samples_test = get_ctat_input_files(sample_file)
-
 #Create config.txt and meta.txt for RNASeqCNV
 generate_files(sample_file, 'data/')
 
@@ -54,21 +51,22 @@ absolute_path = config["absolute_path"]
 rule all:
     input:
         "check_samples.txt",
+        expand("STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",sample_id=list(samples.keys())),
         expand("STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam.bai", sample_id=list(samples.keys())),
         #expand("Variants_RNA_Seq_Reads/{sample_id}/fixed-rg/{sample_id}.bam", sample_id=list(samples.keys())),
-        expand("Variants_RNA_Seq_Reads/{sample_id}/deduped_bam/{sample_id}.bam.bai", sample_id=list(samples.keys())),
+        #expand("Variants_RNA_Seq_Reads/{sample_id}/deduped_bam/{sample_id}.bam.bai", sample_id=list(samples.keys())),
         #expand("Variants_RNA_Seq_Reads/{sample_id}/split/{sample_id}.bam", sample_id=list(samples.keys())),
         #expand("Variants_RNA_Seq_Reads/{sample_id}/recal/{sample_id}_recal.table", sample_id=list(samples.keys())),
         #expand("Variants_RNA_Seq_Reads/{sample_id}/recal/{sample_id}.bam", sample_id=list(samples.keys())),
         expand("Variants_RNA_Seq_Reads/{sample_id}/filter/{sample_id}.snvs.filtered.vcf", sample_id=list(samples.keys())),
         expand("fusions/{sample_id}.pdf",sample_id=samples.keys()),
         expand("fusions/{sample_id}.tsv",sample_id=samples.keys()),
-        expand("STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",sample_id=list(samples.keys())),
+
         expand("multiqc/{sample}/multiqc_data/multiqc_fastqc.txt", sample=fastq_dataframe['sample_id']),
         expand("fusioncatcher_output/{sample_id}/final-list_candidate-fusion-genes.txt",sample_id=list(samples.keys())),
         expand("data/vcf_files/GATK/{sample_id}_Gatk.tsv", sample_id=samples.keys()),     
         expand("data/tpm/{sample_id}.tsv", sample_id=list(samples.keys())),
-        expand("data/cpm/{sample_id}.tsv", sample_id=list(samples.keys())),        
+        #expand("data/cpm/{sample_id}.tsv", sample_id=list(samples.keys())),        
         expand("pysamstats_output_dir/{sample_id}/", sample_id=list(samples.keys())),
         expand("Hotspots/{sample_id}",sample_id=list(samples.keys())),
         expand("comparison/{sample_id}.csv", sample_id= samples.keys()),
@@ -171,18 +169,18 @@ rule install_all:
         """
 
 
-rule download_ref:
-    input:
-        star_directory = absolute_path + "/refs/GATK"
-    output:
-    	directory("/refs/GATK"),
-        vcf= "refs/GATK/GRCH38/dbSNP.vcf",
-        ref= "refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
+#rule download_ref:
+#    input:
+#        star_directory = absolute_path + "/refs/GATK"
+#    output:
+#    	#directory("/refs/GATK"),
+#        vcf= "refs/GATK/GRCH38/dbSNP.vcf",
+#        ref= "refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
 
-    shell:
-        "cd {input.star_directory} && "
-        "wget 'http://141.2.194.197/rnaeditor_annotations/GRCH38.tar.gz' && "
-        "tar -xzf GRCH38.tar.gz "
+#    shell:
+#        "cd {input.star_directory} && "
+#        "wget 'http://141.2.194.197/rnaeditor_annotations/GRCH38.tar.gz' && "
+#        "tar -xzf GRCH38.tar.gz "
 
 
 rule index_ref:
@@ -322,7 +320,7 @@ rule pysamstat:
         out_dir="pysamstats_output_dir/{sample_id}/"
 
     output:
-        pysamstats_output_dir = directory("pysamstats_output_dir/{sample_id}/"),
+        pysamstats_output_dir = temporary(directory("pysamstats_output_dir/{sample_id}/")),
         ikzf1="pysamstats_output_dir/{sample_id}/{sample_id}_IKZF1.csv",
         #PAX5="pysamstats_output_dir/{sample_id}/{sample_id}_PAX5_P80R.tsv",
         #coverage="pysamstats_output_dir/{sample_id}/example.coverage.txt",
@@ -363,7 +361,7 @@ rule run_arriba:
         # Approved gene fusions
         fusions="fusions/{sample_id}.tsv",
         # Discarded gene fusions (optional)
-        discarded="fusions/{sample_id}.discarded.tsv"
+        discarded=temporary("fusions/{sample_id}.discarded.tsv")
     log:
         "logs/arriba/{sample_id}.log"
     benchmark:
@@ -408,14 +406,15 @@ rule run_draw_arriba_fusion:
 
 rule run_fusioncatcher:
     input:
-        fastq_directory = config["fastq_directory"],
+        #fastq_directory = config["fastq_directory"],
         data_directory= absolute_path + "/refs/fusioncatcher/fusioncatcher-master/data/human_v102",
         left= lambda wildcards: samples[wildcards.sample_id][0],
         right= lambda wildcards: samples[wildcards.sample_id][1]
 
     output:
         dir=directory("fusioncatcher_output/{sample_id}"),
-        file="fusioncatcher_output/{sample_id}/final-list_candidate-fusion-genes.txt"
+        keep_file="fusioncatcher_output/{sample_id}/final-list_candidate-fusion-genes.txt"
+
 
     conda:
         "envs/fusioncatcher.yaml"
@@ -433,7 +432,7 @@ rule run_fusioncatcher:
         -d {input.data_directory} \
         -i {input.left},{input.right} \
         -o {output.dir} \
-        -p 60'''
+        -p 20'''
 
 
 # Rule to process ReadsPerGene.out.tab files for ALLCatchR
@@ -529,7 +528,7 @@ rule replace_rg:
         "STAR_output/{sample}/Aligned.sortedByCoord.out.bam"
 
     output:
-        "Variants_RNA_Seq_Reads/{sample}/fixed-rg/{sample}.bam"
+        temporary("Variants_RNA_Seq_Reads/{sample}/fixed-rg/{sample}.bam")
 
     log:
         "logs/picard/replace_rg/{sample}.log",
@@ -548,8 +547,8 @@ rule markduplicates_bam:
         bams="Variants_RNA_Seq_Reads/{sample}/fixed-rg/{sample}.bam"
 
     output:
-        bam="Variants_RNA_Seq_Reads/{sample}/deduped_bam/{sample}.bam",
-        metrics="Variants_RNA_Seq_Reads/{sample}/deduped_bam/{sample}.metrics.txt",
+        bam=temporary("Variants_RNA_Seq_Reads/{sample}/deduped_bam/{sample}.bam"),
+        metrics=temporary("Variants_RNA_Seq_Reads/{sample}/deduped_bam/{sample}.metrics.txt"),
     log:
         "logs/picard/dedup_bam/{sample}.log",
 
@@ -564,7 +563,7 @@ rule index_bam:
     input:
         "Variants_RNA_Seq_Reads/{sample}/deduped_bam/{sample}.bam"
     output:
-        "Variants_RNA_Seq_Reads/{sample}/deduped_bam/{sample}.bam.bai"
+        temporary("Variants_RNA_Seq_Reads/{sample}/deduped_bam/{sample}.bam.bai")
     log:
         "logs/samtools_index/{sample}_deduped.log"
     params:
@@ -579,9 +578,10 @@ rule index_bam:
 rule splitncigarreads:
     input:
         bam="Variants_RNA_Seq_Reads/{sample}/deduped_bam/{sample}.bam",
+        bai="Variants_RNA_Seq_Reads/{sample}/deduped_bam/{sample}.bam.bai",
         ref= "refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
     output:
-        "Variants_RNA_Seq_Reads/{sample}/split/{sample}.bam",
+        temporary("Variants_RNA_Seq_Reads/{sample}/split/{sample}.bam"),
     log:
         "logs/gatk/splitNCIGARreads/{sample}.log",
     params:
@@ -589,7 +589,7 @@ rule splitncigarreads:
         java_opts="",  # optional
     resources:
         mem_mb=5000,
-    threads: 10
+    threads: config['threads']
     wrapper:
         "v3.3.3/bio/gatk/splitncigarreads"
 
@@ -603,7 +603,7 @@ rule gatk_baserecalibrator:
         dict= "refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.dict",
         known= "refs/GATK/GRCH38/dbSNP.vcf",
     output:
-        recal_table="Variants_RNA_Seq_Reads/{sample}/recal/{sample}_recal.table",
+        recal_table=temporary("Variants_RNA_Seq_Reads/{sample}/recal/{sample}_recal.table"),
     log:
         "logs/gatk/baserecalibrator/{sample}.log",
     params:
@@ -611,7 +611,7 @@ rule gatk_baserecalibrator:
         java_opts="",  # optional
     resources:
         mem_mb=5000,
-    threads: 10
+    threads: config['threads']
     wrapper:
         "v3.3.3/bio/gatk/baserecalibrator"
 
@@ -623,7 +623,7 @@ rule gatk_applybqsr:
         dict="refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.dict",
         recal_table="Variants_RNA_Seq_Reads/{sample}/recal/{sample}_recal.table"
     output:
-        bam="Variants_RNA_Seq_Reads/{sample}/recal/{sample}.bam",
+        bam=temporary("Variants_RNA_Seq_Reads/{sample}/recal/{sample}.bam"),
     log:
         "logs/gatk/gatk_applybqsr/{sample}.log",
     params:
@@ -632,7 +632,7 @@ rule gatk_applybqsr:
         embed_ref=True,  # embed the reference in cram output
     resources:
         mem_mb=5000,
-    threads: 10
+    threads: config['threads']
     wrapper:
         "v3.3.3/bio/gatk/applybqsr"
 
@@ -645,14 +645,14 @@ rule haplotype_caller:
         #known= "refs/STAR/dbSNP.vcf" #optional
 
     output:
-        vcf="Variants_RNA_Seq_Reads/{sample}/calls/{sample}.vcf",
+        vcf=temporary("Variants_RNA_Seq_Reads/{sample}/calls/{sample}.vcf"),
 
     log:
         "logs/gatk/haplotypecaller/{sample}.log",
     params:
         extra="-ERC GVCF --output-mode EMIT_ALL_CONFIDENT_SITES --dont-use-soft-clipped-bases -stand-call-conf 20.0",  # optional
         java_opts="",  # optional
-    threads: 10
+    threads: config['threads']
     resources:
         mem_mb=5000,
     wrapper:
@@ -674,7 +674,7 @@ rule gatk_filter:
         java_opts="",  # optional
     resources:
         mem_mb=5000,
-    threads: 10
+    threads: config['threads']
     wrapper:
         "v3.3.3/bio/gatk/variantfiltration"
 
@@ -770,7 +770,7 @@ rule interactive_report:
         star_log_final_out_file="STAR_output/{sample}/Log.final.out",
         multiqc_fqc_right="multiqc/{sample}_right/multiqc_report.html",
         multiqc_fqc_left="multiqc/{sample}_left/multiqc_report.html",
-        comparison_file="comparison/{sample}.csv",     
+        comparison_file="comparison/{sample}.csv",
         hotspots="Hotspots/{sample}"
 
     output:
@@ -792,3 +792,6 @@ rule interactive_report:
 
         python scripts/generate_report.py  {input.prediction_file} {input.fusioncatcher_file} {input.arriba_file} {input.rna_seq_cnv_log2foldchange_file} {input.rna_seq_cnv_manual_an_table_file} {input.star_log_final_out_file}  {input.comparison_file} {input.hotspots} {wildcards.sample} {output.html}
         """
+        
+        
+  

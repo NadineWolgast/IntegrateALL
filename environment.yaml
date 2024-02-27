@@ -154,4 +154,5 @@ dependencies:
   - r-zip=2.3.0=r42h57805ef_1
   - samtools=1.18=hd87286a_0
   - snakemake-minimal=7.32.3=pyhdfd78af_0
-  - star=2.7.1a
+  - star=2.7.10a
+  - wget=1.21.4

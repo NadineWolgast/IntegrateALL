@@ -130,7 +130,7 @@ To test and see the pipelines execution jobs before running the pipeline you can
 ```
 This will list the resulting jobs and reasons for them. If you agree with them, you can run them with:
 ```bash
-  snakemake --use-singularity --use-conda --cores 20
+  snakemake --use-conda --cores 20
 ```
 You can adjust the amount of cores to your available amount with **--cores all**. This will allow parallelization and faster execution for multiple jobs. 
 This command will invoke the whole analysis for all samples in your samples.csv.

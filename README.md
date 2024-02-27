@@ -52,7 +52,7 @@ fastq_directory: /absolute/path/to/your/FASTQ/directory      #For example: /home
 And install all required pipeline tools and references with the command:
 
 ```bash
-snakemake --use-conda --use-singularity --cores all install_all
+snakemake --use-conda --cores all install_all
 ``` 
 **This will need ~60 GB of space**
 

@@ -238,6 +238,7 @@ rule install_fusioncatcher:
         data_directory=absolute_path + "/refs/fusioncatcher"
     output:
         directory(absolute_path + "/refs/fusioncatcher/fusioncatcher-master/data/human_v102")
+
     shell:
         """
         cd  {input.data_directory} &&
@@ -320,8 +321,6 @@ rule pysamstat:
     output:
         pysamstats_output_dir = temporary(directory("pysamstats_output_dir/{sample_id}/")),
         ikzf1="pysamstats_output_dir/{sample_id}/{sample_id}_IKZF1.csv",
-        #PAX5="pysamstats_output_dir/{sample_id}/{sample_id}_PAX5_P80R.tsv",
-        #coverage="pysamstats_output_dir/{sample_id}/example.coverage.txt",
 
     shell:
         """
@@ -338,7 +337,7 @@ rule get_Hotspots:
         r_script="scripts/Get_Amino_for_Hotspot.R",
         gatk_file = "Variants_RNA_Seq_Reads/{sample_id}/filter/{sample_id}.snvs.filtered.vcf"
     output:
-        hotspot_output_dir=directory("Hotspots/{sample_id}")  # Ändere den Ausgabepfad, um eindeutig zu sein
+        hotspot_output_dir=directory("Hotspots/{sample_id}") 
     shell:
         """
         mkdir -p {output.hotspot_output_dir} &&
@@ -350,7 +349,6 @@ rule get_Hotspots:
 
 rule run_arriba:
     input:
-        # STAR BAM containing chimeric alignments from 'run_star_aligner'
         bam="STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",
         genome=absolute_path + "/refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa",       # Path to reference genome
         annotation=absolute_path + "/refs/GATK/GRCH38/Homo_sapiens.GRCh38.83.gtf",   # Path to annotation GTF
@@ -404,7 +402,6 @@ rule run_draw_arriba_fusion:
 
 rule run_fusioncatcher:
     input:
-        #fastq_directory = config["fastq_directory"],
         data_directory= absolute_path + "/refs/fusioncatcher/fusioncatcher-master/data/human_v102",
         left= lambda wildcards: samples[wildcards.sample_id][0],
         right= lambda wildcards: samples[wildcards.sample_id][1]
@@ -413,13 +410,11 @@ rule run_fusioncatcher:
         dir=directory("fusioncatcher_output/{sample_id}"),
         keep_file="fusioncatcher_output/{sample_id}/final-list_candidate-fusion-genes.txt"
 
-
     conda:
         "envs/fusioncatcher.yaml"
 
     params:
         sample_id=lambda wildcards: wildcards.sample_id
-
 
     benchmark:
         "benchmarks/{sample_id}.fusioncatcher.benchmark.txt"
@@ -528,8 +523,11 @@ rule replace_rg:
     output:
         temporary("Variants_RNA_Seq_Reads/{sample}/fixed-rg/{sample}.bam")
 
+    benchmark:
+        "benchmarks/{sample_id}.replace_rg.benchmark.txt"
+
     log:
-        "logs/picard/replace_rg/{sample}.log",
+        "logs/picard/replace_rg/{sample}.log"
     params:
         extra="--RGLB lib1 --RGPL illumina --RGPU {sample} --RGSM {sample}",
         java_opts=""
@@ -546,10 +544,13 @@ rule markduplicates_bam:
 
     output:
         bam=temporary("Variants_RNA_Seq_Reads/{sample}/deduped_bam/{sample}.bam"),
-        metrics=temporary("Variants_RNA_Seq_Reads/{sample}/deduped_bam/{sample}.metrics.txt"),
+        metrics=temporary("Variants_RNA_Seq_Reads/{sample}/deduped_bam/{sample}.metrics.txt")
+
+    benchmark:
+        "benchmarks/{sample_id}.markduplicates_bam.benchmark.txt"
+
     log:
         "logs/picard/dedup_bam/{sample}.log",
-
 
     resources:
         mem_mb=5000,
@@ -568,6 +569,7 @@ rule index_bam:
         extra=""  # optional params string
     benchmark:
         "benchmarks/{sample}.samtools_index.benchmark.txt"
+
     threads: config['threads']
     wrapper:
         "v2.6.0/bio/samtools/index"
@@ -579,7 +581,11 @@ rule splitncigarreads:
         bai="Variants_RNA_Seq_Reads/{sample}/deduped_bam/{sample}.bam.bai",
         ref= "refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
     output:
-        temporary("Variants_RNA_Seq_Reads/{sample}/split/{sample}.bam"),
+        temporary("Variants_RNA_Seq_Reads/{sample}/split/{sample}.bam")
+
+    benchmark:
+        "benchmarks/{sample}.splitncigarreads.benchmark.txt"
+
     log:
         "logs/gatk/splitNCIGARreads/{sample}.log",
     params:
@@ -601,7 +607,11 @@ rule gatk_baserecalibrator:
         dict= "refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.dict",
         known= "refs/GATK/GRCH38/dbSNP.vcf",
     output:
-        recal_table=temporary("Variants_RNA_Seq_Reads/{sample}/recal/{sample}_recal.table"),
+        recal_table=temporary("Variants_RNA_Seq_Reads/{sample}/recal/{sample}_recal.table")
+
+    benchmark:
+        "benchmarks/{sample}.gatk_baserecalibrator.benchmark.txt"
+
     log:
         "logs/gatk/baserecalibrator/{sample}.log",
     params:
@@ -621,7 +631,11 @@ rule gatk_applybqsr:
         dict="refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.dict",
         recal_table="Variants_RNA_Seq_Reads/{sample}/recal/{sample}_recal.table"
     output:
-        bam=temporary("Variants_RNA_Seq_Reads/{sample}/recal/{sample}.bam"),
+        bam=temporary("Variants_RNA_Seq_Reads/{sample}/recal/{sample}.bam")
+
+    benchmark:
+        "benchmarks/{sample}.gatk_applybqsr.benchmark.txt"
+
     log:
         "logs/gatk/gatk_applybqsr/{sample}.log",
     params:
@@ -643,7 +657,10 @@ rule haplotype_caller:
         #known= "refs/STAR/dbSNP.vcf" #optional
 
     output:
-        vcf=temporary("Variants_RNA_Seq_Reads/{sample}/calls/{sample}.vcf"),
+        vcf=temporary("Variants_RNA_Seq_Reads/{sample}/calls/{sample}.vcf")
+
+    benchmark:
+        "benchmarks/{sample}.haplotype_caller.benchmark.txt"
 
     log:
         "logs/gatk/haplotypecaller/{sample}.log",
@@ -663,7 +680,11 @@ rule gatk_filter:
         ref= "refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa",
 
     output:
-        vcf="Variants_RNA_Seq_Reads/{sample}/filter/{sample}.snvs.filtered.vcf",
+        vcf="Variants_RNA_Seq_Reads/{sample}/filter/{sample}.snvs.filtered.vcf"
+
+    benchmark:
+        "benchmarks/{sample}.gatk_filter.benchmark.txt"
+
     log:
         "logs/gatk/filter/{sample}.snvs.log",
     params:
@@ -705,6 +726,11 @@ rule run_rnaseq_cnv_gatk:
         rna_seq_cnv_log2foldchange_file="RNAseqCNV_output/gatk/{sample_id}_gatk/log2_fold_change_per_arm.tsv",
         rna_seq_cnv_manual_an_table_file="RNAseqCNV_output/gatk/{sample_id}_gatk/manual_an_table.tsv",
         rna_seq_cnv_plot="RNAseqCNV_output/gatk/{sample_id}_gatk/{sample_id}/{sample_id}_CNV_main_fig.png"
+
+
+    benchmark:
+        "benchmarks/{sample}.rnaseq_cnv.benchmark.txt"
+
     conda:
         "envs/rnaseqenv.yaml"
 
@@ -791,5 +817,3 @@ rule interactive_report:
         python scripts/generate_report.py  {input.prediction_file} {input.fusioncatcher_file} {input.arriba_file} {input.rna_seq_cnv_log2foldchange_file} {input.rna_seq_cnv_manual_an_table_file} {input.star_log_final_out_file}  {input.comparison_file} {input.hotspots} {wildcards.sample} {output.html}
         """
         
-        
-  

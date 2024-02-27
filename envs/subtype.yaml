@@ -1,0 +1,16 @@
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - r-base=4.2.3
+  - r-essentials
+  - r-tidyverse
+  - r-readr
+  - r-data.table
+  - r-ggplot2
+  - r-dplyr
+  - r-tidyr
+  - r-rmarkdown
+  - r-knitr
+  - r-irkernel
+  - r-argparse

@@ -182,8 +182,8 @@ rule download_ref:
 
 
 rule index_ref:
-    input: "refs/STAR/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
-    output: "refs/STAR/Homo_sapiens.GRCh38.dna.primary_assembly.fa.fai"
+    input: "refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
+    output: "refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa.fai"
     shell:
         "samtools faidx {input}"
 

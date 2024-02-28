@@ -266,8 +266,8 @@ rule run_star_aligner:
     benchmark:
         "benchmarks/{sample_id}.star_aligner.benchmark.txt"
 
-    conda:
-        "envs/star.yaml"
+    #conda:
+    #    "envs/star.yaml"
 
     threads: config['threads']
 
@@ -523,9 +523,6 @@ rule replace_rg:
     output:
         temporary("Variants_RNA_Seq_Reads/{sample}/fixed-rg/{sample}.bam")
 
-    benchmark:
-        "benchmarks/{sample_id}.replace_rg.benchmark.txt"
-
     log:
         "logs/picard/replace_rg/{sample}.log"
     params:
@@ -545,9 +542,6 @@ rule markduplicates_bam:
     output:
         bam=temporary("Variants_RNA_Seq_Reads/{sample}/deduped_bam/{sample}.bam"),
         metrics=temporary("Variants_RNA_Seq_Reads/{sample}/deduped_bam/{sample}.metrics.txt")
-
-    benchmark:
-        "benchmarks/{sample_id}.markduplicates_bam.benchmark.txt"
 
     log:
         "logs/picard/dedup_bam/{sample}.log",
@@ -583,9 +577,6 @@ rule splitncigarreads:
     output:
         temporary("Variants_RNA_Seq_Reads/{sample}/split/{sample}.bam")
 
-    benchmark:
-        "benchmarks/{sample}.splitncigarreads.benchmark.txt"
-
     log:
         "logs/gatk/splitNCIGARreads/{sample}.log",
     params:
@@ -609,9 +600,6 @@ rule gatk_baserecalibrator:
     output:
         recal_table=temporary("Variants_RNA_Seq_Reads/{sample}/recal/{sample}_recal.table")
 
-    benchmark:
-        "benchmarks/{sample}.gatk_baserecalibrator.benchmark.txt"
-
     log:
         "logs/gatk/baserecalibrator/{sample}.log",
     params:
@@ -633,8 +621,6 @@ rule gatk_applybqsr:
     output:
         bam=temporary("Variants_RNA_Seq_Reads/{sample}/recal/{sample}.bam")
 
-    benchmark:
-        "benchmarks/{sample}.gatk_applybqsr.benchmark.txt"
 
     log:
         "logs/gatk/gatk_applybqsr/{sample}.log",
@@ -659,9 +645,6 @@ rule haplotype_caller:
     output:
         vcf=temporary("Variants_RNA_Seq_Reads/{sample}/calls/{sample}.vcf")
 
-    benchmark:
-        "benchmarks/{sample}.haplotype_caller.benchmark.txt"
-
     log:
         "logs/gatk/haplotypecaller/{sample}.log",
     params:
@@ -681,9 +664,6 @@ rule gatk_filter:
 
     output:
         vcf="Variants_RNA_Seq_Reads/{sample}/filter/{sample}.snvs.filtered.vcf"
-
-    benchmark:
-        "benchmarks/{sample}.gatk_filter.benchmark.txt"
 
     log:
         "logs/gatk/filter/{sample}.snvs.log",
@@ -727,9 +707,6 @@ rule run_rnaseq_cnv_gatk:
         rna_seq_cnv_manual_an_table_file="RNAseqCNV_output/gatk/{sample_id}_gatk/manual_an_table.tsv",
         rna_seq_cnv_plot="RNAseqCNV_output/gatk/{sample_id}_gatk/{sample_id}/{sample_id}_CNV_main_fig.png"
 
-
-    benchmark:
-        "benchmarks/{sample}.rnaseq_cnv.benchmark.txt"
 
     conda:
         "envs/rnaseqenv.yaml"

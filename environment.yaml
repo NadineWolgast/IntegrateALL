@@ -4,6 +4,9 @@ channels:
   - defaults
   - r
 dependencies:
+  - r-data.table=1.14.10
+  - unzip=6.0
+  - wget= 1.21.4
   - arriba=2.4.0=h0033a41_2
   - bcftools=1.17=h3cc50cf_1
   - bioconductor-biobase=2.58.0=r42ha9d7317_1

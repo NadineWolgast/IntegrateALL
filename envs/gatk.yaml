@@ -10,3 +10,4 @@ dependencies:
  - r-foreach
  - r-lubridate
  - r-data.table
+ - r-readxl

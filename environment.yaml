@@ -4,6 +4,7 @@ channels:
   - defaults
   - r
 dependencies:
+  - r-readxl=1.4.3
   - r-data.table=1.14.10
   - unzip=6.0
   - arriba=2.4.0=h0033a41_2

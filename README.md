@@ -43,7 +43,7 @@ conda deactivate
 but keep it activated if you want to execute the next steps.
 
 ## Before you can run the pipeline:
-Change the paths in config.yaml file to point to the **absolute path** where you've installed the pipeline and where your samples are:
+Change the path in config.yaml file to point to the **absolute path** where you've installed the pipeline:
 
 ```yaml
 absolute_path: /absolute/path/to/Blast-o-Matic-Fusioninator   # For example: /home/Blast-o-Matic-Fusioninator

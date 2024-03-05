@@ -47,7 +47,6 @@ Change the paths in config.yaml file to point to the **absolute path** where you
 
 ```yaml
 absolute_path: /absolute/path/to/Blast-o-Matic-Fusioninator   # For example: /home/Blast-o-Matic-Fusioninator
-fastq_directory: /absolute/path/to/your/FASTQ/directory      #For example: /home/Blast-o-Matic-Fusioninator/data/samples
 ```
 And install all required pipeline tools and references with the command:
 
@@ -116,11 +115,8 @@ Adjust your config.yaml:
 
 ```yaml
 absolute_path: /absolute/path/to/the/pipeline # You need the absolute path here!   # For example: /home/Blast-o-Matic-Fusioninator
-fastq_directory: /absolute/path/to/your/samples/directory # You need the absolute path here!   # For example: /home/Blast-o-Matic-Fusioninator/data/samples
 star_mem: 80000 # Adjust the amount
 threads: 20 # Adjust if neccessary
-
-
 ```
 **Don't** put an extra slash after the directory or it will throw an error.
 

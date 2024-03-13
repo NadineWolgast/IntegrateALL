@@ -424,8 +424,8 @@ rule run_fusioncatcher:
         fusioncatcher \
         -d {input.data_directory} \
         -i {input.left},{input.right} \
-        -o {output.dir} \
-        -p 20'''
+        -o {output.dir} 
+        '''
 
 
 # Rule to process ReadsPerGene.out.tab files for ALLCatchR

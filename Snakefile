@@ -176,6 +176,8 @@ rule download_ref:
         vcf= "refs/GATK/GRCH38/dbSNP.vcf",
         ref= "refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
     shell:
+        "rm -rf {input.star_directory} && "
+        "mkdir -p {input.star_directory} &&"
         "cd {input.star_directory} && "
         "wget 'http://141.2.194.197/rnaeditor_annotations/GRCH38.tar.gz' && "
         "tar -xzf GRCH38.tar.gz "
@@ -210,6 +212,8 @@ rule index_star:
 rule install_arriba_draw_fusions:
     shell:
         '''
+        rm -rf arriba_v2.4.0 &&
+        rm -f arriba_v2.4.0.tar.gz &&
         wget 'https://github.com/suhrig/arriba/releases/download/v2.4.0/arriba_v2.4.0.tar.gz' &&
         tar -xzf arriba_v2.4.0.tar.gz &&
         cd arriba_v2.4.0 &&
@@ -253,9 +257,7 @@ rule run_star_aligner:
     input:
         fastq1 = lambda wildcards: samples[wildcards.sample_id][0],  # Path to left FASTQ from sample sheet
         fastq2 = lambda wildcards: samples[wildcards.sample_id][1],  # Path to right FASTQ from sample sheet
-        genome_index = absolute_path + "/refs/GATK/STAR/ensembl_94_100"
-    params:
-    	
+        genome_index = absolute_path + "/refs/GATK/STAR/ensembl_94_100"  
 
     output:
         directory = directory("STAR_output/{sample_id}"),
@@ -266,16 +268,13 @@ rule run_star_aligner:
     benchmark:
         "benchmarks/{sample_id}.star_aligner.benchmark.txt"
 
-    #conda:
-    #    "envs/star.yaml"
-
     threads: config['threads']
 
     resources:
         threads=config['threads'],
         mem=config['star_mem']
     shell:
-        'mkdir {output.directory} && '
+        'mkdir -p {output.directory} && '
         'sleep .10;'
         'STAR --runThreadN {config[threads]} '
         '--runMode alignReads '
@@ -296,15 +295,15 @@ rule run_star_aligner:
 
 rule samtools_index:
     input:
-        "STAR_output/{sample}/Aligned.sortedByCoord.out.bam"
+        "STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam"
     output:
-        "STAR_output/{sample}/Aligned.sortedByCoord.out.bam.bai"
+        "STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam.bai"
     log:
-        "logs/samtools_index/{sample}.log"
+        "logs/samtools_index/{sample_id}.log"
     params:
         extra=""  # optional params string
     benchmark:
-        "benchmarks/{sample}.samtools_index.benchmark.txt"
+        "benchmarks/{sample_id}.samtools_index.benchmark.txt"
     threads: config['threads']
     wrapper:
         "v2.6.0/bio/samtools/index"
@@ -449,13 +448,10 @@ rule process_reads_per_gene_to_counts:
 rule run_allcatchr:
     input:
         r_script = "scripts/run_ALLCatchR.R",
-        input_file = 'data/counts/{sample}.tsv'
-
-    benchmark:
-        "benchmarks/{sample}.allcatchr.benchmark.txt"
+        input_file = 'data/counts/{sample_id}.tsv'
 
     output:
-        "allcatch_output/{sample}/predictions.tsv"
+        "allcatch_output/{sample_id}/predictions.tsv"
 
     conda:
         "envs/install_allcatchr.yaml"

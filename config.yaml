@@ -4,7 +4,3 @@ absolute_path: /absolute/path/to/Blast-o-Matic-Fusioninator
 
 star_mem: 80000
 threads: 20
-
-# singularity
-use-singularity: True
-latency-wait: 60

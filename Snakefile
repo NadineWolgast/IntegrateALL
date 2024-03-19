@@ -268,8 +268,6 @@ rule run_star_aligner:
     benchmark:
         "benchmarks/{sample_id}.star_aligner.benchmark.txt"
 
-    threads: config['threads']
-
     resources:
         threads=config['threads'],
         mem=config['star_mem']

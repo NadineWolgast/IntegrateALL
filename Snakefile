@@ -200,7 +200,7 @@ rule index_star:
         threads: config['threads']
 
         shell:
-            'STAR --runThreadN {threads} '
+            'STAR --runThreadN {config['threads]} '
             '--runMode genomeGenerate '
             '--genomeDir {output} '
             '--genomeFastaFiles {input.fa} '
@@ -526,7 +526,7 @@ rule replace_rg:
         java_opts=""
 
     resources:
-        mem_mb=2048,
+        mem_mb=5000,
     wrapper:
         "v3.3.3/bio/picard/addorreplacereadgroups"
 
@@ -560,7 +560,7 @@ rule index_bam:
     benchmark:
         "benchmarks/{sample}.samtools_index.benchmark.txt"
 
-    threads: config['threads']
+    threads: 2
     wrapper:
         "v2.6.0/bio/samtools/index"
 
@@ -580,7 +580,7 @@ rule splitncigarreads:
         java_opts="",  # optional
     resources:
         mem_mb=5000,
-    threads: config['threads']
+    threads: 2
     wrapper:
         "v3.3.3/bio/gatk/splitncigarreads"
 
@@ -603,7 +603,7 @@ rule gatk_baserecalibrator:
         java_opts="",  # optional
     resources:
         mem_mb=5000,
-    threads: config['threads']
+    threads: 2
     wrapper:
         "v3.3.3/bio/gatk/baserecalibrator"
 
@@ -626,7 +626,7 @@ rule gatk_applybqsr:
         embed_ref=True,  # embed the reference in cram output
     resources:
         mem_mb=5000,
-    threads: config['threads']
+    threads: 2
     wrapper:
         "v3.3.3/bio/gatk/applybqsr"
 
@@ -646,7 +646,7 @@ rule haplotype_caller:
     params:
         extra="-ERC GVCF --output-mode EMIT_ALL_CONFIDENT_SITES --dont-use-soft-clipped-bases -stand-call-conf 20.0",  # optional
         java_opts="",  # optional
-    threads: config['threads']
+    threads: 2
     resources:
         mem_mb=5000,
     wrapper:
@@ -669,7 +669,7 @@ rule gatk_filter:
         java_opts="",  # optional
     resources:
         mem_mb=5000,
-    threads: config['threads']
+    threads: 2
     wrapper:
         "v3.3.3/bio/gatk/variantfiltration"
 

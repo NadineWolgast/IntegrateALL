@@ -47,78 +47,26 @@ Change the path in config.yaml file to point to the **absolute path** where you'
 
 ```yaml
 absolute_path: /absolute/path/to/IntegrateALL   # For example: /home/IntegrateALL
+star_mem: 50000 # You can increase the amount of memory, but 50 GB is the minimum
+threads: 4 # You can increase the amount of threads, but 4 is the minimum
 ```
-And install all required pipeline tools and references with the command:
+**Don't** put an extra slash after the directory or it will throw an error.
+
+Install all required pipeline tools and references with the command:
 
 ```bash
 snakemake --use-conda --cores all install_all
 ``` 
-**This will need ~60 GB of space**
-
-<details>
-  <summary>Install only selected tools</summary>
-  
-  ### Install only selected tools
-  If you don't want to install all tools and references for the pipeline because you already have some of them you can select the missing ones and install them individually:
-  
-  ### ALLCatchR
-  Install the ALLCatchR with the command:
-  ```bash
-  snakemake --cores 1 install_allcatchr
-  ```
-  
-  ## RNASeqCNV 
-  Install RNASeqCnv with the command:
-  ```bash
-  snakemake --use-conda --cores 1 install_rnaseq_cnv
-  ```
-  
-  
-  ### Fusioncatcher
-  See: https://github.com/ndaniel/fusioncatcher for more information or install and download the fusioncatcher db with:
-  ```bash
-  conda config --add channels defaults
-  conda config --add channels bioconda
-  conda config --add channels conda-forge
-  conda create -n fusioncatcher fusioncatcher
-  source activate fusioncatcher
-  download-human-db.sh
-  ```
-  Now adjust in config.yaml the rna_fusion_data_directory with the installed path to the downloaded human_v102 directory.
-  ```yaml
-  rna_fusion_data_directory: /path/to/fusioncatcher/data/human_v102
-  ```
-  
-  ### ARRIBA draw fusions
-  In order to produce arribas publication-quality visualizations of the transcripts involved in predicted fusions it needs to be installed with the command
-  ```bash
-  snakemake --cores 1 --use-conda install_arriba_draw_fusions
-  ```
-  This will download and install arrbia version 2.4.0 and its' database in the same directory as the pipeline.  
-  
-  Now you have all needed reference files and tools to run the pipeline. 
-</details>
-
-
+**This will need ~60 GB of space and takes ~6 hours**
 
 ## Test and run the pipeline
-Copy or move your FASTQ files into **ONE** directory and change the samples.csv file to point to your actual samples and change the sample_id names. 
+Copy or move your FASTQ files into **ONE** directory and change the samples.csv file to point to your actual samples and adjust the sample_id names. 
 You can also test the pipeline with the provided samples (sub1_new.fq.gz and sub2_new.fq.gz) in the directory data/samples:
 
 | sample_id   |      left     |  right |
 |----------|:-------------:|------:|
-| test1 |  /home/IntegrateALL/data/samples/sub1_new.fq.gz	 | /home/IntegrateALL/data/samples/sub2_new.fq.gz |
-| your_sample_ID |  /home/IntegrateALL/data/samples/your_sample_1.fq.gz| /home/IntegrateALL/data/samples/your_sample_2.fq.gz|
+| Test42 |  /path/to/IntegrateALL/data/samples/sub1_new.fq.gz	 | /path/to/IntegrateALL/data/samples/sub2_new.fq.gz |
 
-
-Adjust your config.yaml:
-
-```yaml
-absolute_path: /absolute/path/to/the/pipeline # You need the absolute path here!   # For example: /home/IntegrateALL
-star_mem: 80000 # Adjust the amount
-threads: 20 # Adjust if neccessary
-```
-**Don't** put an extra slash after the directory or it will throw an error.
 
 To test and see the pipelines execution jobs before running the pipeline you can run the command:
 ```bash
@@ -165,13 +113,13 @@ You can also run a single analysis for only one of your samples.
 For example, if you want the STAR Alignment output for only one sample you can change **YOUR_SAMPLE_ID** to one of your 
 actual sample_ids from the samples.csv file and run the following command:
 ```bash
-  snakemake --use-conda --cores 1 STAR_output/YOUR_SAMPLE_ID/Aligned.sortedByCoord.out.bam
+  snakemake --use-conda --cores 4 STAR_output/YOUR_SAMPLE_ID/Aligned.sortedByCoord.out.bam
 ```
 You don't need to adjust the Snakemake file for this.
 
 If you want to run the pipeline on a cluster with slurm you can change the command to match your available resources and run it with:
 ```bash
-  srun -c 20 --mem 100G snakemake --use-conda --cores 20 --resources threads=200 -j 20
+  srun -c 20 --mem 100G snakemake --use-conda --cores 20
 ```
 
 The pipeline will output an interactive report for each of your samples in the folder `/path/to/the/pipeline/interactive_output/**YOUR_SAMPLE_ID**/output_report_YOUR_SAMPLE_ID.html` with the necessary result files. 

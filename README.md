@@ -1,6 +1,6 @@
-# Blast-o-Matic-Fusioninator
+# IntegrateALL
 
-The Blast-o-Matic-Fusioninator is a diagnostic RNA-Seq Fusion Pipeline for acute lymphoblastic leukemia samples. It provides the user with an interactiv report, containing subtype prediction, virtual karyotype, fusions, quality control, single nucleotide variants using a snakemake workflow management system. 
+The IntegrateALL is a diagnostic RNA-Seq Fusion Pipeline for acute lymphoblastic leukemia samples. It provides the user with an interactiv report, containing subtype prediction, virtual karyotype, fusions, quality control, single nucleotide variants using a snakemake workflow management system. 
 
 ## Overview
 ![Blast-o-Matic-Fusionator](Pipeline_Overview.png?raw=true)
@@ -18,21 +18,21 @@ sh Miniconda3-latest-Linux-x86_64.sh
 conda install mamba -n base -c conda-forge
 ```
 
-Then, download the gihub repository of Blast-o-Matic-Fusioninator with the command: 
+Then, download the gihub repository of IntegrateALL with the command: 
 ```bash
-git clone https://github.com/NadineKraft/Blast-o-Matic-Fusioninator.git 
+git clone https://github.com/NadineKraft/IntegrateALL.git 
 ```
 
-or download and unpack the zip from https://github.com/NadineKraft/Blast-o-Matic-Fusioninator/archive/refs/heads/main.zip
+or download and unpack the zip from https://github.com/NadineKraft/IntegrateALL/archive/refs/heads/main.zip
 into the directory from where you want it to run - this can be a different directory as the one where your data is stored.
 
 Snakemake will be installed with all its dependencies in an isolated software environment via
 
 ```bash
-cd /path/to/Blast-o-Matic-Fusioninator
+cd /path/to/IntegrateALL
 conda activate base
-mamba env create --name bomf --file environment.yaml
-conda activate bomf
+mamba env create --name IALL --file environment.yaml
+conda activate IALL
 ```
 
 You can deactivate the environment when you don't need it anymore with 
@@ -46,7 +46,7 @@ but keep it activated if you want to execute the next steps.
 Change the path in config.yaml file to point to the **absolute path** where you've installed the pipeline:
 
 ```yaml
-absolute_path: /absolute/path/to/Blast-o-Matic-Fusioninator   # For example: /home/Blast-o-Matic-Fusioninator
+absolute_path: /absolute/path/to/IntegrateALL   # For example: /home/IntegrateALL
 ```
 And install all required pipeline tools and references with the command:
 
@@ -107,14 +107,14 @@ You can also test the pipeline with the provided samples (sub1_new.fq.gz and sub
 
 | sample_id   |      left     |  right |
 |----------|:-------------:|------:|
-| test1 |  /home/Blast-o-Matic-Fusioninator/data/samples/sub1_new.fq.gz	 | /home/Blast-o-Matic-Fusioninator/data/samples/sub2_new.fq.gz |
-| your_sample_ID |  /home/Blast-o-Matic-Fusioninator/data/samples/your_sample_1.fq.gz| /home/Blast-o-Matic-Fusioninator/data/samples/your_sample_2.fq.gz|
+| test1 |  /home/IntegrateALL/data/samples/sub1_new.fq.gz	 | /home/IntegrateALL/data/samples/sub2_new.fq.gz |
+| your_sample_ID |  /home/IntegrateALL/data/samples/your_sample_1.fq.gz| /home/IntegrateALL/data/samples/your_sample_2.fq.gz|
 
 
 Adjust your config.yaml:
 
 ```yaml
-absolute_path: /absolute/path/to/the/pipeline # You need the absolute path here!   # For example: /home/Blast-o-Matic-Fusioninator
+absolute_path: /absolute/path/to/the/pipeline # You need the absolute path here!   # For example: /home/IntegrateALL
 star_mem: 80000 # Adjust the amount
 threads: 20 # Adjust if neccessary
 ```

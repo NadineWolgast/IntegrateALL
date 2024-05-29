@@ -186,7 +186,7 @@ If you want to process the output further you will find all produced data in the
 * RNAseqCNV_output/YOUR_SAMPLE_ID
 * STAR_output/YOUR_SAMPLE_ID
 * aggregated_output/YOUR_SAMPLE_ID.csv (contains a summary of the above results)
-* * Hotspots/YOUR_SAMPLE_ID
+* Hotspots/YOUR_SAMPLE_ID
 
 Furthermore, the pipline produces the following files for your downstream analysis:   
 * data/tpm/YOUR_SAMPLE_ID.tsv

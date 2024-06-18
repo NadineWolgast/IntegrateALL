@@ -1,6 +1,6 @@
 sample_file: samples.csv
 
-absolute_path: /absolute/path/to/Blast-o-Matic-Fusioninator
+absolute_path: /absolute/path/to/IntegrateALL
 
-star_mem: 80000
-threads: 20
+star_mem: 60000
+threads: 10

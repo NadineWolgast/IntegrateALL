@@ -6,7 +6,6 @@ channels:
 dependencies:
   - r-readxl=1.4.3
   - r-data.table=1.14.10
-  - unzip=6.0
   - arriba=2.4.0=h0033a41_2
   - bcftools=1.17=h3cc50cf_1
   - bioconductor-biobase=2.58.0=r42ha9d7317_1
@@ -33,13 +32,15 @@ dependencies:
   - conda=23.7.3=py310hff52083_0
   - conda-package-handling=2.2.0=pyh38be061_0
   - conda-package-streaming=0.9.0=pyhd8ed1ab_0
+  - curl=7.87.0=h6312ad2_0
   - gatk4=4.0.5.1=0
   - multiqc=1.15=pyhdfd78af_0
-  - numpy=1.25.2=py310ha4c1d20_0
+  - numpy=1.26.4=py311h64a7726_0
   - openjdk=8.0.332=h166bdaf_0
-  - pandas=2.1.0=py310hcc13569_0
+  - pandas=2.2.2=py311h14de704_1
   - pip=23.2.1=pyhd8ed1ab_0
   - pysamstats=1.1.2=py310h8472f5a_9
+  - python=3.11.0=h10a6764_1_cpython
   - r-askpass=1.2.0=r42h57805ef_0
   - r-assertthat=0.2.1=r42hc72bb7e_4
   - r-backports=1.4.1=r42h57805ef_2
@@ -62,6 +63,7 @@ dependencies:
   - r-crayon=1.5.2=r42hc72bb7e_2
   - r-credentials=2.0.1=r42hc72bb7e_0
   - r-curl=4.3.3=r42h06615bd_1
+  - r-data.table=1.14.10=r42h029312a_1
   - r-desc=1.4.2=r42hc72bb7e_2
   - r-devtools=2.4.5=r42hc72bb7e_2
   - r-diffobj=0.3.5=r42h57805ef_2
@@ -156,6 +158,16 @@ dependencies:
   - r-yaml=2.3.7=r42h57805ef_1
   - r-zip=2.3.0=r42h57805ef_1
   - samtools=1.18=hd87286a_0
+  - scikit-learn=1.5.0=py311he08f58d_1
+  - scipy=1.13.1=py311h517d4fd_0
   - snakemake-minimal=7.32.3=pyhdfd78af_0
   - star=2.7.10a
+  - unzip=6.0
   - wget=1.21.4
+  - yaml=0.2.5=h7f98852_2
+  - pip:
+      - argparse-dataclass==2.0.0
+      - snakemake-executor-plugin-slurm==0.5.2
+      - snakemake-executor-plugin-slurm-jobstep==0.2.1
+      - snakemake-interface-common==1.17.2
+      - snakemake-interface-executor-plugins==9.1.1

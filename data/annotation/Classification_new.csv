@@ -1,0 +1,348 @@
+WHO-HAEM5	ICC	ALLCatchR	Ph-pos	Confidence	Gene_1_symbol(5end_fusion_partner)	Gene_2_symbol(3end_fusion_partner)	karyotype classifier	PAX5 P80R	IKZF1 N159Y	ZEB2 H1038R
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1 fusion	B-ALLwith t(9;22)(q34.1;q11.2)/BCR::ABL1 with lymphoid only involvement	Ph-pos	lymphoid	*	BCR	ABL1	Hyperdiploid	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1 fusion	B-ALLwith t(9;22)(q34.1;q11.2)/BCR::ABL1 with lymphoid only involvement	Ph-pos	lymphoid	*	ABL1	BCR	Hyperdiploid	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1 fusion	B-ALLwith t(9;22)(q34.1;q11.2)/BCR::ABL1 with multilineage involvement 	Ph-pos	multilineage	*	BCR	ABL1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1 fusion	B-ALLwith t(9;22)(q34.1;q11.2)/BCR::ABL1 with multilineage involvement 	Ph-pos	multilineage	*	ABL1	BCR	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1 fusion	B-ALLwith t(9;22)(q34.1;q11.2)/BCR::ABL1 with lymphoid only involvement	Ph-pos	lymphoid	*	BCR	ABL1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1 fusion	B-ALLwith t(9;22)(q34.1;q11.2)/BCR::ABL1 with lymphoid only involvement	Ph-pos	lymphoid	*	ABL1	BCR	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	ABL2	RCSD1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	RCSD1	ABL2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	ABL2	ZC3HAV1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	EBF1	PDGFRB	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	PDGFRB	EBF1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	ABL1	NUP214	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	NUP214	ABL1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	CSF1R	SSBP2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	SSBP2	CSF1R	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	ABL1	ETV6	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	ETV6	ABL1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	ABL1	ZMIZ1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	ZC3HAV1	ABL2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	ZMIZ1	ABL1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	PDGFRB	TNIP1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	TNIP1	PDGFRB	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	ABL1	RANBP2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	ABL1	RCSD1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	RANBP2	ABL1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	RCSD1	ABL1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	ATF7IP	PDGFRB	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	PDGFRB	ATF7IP	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	ABL1	SNX2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	ABL2	PAG1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	CSF1R	MEF2D	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	MEF2D	CSF1R	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	PDGFRB	ZEB2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	SNX2	ABL1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	ABL1	CENPC	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	ABL1	LSM14A	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	CENPC	ABL1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	CSF1R	TBL1XR1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	ETV6	PDGFRB	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	FIP1L1	PDGFRA	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	GATAD2A	LYN	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	LSM14A	ABL1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	PDGFRA	FIP1L1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	PDGFRB	ETV6	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	PDGFRB	ZMYND8	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	TBL1XR1	CSF1R	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	ZEB2	PDGFRB	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	ZMYND8	PDGFRB	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	ABL1	EXOSC2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	ABL1	FOXP1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	ABL1	MYO18B	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	ABL1	NUP153	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	ABL1	SFPQ	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	ABL1	SNX1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	EXOSC2	ABL1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	GATA2DA	LYN	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	LYN	GATA2DA	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	LYN	GATAD2A	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	LYN	NCOR1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	MYO18B	ABL1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	NCOR1	LYN	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	NUP153	ABL1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	PAG1	ABL2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	PDGFRB	SNX29	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	PDGFRB	SSBP2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	SFPQ	ABL1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	SNX1	ABL1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	SNX29	PDGFRB	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , ABL-1 class rearranged	Ph-like	not Ph-pos predicted	*	SSBP2	PDGFRB	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	CRLF2	IGH@	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	IGH@	CLRF2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	CRLF2	P2RY8	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	P2RY8	CRLF2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	EPOR	IGH@	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	IGH@	EPOR	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	JAK2	PAX5	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	PAX5	JAK2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	BCR	JAK2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	JAK2	BCR	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	JAK2	SSBP2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	SSBP2	JAK2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	ATF7IP	JAK2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	EPOR	IGK	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	ETV6	JAK2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	IGK	EPOR	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	JAK2	ATF7IP	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	JAK2	ETV6	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	EPOR	LAIR1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	JAK2	PCM1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	JAK2	PPFIBP1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	JAK2	TERF2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	JAK2	TPR	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	LAIR1	EPOR	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	PCM1	JAK2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	PPFIBP1	JAK2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	TERF2	JAK2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	TPR	JAK2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	EBF1	JAK2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	IL2RB	MYH9	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	IL7-R	IGH@	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	JAK2	EBF1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	JAK2	OFD1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	JAK2	STRN3	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	JAK2	USP25	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	JAK2	ZNF274	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	MYB	TYK2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	MYH9	IL2RB	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	OFD1	JAK2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	STRN3	JAK2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	USP25	JAK2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	ZNF274	JAK2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	EPOR	THADA	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	IGH@	IL7-R	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	JAK2	RFX3	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	JAK2	SMU1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	JAK2	WDR37	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	JAK2	ZNF340	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	RFX3	JAK2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	SMU1	JAK2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	THADA	EPOR	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	TYK2	MYB	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	TYK2	ZNF340	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	WDR37	JAK2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	ZNF340	JAK2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , JAK-STAT activated	Ph-like	not Ph-pos predicted	*	ZNF340	TYK2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , NOS	Ph-like	not Ph-pos predicted	*	ETV6	NTRK3	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , NOS	Ph-like	not Ph-pos predicted	*	NTRK3	ETV6	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , NOS	Ph-like	not Ph-pos predicted	*	GOPC	ROS1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , NOS	Ph-like	not Ph-pos predicted	*	PTK2B	TMEM2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , NOS	Ph-like	not Ph-pos predicted	*	ROS1	GOPC	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , NOS	Ph-like	not Ph-pos predicted	*	TMEM2	PTK2B	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , NOS	Ph-like	not Ph-pos predicted	*	CBL	KANK1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , NOS	Ph-like	not Ph-pos predicted	*	DGKH	ZFAND3	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , NOS	Ph-like	not Ph-pos predicted	*	IKZF1	ZEB2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , NOS	Ph-like	not Ph-pos predicted	*	KANK1	CBL	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , NOS	Ph-like	not Ph-pos predicted	*	ZEB2	IKZF1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , NOS	Ph-like	not Ph-pos predicted	*	ZFAND3	DGKH	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with KMT2A rearrangement	B-ALLwith t(v;11q23.3)/KMT2A rearranged	KMT2A	not Ph-pos predicted	*	AFF1	KMT2A	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with KMT2A rearrangement	B-ALLwith t(v;11q23.3)/KMT2A rearranged	KMT2A	not Ph-pos predicted	*	KMT2A	AFF1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with KMT2A rearrangement	B-ALLwith t(v;11q23.3)/KMT2A rearranged	KMT2A	not Ph-pos predicted	*	KMT2A	MLLT1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with KMT2A rearrangement	B-ALLwith t(v;11q23.3)/KMT2A rearranged	KMT2A	not Ph-pos predicted	*	MLLT1	KMT2A	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with KMT2A rearrangement	B-ALLwith t(v;11q23.3)/KMT2A rearranged	KMT2A	not Ph-pos predicted	*	KMT2A	MLLT3	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with KMT2A rearrangement	B-ALLwith t(v;11q23.3)/KMT2A rearranged	KMT2A	not Ph-pos predicted	*	MLLT3	KMT2A	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with KMT2A rearrangement	B-ALLwith t(v;11q23.3)/KMT2A rearranged	KMT2A	not Ph-pos predicted	*	KMT2A	MLLT10	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with KMT2A rearrangement	B-ALLwith t(v;11q23.3)/KMT2A rearranged	KMT2A	not Ph-pos predicted	*	MLLT10	KMT2A	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with KMT2A rearrangement	B-ALLwith t(v;11q23.3)/KMT2A rearranged	KMT2A	not Ph-pos predicted	*	KMT2A	USP2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with KMT2A rearrangement	B-ALLwith t(v;11q23.3)/KMT2A rearranged	KMT2A	not Ph-pos predicted	*	USP2	KMT2A	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with KMT2A rearrangement	B-ALLwith t(v;11q23.3)/KMT2A rearranged	KMT2A	not Ph-pos predicted	*	DCPS	KMT2A	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with KMT2A rearrangement	B-ALLwith t(v;11q23.3)/KMT2A rearranged	KMT2A	not Ph-pos predicted	*	EPS15	KMT2A	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with KMT2A rearrangement	B-ALLwith t(v;11q23.3)/KMT2A rearranged	KMT2A	not Ph-pos predicted	*	IKZF1	KMT2A	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with KMT2A rearrangement	B-ALLwith t(v;11q23.3)/KMT2A rearranged	KMT2A	not Ph-pos predicted	*	KMT2A	DCPS	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with KMT2A rearrangement	B-ALLwith t(v;11q23.3)/KMT2A rearranged	KMT2A	not Ph-pos predicted	*	KMT2A	EPS15	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with KMT2A rearrangement	B-ALLwith t(v;11q23.3)/KMT2A rearranged	KMT2A	not Ph-pos predicted	*	KMT2A	IKZF1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with KMT2A rearrangement	B-ALLwith t(v;11q23.3)/KMT2A rearranged	KMT2A	not Ph-pos predicted	*	KMT2A	TNS3	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with KMT2A rearrangement	B-ALLwith t(v;11q23.3)/KMT2A rearranged	KMT2A	not Ph-pos predicted	*	KMT2A	UBASH3B	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with KMT2A rearrangement	B-ALLwith t(v;11q23.3)/KMT2A rearranged	KMT2A	not Ph-pos predicted	*	TNS3	KMT2A	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with KMT2A rearrangement	B-ALLwith t(v;11q23.3)/KMT2A rearranged	KMT2A	not Ph-pos predicted	*	UBASH3B	KMT2A	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1 fusion	B-ALL with t(12;21)(p13.2;q22.1)/ETV6::RUNX1	ETV6::RUNX1	not Ph-pos predicted	*	ETV6	RUNX1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1 fusion	B-ALL with t(12;21)(p13.2;q22.1)/ETV6::RUNX1	ETV6::RUNX1	not Ph-pos predicted	*	RUNX1	ETV6	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1-like features	B-ALL, ETV6::RUNX1-like (provisional entity)	ETV6::RUNX1-like	not Ph-pos predicted	*	ELMO1	ETV6	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1-like features	B-ALL, ETV6::RUNX1-like (provisional entity)	ETV6::RUNX1-like	not Ph-pos predicted	*	ETV6	ELMO1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1-like features	B-ALL, ETV6::RUNX1-like (provisional entity)	ETV6::RUNX1-like	not Ph-pos predicted	*	AMPH	ETV6	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1-like features	B-ALL, ETV6::RUNX1-like (provisional entity)	ETV6::RUNX1-like	not Ph-pos predicted	*	C7ORF72	ETV6	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1-like features	B-ALL, ETV6::RUNX1-like (provisional entity)	ETV6::RUNX1-like	not Ph-pos predicted	*	CASC15	ETV6	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1-like features	B-ALL, ETV6::RUNX1-like (provisional entity)	ETV6::RUNX1-like	not Ph-pos predicted	*	CD163	ETV6	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1-like features	B-ALL, ETV6::RUNX1-like (provisional entity)	ETV6::RUNX1-like	not Ph-pos predicted	*	EBF1	ETV6	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1-like features	B-ALL, ETV6::RUNX1-like (provisional entity)	ETV6::RUNX1-like	not Ph-pos predicted	*	ERC1	ETV6	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1-like features	B-ALL, ETV6::RUNX1-like (provisional entity)	ETV6::RUNX1-like	not Ph-pos predicted	*	ETV6	AMPH	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1-like features	B-ALL, ETV6::RUNX1-like (provisional entity)	ETV6::RUNX1-like	not Ph-pos predicted	*	ETV6	C7ORF72	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1-like features	B-ALL, ETV6::RUNX1-like (provisional entity)	ETV6::RUNX1-like	not Ph-pos predicted	*	ETV6	CASC15	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1-like features	B-ALL, ETV6::RUNX1-like (provisional entity)	ETV6::RUNX1-like	not Ph-pos predicted	*	ETV6	CD163	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1-like features	B-ALL, ETV6::RUNX1-like (provisional entity)	ETV6::RUNX1-like	not Ph-pos predicted	*	ETV6	EBF1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1-like features	B-ALL, ETV6::RUNX1-like (provisional entity)	ETV6::RUNX1-like	not Ph-pos predicted	*	ETV6	ERC1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1-like features	B-ALL, ETV6::RUNX1-like (provisional entity)	ETV6::RUNX1-like	not Ph-pos predicted	*	ETV6	EXTL1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1-like features	B-ALL, ETV6::RUNX1-like (provisional entity)	ETV6::RUNX1-like	not Ph-pos predicted	*	ETV6	FAM136A	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1-like features	B-ALL, ETV6::RUNX1-like (provisional entity)	ETV6::RUNX1-like	not Ph-pos predicted	*	ETV6	FOXO3	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1-like features	B-ALL, ETV6::RUNX1-like (provisional entity)	ETV6::RUNX1-like	not Ph-pos predicted	*	ETV6	IKZF1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1-like features	B-ALL, ETV6::RUNX1-like (provisional entity)	ETV6::RUNX1-like	not Ph-pos predicted	*	ETV6	QSOX1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1-like features	B-ALL, ETV6::RUNX1-like (provisional entity)	ETV6::RUNX1-like	not Ph-pos predicted	*	ETV6	SLC30A7	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1-like features	B-ALL, ETV6::RUNX1-like (provisional entity)	ETV6::RUNX1-like	not Ph-pos predicted	*	ETV6	SRRM1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1-like features	B-ALL, ETV6::RUNX1-like (provisional entity)	ETV6::RUNX1-like	not Ph-pos predicted	*	ETV6	TMTC1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1-like features	B-ALL, ETV6::RUNX1-like (provisional entity)	ETV6::RUNX1-like	not Ph-pos predicted	*	EXTL1	ETV6	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1-like features	B-ALL, ETV6::RUNX1-like (provisional entity)	ETV6::RUNX1-like	not Ph-pos predicted	*	FAM136A	ETV6	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1-like features	B-ALL, ETV6::RUNX1-like (provisional entity)	ETV6::RUNX1-like	not Ph-pos predicted	*	FOXO3	ETV6	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1-like features	B-ALL, ETV6::RUNX1-like (provisional entity)	ETV6::RUNX1-like	not Ph-pos predicted	*	IKZF1	ETV6	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1-like features	B-ALL, ETV6::RUNX1-like (provisional entity)	ETV6::RUNX1-like	not Ph-pos predicted	*	IKZF1	RNFT2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1-like features	B-ALL, ETV6::RUNX1-like (provisional entity)	ETV6::RUNX1-like	not Ph-pos predicted	*	IKZF1	STIM2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1-like features	B-ALL, ETV6::RUNX1-like (provisional entity)	ETV6::RUNX1-like	not Ph-pos predicted	*	IKZF1	ZPBP	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1-like features	B-ALL, ETV6::RUNX1-like (provisional entity)	ETV6::RUNX1-like	not Ph-pos predicted	*	QSOX1	ETV6	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1-like features	B-ALL, ETV6::RUNX1-like (provisional entity)	ETV6::RUNX1-like	not Ph-pos predicted	*	RNFT2	IKZF1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1-like features	B-ALL, ETV6::RUNX1-like (provisional entity)	ETV6::RUNX1-like	not Ph-pos predicted	*	SLC30A7	ETV6	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1-like features	B-ALL, ETV6::RUNX1-like (provisional entity)	ETV6::RUNX1-like	not Ph-pos predicted	*	SRRM1	ETV6	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1-like features	B-ALL, ETV6::RUNX1-like (provisional entity)	ETV6::RUNX1-like	not Ph-pos predicted	*	STIM2	IKZF1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1-like features	B-ALL, ETV6::RUNX1-like (provisional entity)	ETV6::RUNX1-like	not Ph-pos predicted	*	TMTC1	ETV6	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1-like features	B-ALL, ETV6::RUNX1-like (provisional entity)	ETV6::RUNX1-like	not Ph-pos predicted	*	ZPBP	IKZF1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with TCF3::PBX1 fusion	B-ALL with t(1;19)(q23.3;p13.3)/TCF3::PBX1	TCF3::PBX1	not Ph-pos predicted	*	TCF3	PBX1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with TCF3::PBX1 fusion	B-ALL with t(1;19)(q23.3;p13.3)/TCF3::PBX1	TCF3::PBX1	not Ph-pos predicted	*	PBX1	TCF3	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with TCF3::HLF fusion	B-ALL with HLF rearrangement	HLF	not Ph-pos predicted	*	HLF	TCF3	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with TCF3::HLF fusion	B-ALL with HLF rearrangement	HLF	not Ph-pos predicted	*	TCF3	HLF	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with TCF3::HLF fusion	B-ALL with HLF rearrangement	HLF	not Ph-pos predicted	*	HLF	TCF4	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with TCF3::HLF fusion	B-ALL with HLF rearrangement	HLF	not Ph-pos predicted	*	TCF4	HLF	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with MYC rearrangement	BCL2/MYC	not Ph-pos predicted	*	BCL2	IGH@	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with MYC rearrangement	BCL2/MYC	not Ph-pos predicted	*	IGH@	BCL2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with MYC rearrangement	BCL2/MYC	not Ph-pos predicted	*	IGH@	MYC	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with MYC rearrangement	BCL2/MYC	not Ph-pos predicted	*	MYC	IGH@	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with MYC rearrangement	BCL2/MYC	not Ph-pos predicted	*	BCL6	IGH@	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with MYC rearrangement	BCL2/MYC	not Ph-pos predicted	*	IGH@	BCL6	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with MYC rearrangement	BCL2/MYC	not Ph-pos predicted	*	BCL2	MYC	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with MYC rearrangement	BCL2/MYC	not Ph-pos predicted	*	MYC	BCL2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with DUX4 rearrangement	DUX4	not Ph-pos predicted	*	DUX4	IGH@	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with DUX4 rearrangement	DUX4	not Ph-pos predicted	*	IGH@	DUX4	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with DUX4 rearrangement	DUX4	not Ph-pos predicted	*	DUX4	ETV6	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with DUX4 rearrangement	DUX4	not Ph-pos predicted	*	DUX4	PCGF5	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with DUX4 rearrangement	DUX4	not Ph-pos predicted	*	ETV6	DUX4	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with DUX4 rearrangement	DUX4	not Ph-pos predicted	*	PCGF5	DUX4	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with MEF2D rearrangement	MEF2D	not Ph-pos predicted	*	BCL9	MEF2D	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with MEF2D rearrangement	MEF2D	not Ph-pos predicted	*	MEF2D	BCL9	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with MEF2D rearrangement	MEF2D	not Ph-pos predicted	*	HNRNPUL1	MEF2D	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with MEF2D rearrangement	MEF2D	not Ph-pos predicted	*	MEF2D	HNRNPUL1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with MEF2D rearrangement	MEF2D	not Ph-pos predicted	*	MEF2D	PYGO2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with MEF2D rearrangement	MEF2D	not Ph-pos predicted	*	PYGO2	MEF2D	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with MEF2D rearrangement	MEF2D	not Ph-pos predicted	*	DAZAP1	MEF2D	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with MEF2D rearrangement	MEF2D	not Ph-pos predicted	*	FOXJ2	MEF2D	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with MEF2D rearrangement	MEF2D	not Ph-pos predicted	*	HNRNPM	MEF2D	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with MEF2D rearrangement	MEF2D	not Ph-pos predicted	*	MEF2D	DAZAP1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with MEF2D rearrangement	MEF2D	not Ph-pos predicted	*	MEF2D	FOXJ2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with MEF2D rearrangement	MEF2D	not Ph-pos predicted	*	MEF2D	HNRNPM	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with MEF2D rearrangement	MEF2D	not Ph-pos predicted	*	MEF2D	SS18	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with MEF2D rearrangement	MEF2D	not Ph-pos predicted	*	SS18	MEF2D	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with ZNF384(362) rearrangement	ZNF384	not Ph-pos predicted	*	EP300	ZNF384	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with ZNF384(362) rearrangement	ZNF384	not Ph-pos predicted	*	ZNF384	EP300	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with ZNF384(362) rearrangement	ZNF384	not Ph-pos predicted	*	TAF15	ZNF384	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with ZNF384(362) rearrangement	ZNF384	not Ph-pos predicted	*	TCF3	ZNF384	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with ZNF384(362) rearrangement	ZNF384	not Ph-pos predicted	*	ZNF384	TAF15	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with ZNF384(362) rearrangement	ZNF384	not Ph-pos predicted	*	ZNF384	TCF3	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with ZNF384(362) rearrangement	ZNF384	not Ph-pos predicted	*	EWSR1	ZNF384	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with ZNF384(362) rearrangement	ZNF384	not Ph-pos predicted	*	ZNF384	EWSR1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with ZNF384(362) rearrangement	ZNF384	not Ph-pos predicted	*	SMARCA2	ZNF362	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with ZNF384(362) rearrangement	ZNF384	not Ph-pos predicted	*	ZNF362	SMARCA2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with ZNF384(362) rearrangement	ZNF384	not Ph-pos predicted	*	ZNF384	SMARCA2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with ZNF384(362) rearrangement	ZNF384	not Ph-pos predicted	*	ARID1B	ZNF384	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with ZNF384(362) rearrangement	ZNF384	not Ph-pos predicted	*	CLTC	ZNF384	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with ZNF384(362) rearrangement	ZNF384	not Ph-pos predicted	*	CREBBP	ZNF384	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with ZNF384(362) rearrangement	ZNF384	not Ph-pos predicted	*	DDX42	ZNF384	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with ZNF384(362) rearrangement	ZNF384	not Ph-pos predicted	*	NIPBL	ZNF384	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with ZNF384(362) rearrangement	ZNF384	not Ph-pos predicted	*	SMARCA2	ZNF384	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with ZNF384(362) rearrangement	ZNF384	not Ph-pos predicted	*	ZNF384	ARID1B	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with ZNF384(362) rearrangement	ZNF384	not Ph-pos predicted	*	ZNF384	CLTC	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with ZNF384(362) rearrangement	ZNF384	not Ph-pos predicted	*	ZNF384	CREBBP	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with ZNF384(362) rearrangement	ZNF384	not Ph-pos predicted	*	ZNF384	DDX42	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with ZNF384(362) rearrangement	ZNF384	not Ph-pos predicted	*	ZNF384	NIPBL	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with NUTM1 rearrangement	NUTM1	not Ph-pos predicted	*	NUTM1	SLC12A6	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with NUTM1 rearrangement	NUTM1	not Ph-pos predicted	*	SLC12A6	NUTM1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with NUTM1 rearrangement	NUTM1	not Ph-pos predicted	*	ACIN1	NUTM1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with NUTM1 rearrangement	NUTM1	not Ph-pos predicted	*	CUX1	NUTM1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with NUTM1 rearrangement	NUTM1	not Ph-pos predicted	*	NUTM1	ACIN1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with NUTM1 rearrangement	NUTM1	not Ph-pos predicted	*	NUTM1	CUX1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with NUTM1 rearrangement	NUTM1	not Ph-pos predicted	*	BRD9	NUTM1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with NUTM1 rearrangement	NUTM1	not Ph-pos predicted	*	NUTM1	BRD9	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with NUTM1 rearrangement	NUTM1	not Ph-pos predicted	*	NUTM1	ZNF618	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with NUTM1 rearrangement	NUTM1	not Ph-pos predicted	*	ZNF618	NUTM1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with NUTM1 rearrangement	NUTM1	not Ph-pos predicted	*	IKZF1	NUTM1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with NUTM1 rearrangement	NUTM1	not Ph-pos predicted	*	NUTM1	IKZF1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with UBTF::ATXN7L3/PAN3,CDX2 (CDX2/UBTF) 	CDX2/UBTF	not Ph-pos predicted	*	UBTF	ATXN7L3	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with UBTF::ATXN7L3/PAN3,CDX2 (CDX2/UBTF) 	CDX2/UBTF	not Ph-pos predicted	*	ATXN7L3	UBTF	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	ETV6	PAX5	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	PAX5	ETV6	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	NOL4L	PAX5	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	PAX5	NOL4L	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	AUTS2	PAX5	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	PAX5	AUTS2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	PAX5	ZNF521	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	ZNF521	PAX5	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	CBFA2T3	PAX5	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	DACH1	PAX5	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	PAX5	CBFA2T3	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	PAX5	DACH1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	ELN	PAX5	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	FBRSL1	PAX5	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	PAX5	ELN	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	PAX5	FBRSL1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	CBFA2T2	PAX5	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	PAX5	CBFA2T2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	PAX5	NCOA5	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	ADAMTSL5	TCF3	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	ANTXR1	PAX5	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	BMP2K	LEF1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	DACH2	PAX5	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	DBX1	PAX5	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	DMRTA2	PAX5	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	ESRRA	PAX5	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	FKBP15	PAX5	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	FOXP2	PAX5	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	ID4	IGH@	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	IGH@	ID4	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	LEF1	BMP2K	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	MBNL1	MEIS2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	MBNL1	PAX5	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	MEIS2	MBNL1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	MPRIP	PAX5	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	NCOA5	PAX5	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	PAX5	ANTXR1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	PAX5	DACH2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	PAX5	DBX1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	PAX5	DMRTA2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	PAX5	ESRRA	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	PAX5	FKBP15	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	PAX5	FOXP2	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	PAX5	MBNL1	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	PAX5	MPRIP	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	PAX5	PML	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	PAX5	RHOXF2B	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	PAX5	TAF3	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	PAX5	TMPRSS9	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	PAX5	WDR5	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	PAX5	ZNF276	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	PML	PAX5	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	RHOXF2B	PAX5	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	TAF3	PAX5	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	TCF3	ADAMTSL5	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	TMPRSS9	PAX5	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	WDR5	PAX5	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	*	ZNF276	PAX5	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with mutated ZEB2 (p.H1038R)/IGH::CEBPE (provisional entity)	CEBP	not Ph-pos predicted	*	CEBPA	IGH@	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with mutated ZEB2 (p.H1038R)/IGH::CEBPE (provisional entity)	CEBP	not Ph-pos predicted	*	IGH@	CEBPA	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with mutated ZEB2 (p.H1038R)/IGH::CEBPE (provisional entity)	CEBP	not Ph-pos predicted	*	CEBPE	IGH@	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with mutated ZEB2 (p.H1038R)/IGH::CEBPE (provisional entity)	CEBP	not Ph-pos predicted	*	IGH@	CEBPE	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with mutated ZEB2 (p.H1038R)/IGH::CEBPE (provisional entity)	CEBP	not Ph-pos predicted	*	CEBPB	IGH@	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with mutated ZEB2 (p.H1038R)/IGH::CEBPE (provisional entity)	CEBP	not Ph-pos predicted	*	CEBPD	IGH@	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with mutated ZEB2 (p.H1038R)/IGH::CEBPE (provisional entity)	CEBP	not Ph-pos predicted	*	IGH@	CEBPB	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with mutated ZEB2 (p.H1038R)/IGH::CEBPE (provisional entity)	CEBP	not Ph-pos predicted	*	IGH@	CEBPD	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, KMT2A rearranged-like (provisional entity)	KMT2A	not Ph-pos predicted	*	HOXA9	MED12	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, KMT2A rearranged-like (provisional entity)	KMT2A	not Ph-pos predicted	*	MED12	HOXA9	other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with high hyperdiploidy	B-ALL, hyperdiploid	Hyperdiploid	not Ph-pos predicted	*			Hyperdiploid	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with hypodiploidy	B-ALL, low hypodiploid	Low hypodiploid	not Ph-pos predicted	*			Low hypodiploid	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, near haploid	Near haploid	not Ph-pos predicted	*			Near haploid	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with iAMP21	B-ALL with iAMP21	iAMP21	not Ph-pos predicted	*			iAMP21	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with PAX5 alteration (provisional entity)	PAX5alt	not Ph-pos predicted	high-confidence			other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features	B-ALL, BCR::ABL1-like , NOS	Ph-like	not Ph-pos predicted	high-confidence			other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1-like features	B-ALL, ETV6::RUNX1-like (provisional entity)	ETV6::RUNX1-like	not Ph-pos predicted	high-confidence			other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, ZNF384 rearranged-like (provisional entity)	ZNF384	not Ph-pos predicted	high-confidence			other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, KMT2A rearranged-like (provisional entity)	KMT2A	not Ph-pos predicted	high-confidence			other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL, with mutated ZEB2 (p.H1038R)/IGH::CEBPE (provisional entity)	CEBP	not Ph-pos predicted	high-confidence			other	no 	no 	yes
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with mutated IKZF1 N159Y	IKZF1 N159Y	not Ph-pos predicted	*			other	no 	yes	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with mutated PAX5 P80R 	PAX5 P80R	not Ph-pos predicted	*			other	yes	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with DUX4 rearrangement	DUX4	not Ph-pos predicted	high-confidence			other	no 	no 	*
+B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities	B-ALL with MYC rearrangement	BCL2/MYC	not Ph-pos predicted	high-confidence			other	no 	no 	*

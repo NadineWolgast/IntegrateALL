@@ -4,8 +4,6 @@ channels:
   - defaults
   - r
 dependencies:
-  - r-readxl=1.4.3
-  - r-data.table=1.14.10
   - arriba=2.4.0=h0033a41_2
   - bcftools=1.17=h3cc50cf_1
   - bioconductor-biobase=2.58.0=r42ha9d7317_1
@@ -29,17 +27,21 @@ dependencies:
   - bwa=0.7.17=he4a0461_11
   - bzip2=1.0.8=h7f98852_4
   - cairo=1.16.0=ha61ee94_1014
-  - conda=23.7.3=py310hff52083_0
+  - conda=23.9.0
   - conda-package-handling=2.2.0=pyh38be061_0
   - conda-package-streaming=0.9.0=pyhd8ed1ab_0
   - curl=7.87.0=h6312ad2_0
   - gatk4=4.0.5.1=0
+  - htslib=1.17
+  - libcurl=7.87.0
   - multiqc=1.15=pyhdfd78af_0
   - numpy=1.26.4=py311h64a7726_0
   - openjdk=8.0.332=h166bdaf_0
+  - openssl=1.1.1w 
   - pandas=2.2.2=py311h14de704_1
   - pip=23.2.1=pyhd8ed1ab_0
   - python=3.11.0=h10a6764_1_cpython
+  - python_abi=3.11=4_cp311
   - r-askpass=1.2.0=r42h57805ef_0
   - r-assertthat=0.2.1=r42hc72bb7e_4
   - r-backports=1.4.1=r42h57805ef_2
@@ -121,6 +123,7 @@ dependencies:
   - r-rcmdcheck=1.4.0=r42h785f33e_2
   - r-rcpp=1.0.11=r42h7df8631_0
   - r-rcurl=1.98_1.10=r42h133d619_0
+  - r-readxl=1.4.3
   - r-rematch2=2.1.2=r42hc72bb7e_3
   - r-remotes=2.4.2.1=r42hc72bb7e_0
   - r-rlang=1.1.1=r42ha503ecb_1

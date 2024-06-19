@@ -39,7 +39,6 @@ dependencies:
   - openjdk=8.0.332=h166bdaf_0
   - pandas=2.2.2=py311h14de704_1
   - pip=23.2.1=pyhd8ed1ab_0
-  - pysamstats=1.1.2=py310h8472f5a_9
   - python=3.11.0=h10a6764_1_cpython
   - r-askpass=1.2.0=r42h57805ef_0
   - r-assertthat=0.2.1=r42hc72bb7e_4

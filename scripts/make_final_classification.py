@@ -8,166 +8,174 @@ no_driver_subtypes_list = ["Hyperdiploid", "Low hypodiploid", "Near haploid", "i
 no_driver_karyotype_list = ["Hyperdiploid", "Low hypodiploid", "Near haploid", "iAMP21", "other"]
 
 driver_fusion_list = [
-    "BCR",
     "ABL1",
     "ABL2",
-    "RCSD1",
-    "ZC3HAV1",
-    "EBF1",
-    "PDGFRB",
-    "NUP214",
-    "CSF1R",
-    "SSBP2",
-    "ETV6",
-    "ZMIZ1",
-    "RANBP2",
-    "ATF7IP",
-    "SNX2",
-    "PAG1",
-    "MEF2D",
-    "ZEB2",
-    "CENPC",
-    "LSM14A",
-    "TBL1XR1",
-    "FIP1L1",
-    "GATAD2A",
-    "LYN",
-    "NCOR1",
-    "EXOSC2",
-    "FOXP1",
-    "MYO18B",
-    "NUP153",
-    "SFPQ",
-    "SNX1",
-    "ZMYND8",
-    "EPOR",
-    "IGK",
-    "LAIR1",
-    "PCM1",
-    "PPFIBP1",
-    "TERF2",
-    "TPR",
-    "JAK2",
-    "IL2RB",
-    "MYH9",
-    "IL7-R",
-    "OFD1",
-    "STRN3",
-    "USP25",
-    "ZNF274",
-    "MYB",
-    "TYK2",
-    "RFX3",
-    "SMU1",
-    "WDR37",
-    "ZNF340",
-    "NTRK3",
-    "GOPC",
-    "ROS1",
-    "PTK2B",
-    "TMEM2",
-    "CBL",
-    "KANK1",
-    "DGKH",
-    "ZFAND3",
-    "IKZF1",
+    "ACIN1",
+    "ADAMTSL5",
     "AFF1",
-    "KMT2A",
-    "MLLT1",
-    "MLLT3",
-    "MLLT10",
-    "USP2",
-    "DCPS",
-    "EPS15",
-    "TNS3",
-    "UBASH3B",
-    "RUNX1",
-    "ELMO1",
     "AMPH",
+    "ANTXR1",
+    "ARID1B",
+    "ATF7IP",
+    "ATXN7L3",
+    "AUTS2",
+    "BCL2",
+    "BCL6",
+    "BCL9",
+    "BCR",
+    "BCR",
+    "BMP2K",
+    "BRD9",
     "C7ORF72",
     "CASC15",
-    "CD163",
-    "EBF1",
-    "ERC1",
-    "EXTL1",
-    "FAM136A",
-    "FOXO3",
-    "QSOX1",
-    "SLC30A7",
-    "SRRM1",
-    "TMTC1",
-    "RNFT2",
-    "ZPBP",
-    "TCF3",
-    "PBX1",
-    "HLF",
-    "TCF4",
-    "BCL2",
-    "IGH@",
-    "MYC",
-    "DUX4",
-    "PCGF5",
-    "BCL9",
-    "HNRNPUL1",
-    "PYGO2",
-    "DAZAP1",
-    "FOXJ2",
-    "HNRNPM",
-    "SS18",
-    "EP300",
-    "ZNF384",
-    "TAF15",
-    "TCF3",
-    "EWSR1",
-    "SMARCA2",
-    "ARID1B",
-    "CLTC",
-    "CREBBP",
-    "DDX42",
-    "NIPBL",
-    "ZNF362",
-    "NUTM1",
-    "SLC12A6",
-    "ACIN1",
-    "CUX1",
-    "BRD9",
-    "ZNF618",
-    "UBTF",
-    "ATXN7L3",
-    "PAX5",
-    "NOL4L",
-    "AUTS2",
-    "ZNF521",
-    "CBFA2T3",
-    "DACH1",
     "CBFA2T2",
-    "NCOA5",
-    "ADAMTSL5",
-    "ANTXR1",
-    "BMP2K",
-    "LEF1",
-    "DACH2",
-    "DBX1",
-    "DMRTA2",
-    "ESRRA",
-    "FKBP15",
-    "FOXP2",
-    "ID4",
-    "MBNL1",
-    "MEIS2",
-    "MPRIP",
-    "PML",
-    "RHOXF2B",
-    "TAF3",
-    "TMPRSS9",
-    "WDR5",
-    "ZNF276",
+    "CBFA2T3",
+    "CBL",
+    "CD163",
     "CEBPA",
-    "CEBPE",
     "CEBPB",
     "CEBPD",
+    "CEBPE",
+    "CENPC",
+    "CLTC",
+    "CREBBP",
+    "CRLF2",
+    "CSF1R",
+    "CUX1",
+    "DACH1",
+    "DACH2",
+    "DAZAP1",
+    "DBX1",
+    "DCPS",
+    "DDX42",
+    "DGKH",
+    "DMRTA2",
+    "DUX4",
+    "EBF1",
+    "ELMO1",
+    "ELN",
+    "EP300",
+    "EPOR",
+    "EPS15",
+    "ERC1",
+    "ESRRA",
+    "ETV6",
+    "EWSR1",
+    "EXOSC2",
+    "EXTL1",
+    "FAM136A",
+    "FBRSL1",
+    "FIP1L1",
+    "FKBP15",
+    "FOXJ2",
+    "FOXO3",
+    "FOXP2",
+    "GATA2DA",
+    "GATAD2A",
+    "GOPC",
+    "HLF",
+    "HNRNPM",
+    "HNRNPUL1",
     "HOXA9",
-    "MED12"
+    "ID4",
+    "IGH@",
+    "IGK",
+    "IKZF1",
+    "IL2RB",
+    "IL7-R",
+    "JAK2",
+    "KANK1",
+    "KMT2A",
+    "LAIR1",
+    "LEF1",
+    "LSM14A",
+    "LYN",
+    "MBNL1",
+    "MED12",
+    "MEF2D",
+    "MEIS2",
+    "MLLT1",
+    "MLLT10",
+    "MLLT3",
+    "MPRIP",
+    "MYB",
+    "MYC",
+    "MYH9",
+    "MYO18B",
+    "NCOA5",
+    "NCOR1",
+    "NIPBL",
+    "NOL4L",
+    "NTRK3",
+    "NUP153",
+    "NUP214",
+    "NUTM1",
+    "OFD1",
+    "P2RY8",
+    "PAG1",
+    "PAX5",
+    "PBX1",
+    "PCGF5",
+    "PCM1",
+    "PDGFRA",
+    "PDGFRB",
+    "PML",
+    "PPFIBP1",
+    "PTK2B",
+    "PYGO2",
+    "QSOX1",
+    "RANBP2",
+    "RCSD1",
+    "RFX3",
+    "RHOXF2B",
+    "RNFT2",
+    "ROS1",
+    "RUNX1",
+    "SFPQ",
+    "SLC12A6",
+    "SLC30A7",
+    "SMARCA2",
+    "SNX1",
+    "SNX2",
+    "SNX29",
+    "SRRM1",
+    "SS18",
+    "SSBP2",
+    "STIM2",
+    "STRN3",
+    "TAF15",
+    "TAF3",
+    "TBL1XR1",
+    "TCF3",
+    "TCF4",
+    "TERF2",
+    "THADA",
+    "TMEM2",
+    "TMPRSS9",
+    "TMTC1",
+    "TNIP1",
+    "TNS3",
+    "TPR",
+    "TYK2",
+    "UBASH3B",
+    "UBTF",
+    "USP2",
+    "USP25",
+    "WDR37",
+    "WDR5",
+    "ZC3HAV1",
+    "ZEB2",
+    "ZFAND3",
+    "ZMIZ1",
+    "ZMYND8",
+    "ZNF274",
+    "ZNF276",
+    "ZNF340",
+    "ZNF362",
+    "ZNF384",
+    "ZNF521",
+    "ZNF618",
+    "ZPBP"
 ]
 
 
@@ -240,13 +248,19 @@ def filter_karyotype(karyotype, unique_karyotypes):
     return filtered_karyotype
 
 
-def gather_data(allcatchr_file, karyotype_file, fusioncatcher_file, hotspot_dir):
+def gather_data(allcatchr_file, karyotype_file, fusioncatcher_file, arriba_file, hotspot_dir):
     subgruppe, confidence, bcr_abl1_maincluster_pred = get_allcatchr_data(allcatchr_file)
     karyotype, score = get_karyotype_and_probabilities(karyotype_file)
     relevant_files = check_hotspot_files(hotspot_dir)
 
     fusion_genes = []
     with open(fusioncatcher_file, 'r') as f:
+        next(f)  # Überspringen der Header-Zeile
+        for line in f:
+            parts = line.strip().split('\t')
+            fusion_genes.append((parts[0], parts[1]))
+
+    with open(arriba_file, 'r') as f:
         next(f)  # Überspringen der Header-Zeile
         for line in f:
             parts = line.strip().split('\t')
@@ -326,7 +340,7 @@ def check_conditions(subgruppe, confidence, bcr_abl1_maincluster_pred, karyotype
             else:
                 print("Different subtype and karyotype")
     else:
-        print("Mit fusionen")
+        print("Mit fusionen:", filtered_fusions)
         for index, row in df.iterrows():
             all_conditions_met = True
             gene_1 = row['Gene_1_symbol(5end_fusion_partner)']
@@ -356,13 +370,13 @@ def check_conditions(subgruppe, confidence, bcr_abl1_maincluster_pred, karyotype
     return results
 
 
-
-def main(sample, allcatchr_file, karyotype_file, fusioncatcher_file, hotspot_dir, classification_file, output_csv,
+def main(sample, allcatchr_file, karyotype_file, fusioncatcher_file, arriba_file, hotspot_dir, classification_file, output_csv,
          output_text):
     subgruppe, confidence, bcr_abl1_maincluster_pred, karyotype, relevant_files, fusion_genes = gather_data(
-        allcatchr_file, karyotype_file, fusioncatcher_file, hotspot_dir)
+        allcatchr_file, karyotype_file, fusioncatcher_file, arriba_file, hotspot_dir)
     df = pd.read_csv(classification_file, sep='\t')
     filtered_fusions = filter_fusions(fusion_genes, driver_fusion_list, df)
+
 
     results = check_conditions(subgruppe, confidence, bcr_abl1_maincluster_pred, karyotype, relevant_files,
                                fusion_genes, df)
@@ -374,6 +388,18 @@ def main(sample, allcatchr_file, karyotype_file, fusioncatcher_file, hotspot_dir
             return "no fusion"
         return f"{gene_1}::{gene_2}"
 
+    def get_filtered_fusion_genes(filtered_fusions, matched_fusions):
+        filtered_gene_pairs = set()
+        for fusion in filtered_fusions:
+            gene_1, gene_2 = fusion[0], fusion[1]
+            if not pd.isna(gene_1) and not pd.isna(gene_2):
+                pair = (gene_1, gene_2)
+                if pair not in matched_fusions:
+                    filtered_gene_pairs.add(pair)
+        return list(filtered_gene_pairs)
+
+    matched_fusions = set()
+
     # Ergebnisse in die Ausgabedatei schreiben
     if results:
         output_df = pd.DataFrame(results)
@@ -383,14 +409,25 @@ def main(sample, allcatchr_file, karyotype_file, fusioncatcher_file, hotspot_dir
         with open(output_text, 'w') as f:
             for result in results:
                 fusion_text = format_fusion(result)
+                if fusion_text != "no fusion":
+                    gene_1, gene_2 = result['Gene_1_symbol(5end_fusion_partner)'], result['Gene_2_symbol(3end_fusion_partner)']
+                    matched_fusions.add((gene_1, gene_2))
                 f.write(f"Consistency between gene expression-based subtype-allocation (ALLCatchR: {subgruppe} subtype, {confidence} confidence) "
-                        f"and the genomic driver profile (fusioncatcher: {fusion_text}, "
+                        f"and the genomic driver profile (fusioncatcher/arriba: {fusion_text}, "
                         f"RNA-Seq CNV karyotype classifier: {karyotype}, subtype defining SNPs: "
                         f"{'PAX5 P80R present' if relevant_files['PAX5_P80R'] else 'absent'}, "
                         f"{'IKZF1 N159Y present' if relevant_files['IKZF1_N159Y'] else 'absent'}) "
                         f"supports a classification as\n\n"
                         f"{result['WHO-HAEM5']} according to WHO-HAEM5 (Alaggio R et al. Leukemia, 2022) and\n"
                         f"{result['ICC']} according to ICC (Arber D et al. Blood, 2022).\n\n")
+
+            # Wenn es mehr als ein Fusionspaar gibt, schreiben Sie die gefilterten Fusionsgene, die keinen Match hatten
+            if len(filtered_fusions) > 1:
+                unique_filtered_genes = get_filtered_fusion_genes(filtered_fusions, matched_fusions)
+                f.write("IntegrateALL identified additional driver fusions:\n")
+                for gene_1, gene_2 in unique_filtered_genes:
+                    f.write(f"{gene_1}::{gene_2}\n")
+
         print(f"Detailed results written to {output_text}")
 
     else:
@@ -404,13 +441,14 @@ def main(sample, allcatchr_file, karyotype_file, fusioncatcher_file, hotspot_dir
         with open(output_text, 'w') as f:
             f.write(f"IntegretALL classification:\n\n"
                     f"Gene expression-based subtype-allocation (ALLCatchR: {subgruppe} subtype, {confidence} confidence) "
-                    f"and the genomic driver profile (fusioncatcher: no fusion, "
+                    f"and the genomic driver profile (fusioncatcher/arriba: no fusion, "
                     f"RNA-Seq CNV karyotype classifier: {karyotype}, subtype defining SNPs: "
                     f"{'PAX5 P80R present' if relevant_files['PAX5_P80R'] else 'absent'}, "
                     f"{'IKZF1 N159Y present' if relevant_files['IKZF1_N159Y'] else 'absent'}) "
                     f"seem not to be consistent with an unambiguous diagnostic classification according to WHO-HAEM5 "
                     f"(Alaggio R et al. Leukemia, 2022) / ICC (Arber D et al. Blood, 2022).")
         print(f"Detailed message written to {output_text}")
+
 
 
 if __name__ == "__main__":
@@ -420,9 +458,10 @@ if __name__ == "__main__":
     allcatchr_file = sys.argv[2]
     karyotype_file = sys.argv[3]
     fusioncatcher_file = sys.argv[4]
-    hotspot_dir = sys.argv[5]
-    classification_file = sys.argv[6]
-    output_csv = sys.argv[7]
-    output_text = sys.argv[8]
-    main(sample, allcatchr_file, karyotype_file, fusioncatcher_file, hotspot_dir, classification_file, output_csv,
+    arriba_file = sys.argv[5]
+    hotspot_dir = sys.argv[6]
+    classification_file = sys.argv[7]
+    output_csv = sys.argv[8]
+    output_text = sys.argv[9]
+    main(sample, allcatchr_file, karyotype_file, fusioncatcher_file, arriba_file, hotspot_dir, classification_file, output_csv,
          output_text)

@@ -797,7 +797,7 @@ rule final_classification:
         allcatchr_file="allcatch_output/{sample}/predictions.tsv",
         karyotype="karyotype_prediction/{sample}.csv",
         fusioncatcher_file="fusioncatcher_output/{sample}/final-list_candidate-fusion-genes.txt",
-        #arriba_file="fusions/{sample}.tsv",
+        arriba_file="fusions/{sample}.tsv",
         hotspots="Hotspots/{sample}",
         classification_file="data/annotation/Classification_new.csv"
 
@@ -807,9 +807,9 @@ rule final_classification:
 
     shell:
         """
-        python scripts/make_final_classification.py {wildcards.sample} {input.allcatchr_file} {input.karyotype} {input.fusioncatcher_file} {input.hotspots} {input.classification_file} {output.csv} {output.text}
-        """        
-  
+        python scripts/make_final_classification.py {wildcards.sample} {input.allcatchr_file} {input.karyotype} {input.fusioncatcher_file} {input.arriba_file} {input.hotspots} {input.classification_file} {output.csv} {output.text}
+        """
+
 
 rule interactive_report:
     input:

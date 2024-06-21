@@ -268,7 +268,7 @@ rule run_star_aligner:
 
     resources:
         threads=config['threads'],
-        mem=config['star_mem']
+        mem_mb=config['star_mem']
 
     shell:
         'mkdir -p {output.directory} && '
@@ -436,7 +436,7 @@ rule run_fusioncatcher:
         
     resources:
         threads=config['threads'],
-        mem=config['star_mem']
+        mem_mb=config['star_mem']
 
     shell:
         '''

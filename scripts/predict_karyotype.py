@@ -13,6 +13,14 @@ sample_id = sys.argv[3]
 
 np.set_printoptions(suppress=True)
 
+def generate_dummy_output(outfile, sample_id):
+    # Erstelle den Dummy-Output
+    with open(outfile, mode='w', newline='') as file:
+        writer = csv.writer(file)
+        # Schreibe die Header
+        writer.writerow(['Sample', 'Score', 'Prediction', 'Hyperdiploid', 'Low hypodiploid', 'Near haploid', 'iAMP21', 'Other'])
+        writer.writerow([sample_id, '0%', 'unclassified', '0%', '0%', '0%', '0%', '0%'])
+
 def generate_prediction_statement(predictions):
     # Zähle die Häufigkeit der einzelnen Vorhersagen
     prediction_counts = Counter(predictions)
@@ -35,26 +43,32 @@ with open('scripts/ensemble_classifier_250524.pkl', 'rb') as model_file:
     label_encoder = model_data['label_encoder']
 
 new = pd.read_csv(in_file)
-new_data = new.iloc[:, 1:]
-# Skalierung der Daten mit dem geladenen Scaler
-scaled_data = scaler.transform(new_data)
 
-pred = rf_classifier.predict(scaled_data)
-pred_pro = rf_classifier.predict_proba(scaled_data)
+# Prüfen der Spaltenanzahl
+if new.shape[1] < 185:
+    print(f"Die Eingabedatei {in_file} hat weniger als 185 Spalten. Generiere Dummy-Output.")
+    generate_dummy_output(outfile, sample_id)
+else:
+    new_data = new.iloc[:, 1:]
 
-# Extrahiere das vorhergesagte Label
-predicted_label = label_encoder.inverse_transform([pred[0]])[0]
-index_predicted_label = list(rf_classifier.classes_).index(pred[0])
-probability = pred_pro[0][index_predicted_label]
+    # Skalierung der Daten mit dem geladenen Scaler
+    scaled_data = scaler.transform(new_data)
 
-# Convert probabilities to whole numbers as percentages
-print(probability, pred_pro[0])
-pred_pro_percent = [f"{int(prob * 100)}%" for prob in pred_pro[0]]
+    pred = rf_classifier.predict(scaled_data)
+    pred_pro = rf_classifier.predict_proba(scaled_data)
 
+    # Extrahiere das vorhergesagte Label
+    predicted_label = label_encoder.inverse_transform([pred[0]])[0]
+    index_predicted_label = list(rf_classifier.classes_).index(pred[0])
+    probability = pred_pro[0][index_predicted_label]
 
-with open(outfile, mode='w', newline='') as file:
-    writer = csv.writer(file)
+    # Convert probabilities to whole numbers as percentages
+    print(probability, pred_pro[0])
+    pred_pro_percent = [f"{int(prob * 100)}%" for prob in pred_pro[0]]
 
-    # Schreibe die Header
-    writer.writerow(['Sample', 'Score', 'Prediction', 'Hyperdiploid', 'Low hypodiploid', 'Near haploid', 'iAMP21', 'Other'])
-    writer.writerow([sample_id, f"{int(probability * 100)}%", predicted_label] + pred_pro_percent)
+    with open(outfile, mode='w', newline='') as file:
+        writer = csv.writer(file)
+
+        # Schreibe die Header
+        writer.writerow(['Sample', 'Score', 'Prediction', 'Hyperdiploid', 'Low hypodiploid', 'Near haploid', 'iAMP21', 'Other'])
+        writer.writerow([sample_id, f"{int(probability * 100)}%", predicted_label] + pred_pro_percent)

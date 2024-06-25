@@ -59,18 +59,18 @@ find_CHROM_row_header <- function(file_path) {
 find_CHROM_row <- function(file_path, chrom_val, pos_val) {
   skip <- find_CHROM_row_header(file_path)
   skip <- skip - 1
-  
+
   # Einlesen des Dateiinhalts als DataFrame
   df <- read.csv(file_path, header = FALSE, skip = skip, stringsAsFactors = FALSE, sep = "\t")
-  
+
   # Setzen der Spaltennamen
-  headers <- c("X.CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO", "FORMAT", "Sample_Values")
+  headers <- c("X.CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO", "FORMAT", "Sample")
   colnames(df) <- headers
   print(names(df))
   print("vor subset")
   # Subset basierend auf den Bedingungen
   filtered_rows <- subset(df, X.CHROM == chrom_val & POS >= pos_val & POS <= pos_val + 2)
-  
+
   # Überprüfung, ob Zeilen gefunden wurden
   if (nrow(filtered_rows) > 0) {
     #found_info <- filtered_rows$INFO  # Annahme: Es wird nur der erste gefundene Wert zurückgegeben
@@ -96,131 +96,134 @@ for (file in file_list) {
     #print("not IKZF1")
     data <- read.csv(file, sep="\t", header = TRUE)
     if(NROW(data) > 2) {
-      
-      #print("rows")
-      #print(NROW(data))
-      file_name <- basename(file)
-      #print(paste("Extracted info from filename:", file_name))
-      pattern <- "([^_]+_[^_]+)\\.tsv$" # Pattern to match the text between the first and second underscore before .tsv
-      extracted_info <- sub(".*_([^_]+_[^_]+)\\.tsv$", "\\1", file_name)
-      #print(paste("Extracted info from filename:", extracted_info))
-      output_file <- paste0(extracted_info, "_output_file.csv")
-      gene <- substr(extracted_info, 1, regexpr("_", extracted_info) - 1)
-      hotspot <- substr(extracted_info, regexpr("_", extracted_info) + 1, nchar(extracted_info))
-      # Get the corresponding information from mutations table
-      entry <- subset(mutations, Gene == gene & Hotspot == hotspot)
-      chromosome <- entry$Chromosome
-      start <- as.numeric(entry$Start)
-      end <- as.numeric(entry$End)
-      
-      # Find and save "new bases" in data
-      data$new_base <- ""
-      for(row in 1:NROW(data)){
-        # Iterate data rows, and check if mismatches > 0 and mismatches_pp/matches_pp > 0.05
-        if(data$mismatches_pp[row] > 0 & (data$mismatches_pp[row] / data$matches_pp[row]) >= 0.05){
-          # Get ref and switch case based on Ref base and maximum Character_pp, append result to data
-          ref <- data$ref[row]
-          res <- switch(
-            ref,
-            "A" = {if(colnames(data[row, c(17,19,21,23)])[apply(data[row, c(17,19,21,23)], 1, which.max)] == "C_pp"){"C"} else if(colnames(data[row, c(17,19,21,23)])[apply(data[row, c(17,19,21,23)], 1, which.max)] == "T_pp"){"T"} else if(colnames(data[row, c(17,19,21,23)])[apply(data[row, c(17,19,21,23)], 1, which.max)] == "G_pp"){"G"} else if(colnames(data[row, c(17,19,21,23)])[apply(data[row, c(17,19,21,23)], 1, which.max)] == "N_pp"){"N"} else{"A"}},
-            "C" = {if(colnames(data[row, c(15,19,21,23)])[apply(data[row, c(15,19,21,23)], 1, which.max)] == "A_pp"){"A"} else if(colnames(data[row, c(15,19,21,23)])[apply(data[row, c(15,19,21,23)], 1, which.max)] == "T_pp"){"T"} else if(colnames(data[row, c(15,19,21,23)])[apply(data[row, c(15,19,21,23)], 1, which.max)] == "G_pp"){"G"} else if(colnames(data[row, c(15,19,21,23)])[apply(data[row, c(15,19,21,23)], 1, which.max)] == "N_pp"){"N"} else{"C"}},
-            "T" = {if(colnames(data[row, c(15,17,21,23)])[apply(data[row, c(15,17,21,23)], 1, which.max)] == "C_pp"){"C"} else if(colnames(data[row, c(15,17,21,23)])[apply(data[row, c(15,17,21,23)], 1, which.max)] == "A_pp"){"A"} else if(colnames(data[row, c(15,17,21,23)])[apply(data[row, c(15,17,21,23)], 1, which.max)] == "G_pp"){"G"} else if(colnames(data[row, c(15,17,21,23)])[apply(data[row, c(15,17,21,23)], 1, which.max)] == "N_pp"){"N"} else{"T"}},
-            "G" = {if(colnames(data[row, c(15,17,19,23)])[apply(data[row, c(15,17,19,23)], 1, which.max)] == "C_pp"){"C"} else if(colnames(data[row, c(15,17,19,23)])[apply(data[row, c(15,17,19,23)], 1, which.max)] == "T_pp"){"T"} else if(colnames(data[row, c(15,17,19,23)])[apply(data[row, c(15,17,19,23)], 1, which.max)] == "A_pp"){"A"} else if(colnames(data[row, c(15,17,19,23)])[apply(data[row, c(15,17,19,23)], 1, which.max)] == "N_pp"){"N"} else{"G"}},
-            "N" = {if(colnames(data[row, c(15,17,19,21)])[apply(data[row, c(15,17,19,21)], 1, which.max)] == "C_pp"){"C"} else if(colnames(data[row, c(15,17,19,21)])[apply(data[row, c(15,17,19,21)], 1, which.max)] == "T_pp"){"T"} else if(colnames(data[row, c(15,17,19,21)])[apply(data[row, c(15,17,19,21)], 1, which.max)] == "A_pp"){"A"} else if(colnames(data[row, c(15,17,19,21)])[apply(data[row, c(15,17,19,21)], 1, which.max)] == "G_pp"){"G"} else{"N"}},
-          )
-          data[row, 24] <- res
-          percentage <- 0
-          v <- list("A", "C", "T", "G")
-          #Reverse data
-          current_block <- data[nrow(data):1, ]
-          bases <- list()
-          
-          
-          
-          # Check whether new bases are available and calculate percentage:
-          for(k in 1:nrow(current_block)){
-            if(current_block$new_base[k] %in% v & current_block$reads_pp[k] >= 50){
-              if (current_block$new_base[k] == TRUE){
-                print(" TRUE")
-                bases <- append(bases, "T")
-              } else{
-                bases <- append(bases, current_block$new_base[k])
-              }
-              
-              col <- sprintf("%s_pp", current_block$new_base[k])
-              percentage <- switch(
-                col,
-                "A_pp" = {current_block$A_pp[k] * 100 / current_block$reads_pp[k]},
-                "C_pp" = {current_block$C_pp[k] * 100 / current_block$reads_pp[k]},
-                "T_pp" = {current_block$T_pp[k] * 100 / current_block$reads_pp[k]},
-                "G_pp" = {current_block$G_pp[k] * 100 / current_block$reads_pp[k]},
-              )
-              
-            }else{
-              if (current_block$ref[k] == TRUE){
-                bases <- append(bases, "T")
-              }else {
-                bases <- append(bases, current_block$ref[k])
-              }
-              
-            }
-          }
-          print("bases")
-          print(bases)
-          bases <- paste(unlist(bases), collapse="")
-          
-          reverse_bases <- toString(complement(DNAString(bases)))
-          
-          newAminoAcid <- GENETIC_CODE[[reverse_bases]]
-          
-          
-          if(percentage > 0){
-            write.csv(data.frame(Gene = character(), Hotspot = character(), Chromosome = character(), Start = numeric(), End = numeric(), New_Aminoacid = character(), Percentage = numeric()), file = paste0(output_dir,"/", output_file), row.names = FALSE)
-            selected_columns <- current_block[c("chrom", "pos", "ref", "reads_pp", "mismatches_pp", "deletions_pp", "insertions_pp", "A_pp", "C_pp", "T_pp", "G_pp", "N_pp", "new_base")]
-            selected_columns_right_order <- selected_columns[nrow(selected_columns):1, ]
-            write.table(selected_columns_right_order, file = paste0(output_dir,"/",extracted_info, "_with_bases.tsv"), row.names = FALSE)
-            result <- data.frame(Gene = gene, Hotspot = hotspot, Chromosome = chromosome, Start = start, End = end, New_Aminoacid = newAminoAcid, Percentage = percentage)
-            write.table(result, paste0(output_dir,"/", output_file), append = TRUE, sep = ",", col.names = FALSE, row.names = FALSE)
-            
-            result_row <- find_CHROM_row(ctat_file, chromosome, start)
-            if(!is.null(result_row)){
-              print("result_row:")
-              print(result_row)
-              result_df <- as.data.frame(result_row, stringsAsFactors = FALSE)
-              col_names <- c("X.CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO", "FORMAT", "Sample")
-              #result_df <- data.frame(t(result_row), stringsAsFactors = FALSE)
-              #colnames(result_df) <- col_names
-              write.table(result_df, file = paste0(output_dir, "/", extracted_info, "_ctat_result.tsv"), sep = "\t", quote = FALSE, row.names = FALSE, append = TRUE)
-              write.table(result_df, file = paste0(output_dir, "/", extracted_info, "_ctat_result_1.tsv"), sep = "\t", quote = FALSE, row.names = FALSE, append = TRUE)
-              
-              #output <- paste("CTAT INFO data for chromosome", chromosome, "and", start, ":", result_row)
-              #writeLines(output, paste0(output_dir,"/",extracted_info, "_ctat_result.tsv"))
-              #cat("CTAT INFO data for chromosome", chromosome, "at position", start, ":\n", file = paste0(output_dir, "/", extracted_info, "_ctat_result.tsv"))
-              #cat(paste(result_row, collapse = "\n"), file = paste0(output_dir, "/", extracted_info, "_ctat_result.tsv"), append = TRUE)
-            } else {
-              print("result_row empty")
-              #output <- paste("Zeile nicht gefunden", chromosome, "and", start)
-              #writeLines(output, paste0(output_dir,"/",extracted_info, "_ctat_result.tsv"))
-              cat("Empty result for chromosome", chromosome, "at position", start, "\n", file = paste0(output_dir, "/", extracted_info, "_ctat_result.tsv"))
-            }
+
+        #print("rows")
+        #print(NROW(data))
+        file_name <- basename(file)
+        #print(paste("Extracted info from filename:", file_name))
+        pattern <- "([^_]+_[^_]+)\\.tsv$" # Pattern to match the text between the first and second underscore before .tsv
+        extracted_info <- sub(".*_([^_]+_[^_]+)\\.tsv$", "\\1", file_name)
+        #print(paste("Extracted info from filename:", extracted_info))
+        output_file <- paste0(extracted_info, "_output_file.csv")
+        gene <- substr(extracted_info, 1, regexpr("_", extracted_info) - 1)
+        hotspot <- substr(extracted_info, regexpr("_", extracted_info) + 1, nchar(extracted_info))
+        # Get the corresponding information from mutations table
+        entry <- subset(mutations, Gene == gene & Hotspot == hotspot)
+        chromosome <- entry$Chromosome
+        start <- as.numeric(entry$Start)
+        end <- as.numeric(entry$End)
+
+        # Find and save "new bases" in data
+        data$new_base <- ""
+        for(row in 1:NROW(data)){
+          # Iterate data rows, and check if mismatches > 0 and mismatches_pp/matches_pp > 0.05
+          if(data$mismatches_pp[row] > 0 & (data$mismatches_pp[row] / data$matches_pp[row]) >= 0.05){
+            # Get ref and switch case based on Ref base and maximum Character_pp, append result to data
+            ref <- data$ref[row]
+            res <- switch(
+              ref,
+              "A" = {if(colnames(data[row, c(17,19,21,23)])[apply(data[row, c(17,19,21,23)], 1, which.max)] == "C_pp"){"C"} else if(colnames(data[row, c(17,19,21,23)])[apply(data[row, c(17,19,21,23)], 1, which.max)] == "T_pp"){"T"} else if(colnames(data[row, c(17,19,21,23)])[apply(data[row, c(17,19,21,23)], 1, which.max)] == "G_pp"){"G"} else if(colnames(data[row, c(17,19,21,23)])[apply(data[row, c(17,19,21,23)], 1, which.max)] == "N_pp"){"N"} else{"A"}},
+              "C" = {if(colnames(data[row, c(15,19,21,23)])[apply(data[row, c(15,19,21,23)], 1, which.max)] == "A_pp"){"A"} else if(colnames(data[row, c(15,19,21,23)])[apply(data[row, c(15,19,21,23)], 1, which.max)] == "T_pp"){"T"} else if(colnames(data[row, c(15,19,21,23)])[apply(data[row, c(15,19,21,23)], 1, which.max)] == "G_pp"){"G"} else if(colnames(data[row, c(15,19,21,23)])[apply(data[row, c(15,19,21,23)], 1, which.max)] == "N_pp"){"N"} else{"C"}},
+              "T" = {if(colnames(data[row, c(15,17,21,23)])[apply(data[row, c(15,17,21,23)], 1, which.max)] == "C_pp"){"C"} else if(colnames(data[row, c(15,17,21,23)])[apply(data[row, c(15,17,21,23)], 1, which.max)] == "A_pp"){"A"} else if(colnames(data[row, c(15,17,21,23)])[apply(data[row, c(15,17,21,23)], 1, which.max)] == "G_pp"){"G"} else if(colnames(data[row, c(15,17,21,23)])[apply(data[row, c(15,17,21,23)], 1, which.max)] == "N_pp"){"N"} else{"T"}},
+              "G" = {if(colnames(data[row, c(15,17,19,23)])[apply(data[row, c(15,17,19,23)], 1, which.max)] == "C_pp"){"C"} else if(colnames(data[row, c(15,17,19,23)])[apply(data[row, c(15,17,19,23)], 1, which.max)] == "T_pp"){"T"} else if(colnames(data[row, c(15,17,19,23)])[apply(data[row, c(15,17,19,23)], 1, which.max)] == "A_pp"){"A"} else if(colnames(data[row, c(15,17,19,23)])[apply(data[row, c(15,17,19,23)], 1, which.max)] == "N_pp"){"N"} else{"G"}},
+              "N" = {if(colnames(data[row, c(15,17,19,21)])[apply(data[row, c(15,17,19,21)], 1, which.max)] == "C_pp"){"C"} else if(colnames(data[row, c(15,17,19,21)])[apply(data[row, c(15,17,19,21)], 1, which.max)] == "T_pp"){"T"} else if(colnames(data[row, c(15,17,19,21)])[apply(data[row, c(15,17,19,21)], 1, which.max)] == "A_pp"){"A"} else if(colnames(data[row, c(15,17,19,21)])[apply(data[row, c(15,17,19,21)], 1, which.max)] == "G_pp"){"G"} else{"N"}},
+            )
+            data[row, 24] <- res
             percentage <- 0
-          }else{
+            v <- list("A", "C", "T", "G")
+            #Reverse data
+            current_block <- data[nrow(data):1, ]
+            bases <- list()
+
+
+
+            # Check whether new bases are available and calculate percentage:
+            for(k in 1:nrow(current_block)){
+               if(current_block$new_base[k] %in% v & current_block$reads_pp[k] >= 50){
+                    if (current_block$new_base[k] == TRUE){
+                        print(" TRUE")
+                        bases <- append(bases, "T")
+                    } else{
+                        bases <- append(bases, current_block$new_base[k])
+                    }
+
+                    col <- sprintf("%s_pp", current_block$new_base[k])
+                    percentage <- switch(
+                      col,
+                      "A_pp" = {current_block$A_pp[k] * 100 / current_block$reads_pp[k]},
+                      "C_pp" = {current_block$C_pp[k] * 100 / current_block$reads_pp[k]},
+                      "T_pp" = {current_block$T_pp[k] * 100 / current_block$reads_pp[k]},
+                      "G_pp" = {current_block$G_pp[k] * 100 / current_block$reads_pp[k]},
+                    )
+
+                }else{
+                    if (current_block$ref[k] == TRUE){
+                        bases <- append(bases, "T")
+                    }else {
+                        bases <- append(bases, current_block$ref[k])
+                    }
+
+                }
+            }
+            print("bases")
+            print(bases)
+            bases <- paste(unlist(bases), collapse="")
+
+            reverse_bases <- toString(complement(DNAString(bases)))
+
+            newAminoAcid <- GENETIC_CODE[[reverse_bases]]
+
+
+            if(percentage > 0){
+                write.csv(data.frame(Gene = character(), Hotspot = character(), Chromosome = character(), Start = numeric(), End = numeric(), New_Aminoacid = character(), Percentage = numeric()), file = paste0(output_dir,"/", output_file), row.names = FALSE)
+                selected_columns <- current_block[c("chrom", "pos", "ref", "reads_pp", "mismatches_pp", "deletions_pp", "insertions_pp", "A_pp", "C_pp", "T_pp", "G_pp", "N_pp", "new_base")]
+                selected_columns_right_order <- selected_columns[nrow(selected_columns):1, ]
+                write.table(selected_columns_right_order, file = paste0(output_dir,"/",extracted_info, "_with_bases.tsv"), row.names = FALSE)
+                result <- data.frame(Gene = gene, Hotspot = hotspot, Chromosome = chromosome, Start = start, End = end, New_Aminoacid = newAminoAcid, Percentage = percentage)
+                write.table(result, paste0(output_dir,"/", output_file), append = TRUE, sep = ",", col.names = FALSE, row.names = FALSE)
+
+                result_row <- find_CHROM_row(ctat_file, chromosome, start)
+                if(!is.null(result_row)){
+                    print("result_row:")
+                    print(result_row)
+                    result_df <- as.data.frame(result_row, stringsAsFactors = FALSE)
+                    col_names <- c("X.CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO", "FORMAT", "Sample")
+                    #result_df <- data.frame(t(result_row), stringsAsFactors = FALSE)
+                    #colnames(result_df) <- col_names
+                    write.table(result_df, file = paste0(output_dir, "/", extracted_info, "_gatk_result.tsv"), sep = "\t", quote = FALSE, row.names = FALSE, append = TRUE)
+
+                    #output <- paste("CTAT INFO data for chromosome", chromosome, "and", start, ":", result_row)
+                    #writeLines(output, paste0(output_dir,"/",extracted_info, "_ctat_result.tsv"))
+                    #cat("CTAT INFO data for chromosome", chromosome, "at position", start, ":\n", file = paste0(output_dir, "/", extracted_info, "_ctat_result.tsv"))
+                    #cat(paste(result_row, collapse = "\n"), file = paste0(output_dir, "/", extracted_info, "_ctat_result.tsv"), append = TRUE)
+                } else {
+                      print("result_row empty")
+                      #output <- paste("Zeile nicht gefunden", chromosome, "and", start)
+                      #writeLines(output, paste0(output_dir,"/",extracted_info, "_ctat_result.tsv"))
+                      cat("Empty result for chromosome", chromosome, "at position", start, "\n", file = paste0(output_dir, "/", extracted_info, "_gatk_result.tsv"))
+                }
+                percentage <- 0
+            }else{
+                # Nothing
+            }
+
+          }else {
             # Nothing
           }
-          
-        }else {
-          # Nothing
         }
-      }
     }
   }
-  
+
 }
 
 for (file in file_list) {
   if (grepl("\\.csv$", file, ignore.case = TRUE)) {
     print("IKZF1")
     data <- read.csv(file, sep="\t", header = TRUE)
+    if (nrow(data) == 0) {
+        print(paste("Datei", file, "hat nur einen Header. Schleife wird abgebrochen."))
+        break
+    }
     file_name <- basename(file)
     pattern <- "([^_]+_[^_]+)\\.tsv$" # Pattern to match the text between the first and second underscore before .tsv
     extracted_info <- sub(".*_([^_]+_[^_]+)\\.tsv$", "\\1", file_name)
@@ -239,7 +242,7 @@ for (file in file_list) {
     data$new_base <- ""
     for(row in 1:NROW(data)){
       # Iterate data rows, and check if mismatches > 0 and mismatches_pp/matches_pp > 0.05
-      if(data$mismatches_pp[row] > 0 & (data$mismatches_pp[row] / data$matches_pp[row]) >= 0.05){
+        if(data$mismatches_pp[row] > 0 & (data$mismatches_pp[row] / data$matches_pp[row]) >= 0.05){
         # Get ref and switch case based on Ref base and maximum Character_pp, append result to data
         ref <- data$ref[row]
         res <- switch(
@@ -256,27 +259,27 @@ for (file in file_list) {
         #Reverse data
         current_block <- data
         bases <- list()
-        
-        
-        
+
+
+
         # Check whether new bases are available and calculate percentage:
         for(k in 1:nrow(current_block)){
-          if(current_block$new_base[k] %in% v & current_block$reads_pp[k] >= 50){
-            bases <- append(bases, current_block$new_base[k])
-            col <- sprintf("%s_pp", current_block$new_base[k])
-            percentage <- switch(
-              col,
-              "A_pp" = {current_block$A_pp[k] * 100 / current_block$reads_pp[k]},
-              "C_pp" = {current_block$C_pp[k] * 100 / current_block$reads_pp[k]},
-              "T_pp" = {current_block$T_pp[k] * 100 / current_block$reads_pp[k]},
-              "G_pp" = {current_block$G_pp[k] * 100 / current_block$reads_pp[k]},
-            )
-            
-          }else{
-            bases <- append(bases, current_block$ref[k])
-          }
+           if(current_block$new_base[k] %in% v & current_block$reads_pp[k] >= 50){
+                bases <- append(bases, current_block$new_base[k])
+                col <- sprintf("%s_pp", current_block$new_base[k])
+                percentage <- switch(
+                  col,
+                  "A_pp" = {current_block$A_pp[k] * 100 / current_block$reads_pp[k]},
+                  "C_pp" = {current_block$C_pp[k] * 100 / current_block$reads_pp[k]},
+                  "T_pp" = {current_block$T_pp[k] * 100 / current_block$reads_pp[k]},
+                  "G_pp" = {current_block$G_pp[k] * 100 / current_block$reads_pp[k]},
+                )
+
+            }else{
+                bases <- append(bases, current_block$ref[k])
+            }
         }
-        
+
         bases <- paste(unlist(bases), collapse="")
         bases <- toString((DNAString(bases)))
         print("bases")
@@ -286,42 +289,42 @@ for (file in file_list) {
         newAminoAcid <- GENETIC_CODE[[bases]]
         print("newAminoAcid")
         print(newAminoAcid)
-        
-        
-        
+
+
+
         if(percentage > 0){
-          write.csv(data.frame(Gene = character(), Hotspot = character(), Chromosome = character(), Start = numeric(), End = numeric(), New_Aminoacid = character(), Percentage = numeric()), file = paste0(output_dir,"/", output_file), row.names = FALSE)
-          selected_columns <- current_block[c("chrom", "pos", "ref", "reads_pp", "mismatches_pp", "deletions_pp", "insertions_pp", "A_pp", "C_pp", "T_pp", "G_pp", "N_pp", "new_base")]
-          selected_columns_right_order <- selected_columns[nrow(selected_columns):1, ]
-          write.table(selected_columns_right_order, file = paste0(output_dir,"/",extracted_info, "_with_bases.tsv"), row.names = FALSE)
-          chromosome <- "chr7"
-          start <- 50382593
-          end <- 50382596
-          gene <- "IKZF1"
-          hotspot <- "Y159N"
-          result <- data.frame(Gene = gene, Hotspot = hotspot, Chromosome = chromosome, Start = start, End = end, New_Aminoacid = newAminoAcid, Percentage = percentage)
-          write.table(result, paste0(output_dir,"/", output_file), append = TRUE, sep = ",", col.names = FALSE, row.names = FALSE)
-          
-          result_row <- find_CHROM_row(ctat_file, chromosome, start)
-          if(!is.null(result_row)){
-            #info_column_index <- which(headers =="INFO")
-            #info_data <- result_row[info_column_index]
-            output <- paste("CTAT INFO data for", chromosome, "and", start, ":", result_row)
-            writeLines(output, paste0(output_dir,"/",extracted_info, "_ctat_result.tsv"))
-          } else {
-            output <- paste("Zeile nicht gefunden IKZF1", chromosome, "and", start)
-            writeLines(output, paste0(output_dir,"/",extracted_info, "_ctat_result.tsv"))
-          }
-          percentage <- 0
+            write.csv(data.frame(Gene = character(), Hotspot = character(), Chromosome = character(), Start = numeric(), End = numeric(), New_Aminoacid = character(), Percentage = numeric()), file = paste0(output_dir,"/", output_file), row.names = FALSE)
+            selected_columns <- current_block[c("chrom", "pos", "ref", "reads_pp", "mismatches_pp", "deletions_pp", "insertions_pp", "A_pp", "C_pp", "T_pp", "G_pp", "N_pp", "new_base")]
+            selected_columns_right_order <- selected_columns[nrow(selected_columns):1, ]
+            write.table(selected_columns_right_order, file = paste0(output_dir,"/",extracted_info, "_with_bases.tsv"), row.names = FALSE)
+            chromosome <- "chr7"
+            start <- 50382593
+            end <- 50382596
+            gene <- "IKZF1"
+            hotspot <- "Y159N"
+            result <- data.frame(Gene = gene, Hotspot = hotspot, Chromosome = chromosome, Start = start, End = end, New_Aminoacid = newAminoAcid, Percentage = percentage)
+            write.table(result, paste0(output_dir,"/", output_file), append = TRUE, sep = ",", col.names = FALSE, row.names = FALSE)
+
+            result_row <- find_CHROM_row(ctat_file, chromosome, start)
+            if(!is.null(result_row)){
+                #info_column_index <- which(headers =="INFO")
+                #info_data <- result_row[info_column_index]
+                output <- paste("GATK INFO data for", chromosome, "and", start, ":", result_row)
+                writeLines(output, paste0(output_dir,"/",extracted_info, "_gatk_result.tsv"))
+            } else {
+                  output <- paste("Zeile nicht gefunden", chromosome, "and", start)
+                  writeLines(output, paste0(output_dir,"/",extracted_info, "_gatk_result.tsv"))
+            }
+            percentage <- 0
         }else{
-          # Nothing
+            # Nothing
         }
-        
+
       }else {
         # Nothing
       }
     }
-    
+
   }
-  
+
 }

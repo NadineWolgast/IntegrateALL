@@ -149,13 +149,13 @@ rule install_all:
     input: []
     shell:
         """
-            snakemake --cores 10 download_ref &&
-            snakemake --cores 10 index_ref &&
-            snakemake --cores all index_star &&
-            snakemake --cores 1 install_arriba_draw_fusions &&
-            snakemake --use-conda --cores 2 install_allcatchr &&
-            snakemake --use-conda --cores 2 install_rnaseq_cnv &&
-            snakemake --cores 2 install_fusioncatcher
+            snakemake --use-conda --cores 8 download_ref &&
+            snakemake --use-conda --cores 8 index_ref &&
+            snakemake --use-conda --cores 8 index_star &&
+            snakemake --use-conda --cores 4 install_arriba_draw_fusions &&
+            snakemake --use-conda --cores 4 install_allcatchr &&
+            snakemake --use-conda --cores 4 install_rnaseq_cnv &&
+            snakemake --use-conda --cores 4 install_fusioncatcher
         """
 
 

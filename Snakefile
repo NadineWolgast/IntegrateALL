@@ -155,7 +155,17 @@ rule install_all:
             snakemake --use-conda --cores 4 install_arriba_draw_fusions &&
             snakemake --use-conda --cores 4 install_allcatchr &&
             snakemake --use-conda --cores 4 install_rnaseq_cnv &&
+            snakemake --use-conda --cores 4 download_rda &&
             snakemake --use-conda --cores 4 install_fusioncatcher
+        """
+
+
+rule download_rda:
+    output:
+        "scripts/dbSNP_hg38.rda"
+    shell:
+        """
+        wget -O {output} https://github.com/honzee/RNAseqCNV/raw/master/data/dbSNP_hg38.rda
         """
 
 

@@ -65,7 +65,7 @@ You can also test the pipeline with the provided samples (sub1_new.fq.gz and sub
 
 | sample_id   |      left     |  right |
 |----------|:-------------:|------:|
-| Test42 |  /path/to/IntegrateALL/data/samples/sub1_new.fq.gz	 | /path/to/IntegrateALL/data/samples/sub2_new.fq.gz |
+| Test |  /path/to/IntegrateALL/data/samples/sub1_new.fq.gz	 | /path/to/IntegrateALL/data/samples/sub2_new.fq.gz |
 
 
 To test and see the pipelines execution jobs before running the pipeline you can run the command:

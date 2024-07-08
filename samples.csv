@@ -1,2 +1,2 @@
 sample_id,left,right
-test1,/home/Blast-o-Matic-Fusioninator/data/samples/reads_1.fq.gz,/home/Blast-o-Matic-Fusioninator/data/samples/reads_2.fq.gz
+test,/IntegretALL/data/samples/reads_1.fq.gz,/IntegretALL/data/samples/reads_2.fq.gz

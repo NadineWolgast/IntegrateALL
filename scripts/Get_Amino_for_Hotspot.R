@@ -12,19 +12,19 @@ output_dir <- args[3]
 mutations <- data.frame(
   Gene = c("ZEB2", "ZEB2", "KRAS", "KRAS", "KRAS", "KRAS", "NRAS", "NRAS", "NRAS", "NRAS", "FLT3", "FLT3", "FLT3", "FLT3", "FLT3", "FLT3", "FLT3", "FLT3", "FLT3",
            "FLT3", "FLT3", "FLT3", "FLT3", "FLT3", "FLT3", "FLT3", "FLT3", "FLT3",
-           "FLT3", "FLT3", "FLT3", "FLT3", "FLT3", "FLT3", "FLT3", "FLT3", "FLT3", "PAX5"),
+           "FLT3", "FLT3", "FLT3", "FLT3", "FLT3", "FLT3", "FLT3", "FLT3", "FLT3", "PAX5", "IKZF1"),
   Hotspot = c("H1038", "Q1072", "G12", "G13", "Q16", "A146", "G12", "G13", "Q61", "A146", "P857", "V843", "Y842", "N841", "D839", "M837", "I836", "D835", "R834",
               "A680", "N676", "A627", "K623", "Y599", "R595", "V592", "Y589", "N587",
-              "G583", "Q580", "V579", "Q577", "L576", "E573", "Y572", "V491", "S446", "P80R"),
+              "G583", "Q580", "V579", "Q577", "L576", "E573", "Y572", "V491", "S446", "P80R", "N159Y"),
   Chromosome = c("2", "2", "12", "12", "12", "12", "1", "1", "1", "1", "13", "13", "13", "13", "13", "13", "13", "13", "13",
                  "13", "13", "13", "13", "13", "13", "13", "13", "13",
-                 "13", "13", "13", "13", "13", "13", "13", "13", "13", "9"),
+                 "13", "13", "13", "13", "13", "13", "13", "13", "13", "9", "7"),
   Start = c("144389982", "144389880" , "25245349", "25245346", "25227341", "25225626", "114716125", "114716122", "114713907", "114709581", "28015672", "28018479", "28018482", "28018485", "28018491", "28018497", "28018500", "28018503", "28018506",
             "28028191", "28028203", "28033948", "28033960", "28034122", "28034134", "28034143", "28034152", "28034158",
-            "28034170", "28034179", "28034182", "28034188", "28034191", "28034200", "28034203", "28035619", "28036015", "37015167"),
+            "28034170", "28034179", "28034182", "28034188", "28034191", "28034200", "28034203", "28035619", "28036015", "37015167", "50382592"),
   End = c("144389984", "144389882", "25245351", "25245348", "25227343", "25225628", "114716127", "114716124", "114713909", "114709583", "28015674", "28018481", "28018484", "28018487", "28018493", "28018499", "28018502", "28018505", "28018508",
           "28028193", "28028205", "28033950", "28033962", "28034124", "28034136", "28034145", "28034154", "28034160",
-          "28034172", "28034181", "28034184", "28034190", "28034193", "28034202", "28034205", "28035621", "28036017", "37015169")
+          "28034172", "28034181", "28034184", "28034190", "28034193", "28034202", "28034205", "28035621", "28036017", "37015169", " 50382595")
 )
 
 mutations$Start <- as.integer(mutations$Start)
@@ -175,6 +175,18 @@ for (file in file_list) {
 
 
             if(percentage > 0){
+                print(length(gene))
+                print(length(hotspot))
+                print(length(chromosome))
+                print((gene))
+                print((hotspot))
+                print((chromosome))
+                
+                # Stelle sicher, dass alle Vektoren die gleiche Länge haben
+                if(length(gene) != length(hotspot) || length(gene) != length(chromosome)) {
+                  print("Die Längen der Vektoren stimmen nicht überein.")
+                  pass
+                }
                 write.csv(data.frame(Gene = character(), Hotspot = character(), Chromosome = character(), Start = numeric(), End = numeric(), New_Aminoacid = character(), Percentage = numeric()), file = paste0(output_dir,"/", output_file), row.names = FALSE)
                 selected_columns <- current_block[c("chrom", "pos", "ref", "reads_pp", "mismatches_pp", "deletions_pp", "insertions_pp", "A_pp", "C_pp", "T_pp", "G_pp", "N_pp", "new_base")]
                 selected_columns_right_order <- selected_columns[nrow(selected_columns):1, ]
@@ -203,12 +215,8 @@ for (file in file_list) {
                       cat("Empty result for chromosome", chromosome, "at position", start, "\n", file = paste0(output_dir, "/", extracted_info, "_gatk_result.tsv"))
                 }
                 percentage <- 0
-            }else{
-                # Nothing
             }
 
-          }else {
-            # Nothing
           }
         }
     }

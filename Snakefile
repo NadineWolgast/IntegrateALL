@@ -122,10 +122,10 @@ rule unzip:
     input:
         sample="fastqc/{sample}.zip"
     output:
-        directory("fastqc/{sample}"),
+        directory=directory("fastqc/{sample}"),
         sentinel="fastqc/{sample}/unzip_done.sentinel"
     shell:
-        "unzip -q {input.sample} -d {output} && touch {output.sentinel}"
+        "unzip -q {input.sample} -d {output.directory} && touch {output.sentinel}"
 
 
 rule multiqc_file:
@@ -149,23 +149,25 @@ rule install_all:
     input: []
     shell:
         """
-            snakemake --use-conda --cores 8 download_ref &&
-            snakemake --use-conda --cores 8 index_ref &&
-            snakemake --use-conda --cores 8 index_star &&
-            snakemake --use-conda --cores 4 install_arriba_draw_fusions &&
-            snakemake --use-conda --cores 4 install_allcatchr &&
-            snakemake --use-conda --cores 4 install_rnaseq_cnv &&
-            snakemake --use-conda --cores 4 download_rda &&
-            snakemake --use-conda --cores 4 install_fusioncatcher
+            snakemake --use-conda --cores {config[threads]} download_ref &&
+            snakemake --use-conda --cores {config[threads]} index_ref &&
+            snakemake --use-conda --cores {config[threads]} index_star &&
+            snakemake --use-conda --cores {config[threads]} install_arriba_draw_fusions &&
+            snakemake --use-conda --cores {config[threads]} install_allcatchr &&
+            snakemake --use-conda --cores {config[threads]} install_rnaseq_cnv &&
+            snakemake --use-conda --cores {config[threads]} download_rda &&
+            snakemake --use-conda --cores {config[threads]} install_fusioncatcher
         """
 
 
 rule download_rda:
     output:
-        "scripts/dbSNP_hg38.rda"
+        dbsnp="scripts/dbSNP_hg38.rda",
+        par="scripts/pseudoautosomal_regions_hg38.rda"
     shell:
         """
-        wget -O {output} https://github.com/honzee/RNAseqCNV/raw/master/data/dbSNP_hg38.rda
+        wget -O {output.dbsnp} https://github.com/honzee/RNAseqCNV/raw/master/data/dbSNP_hg38.rda &&
+        wget -O {output.par} https://github.com/honzee/RNAseqCNV/raw/master/data/pseudoautosomal_regions_hg38.rda
         """
 
 
@@ -195,7 +197,7 @@ rule index_star:
             fa = absolute_path + "/refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa",
             gtf = absolute_path + "/refs/GATK/GRCH38/Homo_sapiens.GRCh38.83.gtf"
         output:
-            directory(absolute_path + "/refs/GATK/STAR/ensembl_94_100")
+            directory = directory(absolute_path + "/refs/GATK/STAR/ensembl_94_100")
 
         threads: config['threads']
 
@@ -203,7 +205,8 @@ rule index_star:
             "envs/star.yaml"
 
         shell:
-            'STAR --runThreadN {config['threads]} '
+            'mkdir -p {output.directory} && '
+            'STAR --runThreadN {config[threads]} '
             '--runMode genomeGenerate '
             '--genomeDir {output} '
             '--genomeFastaFiles {input.fa} '
@@ -218,18 +221,16 @@ rule install_arriba_draw_fusions:
         rm -rf arriba_v2.4.0 &&
         rm -f arriba_v2.4.0.tar.gz &&
         wget 'https://github.com/suhrig/arriba/releases/download/v2.4.0/arriba_v2.4.0.tar.gz' &&
-        tar -xzf arriba_v2.4.0.tar.gz &&
-        cd arriba_v2.4.0 &&
-        ./download_references.sh hs37d5viral+GENCODE19
+        tar -xzf arriba_v2.4.0.tar.gz
         '''
 
 
 rule install_allcatchr:
     conda:
-    	"envs/install_allcatchr.yaml"
+        "envs/install_allcatchr.yaml"
 
     shell:
-        "Rscript -e 'devtools::install_github(\"ThomasBeder/ALLCatchR_bcrabl1\")'"
+        "Rscript -e 'devtools::install_github(\"ThomasBeder/ALLCatchR_bcrabl1\", Ncpus = {config[threads]})'"
 
 
 rule install_rnaseq_cnv:
@@ -237,7 +238,7 @@ rule install_rnaseq_cnv:
         "envs/rnaseqenv.yaml"
 
     shell:
-        "Rscript -e 'devtools::install_github(\"honzee/RNAseqCNV\")'"
+        "Rscript -e 'devtools::install_github(\"honzee/RNAseqCNV\", Ncpus = {config[threads]})'"
         
 
 rule install_fusioncatcher:
@@ -415,8 +416,8 @@ rule run_draw_arriba_fusion:
         --alignments={input.bam} \
         --output={output.pdf} \
         --annotation={input.annotation}\
-        --cytobands=arriba_v2.4.0/database/cytobands_hg19_hs37d5_GRCh37_v2.4.0.tsv \
-        --proteinDomains=arriba_v2.4.0/database/protein_domains_hg19_hs37d5_GRCh37_v2.4.0.gff3
+        --cytobands=arriba_v2.4.0/database/cytobands_hg38_GRCh38_v2.4.0.tsv \
+        --proteinDomains=arriba_v2.4.0/database/protein_domains_hg38_GRCh38_v2.4.0.gff3
         '''
 
 
@@ -453,8 +454,8 @@ rule run_fusioncatcher:
         fusioncatcher \
         -d {input.data_directory} \
         -i {input.left},{input.right} \
-        -o {output.dir} 
-       --skip-blat \
+        -o {output.dir} \
+        --skip-blat \
         --threads={config[threads]} \
         > logs/fusioncatcher/{wildcards.sample_id}.log \
         && touch {output.sentinel}
@@ -485,14 +486,14 @@ rule run_allcatchr:
         input_file = 'data/counts/{sample_id}.tsv'
 
     output:
-        "allcatch_output/{sample_id}/predictions.tsv"
+        out_file = "allcatch_output/{sample_id}/predictions.tsv"
 
     conda:
         "envs/install_allcatchr.yaml"
 
     params:
-    	out_dir = absolute_path + "/allcatch_output/{sample_id}",
-    	abs = absolute_path
+        out_dir = absolute_path + "/allcatch_output/{sample_id}",
+        abs = absolute_path
 
     threads: config['threads']
 
@@ -504,8 +505,8 @@ rule run_allcatchr:
         "benchmarks/{sample_id}.allcatchr.benchmark.txt"
 
     shell:
-    	"mkdir -p {params.out_dir} && "
-    	"cd {params.out_dir} && "
+        "mkdir -p {params.out_dir} && "
+        "cd {params.out_dir} && "
         "Rscript {params.abs}/{input.r_script} {params.abs}/{input.input_file} {params.abs}/{output.out_file} "
         
 
@@ -628,7 +629,7 @@ rule splitncigarreads:
 
 rule gatk_baserecalibrator:
     input:
-    	bam="Variants_RNA_Seq_Reads/{sample}/split/{sample}.bam",
+        bam="Variants_RNA_Seq_Reads/{sample}/split/{sample}.bam",
         ref= "refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa",
         dict= "refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.dict",
         known= "refs/GATK/GRCH38/dbSNP.vcf",
@@ -739,7 +740,7 @@ rule run_rnaseq_cnv_gatk:
         "envs/rnaseqenv.yaml"
         
     resources:
-    	threads=config['threads'],
+        threads=config['threads'],
         mem_mb=5000
         
     shell:

@@ -437,6 +437,12 @@ def main(sample, allcatchr_file, karyotype_file, fusioncatcher_file, arriba_file
             if len(filtered_fusions) > 1:
                 fusion_table = create_fusion_table(filtered_fusions)
                 fusion_table.to_csv(output_driver, index=False)
+            else:
+                # Wenn keine Fusionen gefunden werden, schreibe eine leere Datei
+                with open(output_driver, 'w') as empty_file:
+                    pass  # Erstelle eine leere Datei ohne Inhalt
+                print("No fusions found, empty file created.")
+              
         print(f"Detailed results written to {output_text}")
 
     else:
@@ -457,6 +463,10 @@ def main(sample, allcatchr_file, karyotype_file, fusioncatcher_file, arriba_file
                     f"seem not to be consistent with an unambiguous diagnostic classification according to WHO-HAEM5 "
                     f"(Alaggio R et al. Leukemia, 2022) / ICC (Arber D et al. Blood, 2022).")
         print(f"Detailed message written to {output_text}")
+      
+        with open(output_driver, 'w') as empty_file:
+            pass  # Erstelle eine leere Datei ohne Inhalt
+        print("No fusions found, empty file created.")
 
 
 

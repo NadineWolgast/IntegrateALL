@@ -181,8 +181,12 @@ def generate_report(prediction_file, fusioncatcher_file, arriba_file,
     rna_seq_cnv_log2foldchange_file = pd.read_csv(rna_seq_cnv_log2foldchange_file, delimiter='\t')
     rna_seq_cnv_log2foldchange_file_html_table = rna_seq_cnv_log2foldchange_file.to_html(classes='my-table-class',
                                                                                          index=False)
-    driver_file = pd.read_csv(driver, delimiter=',')
-    driver_table = driver_file.to_html(classes='my-table-class', index=False)
+    if os.path.getsize(driver) > 0:
+        driver_file = pd.read_csv(driver, delimiter=',')
+        driver_table = driver_file.to_html(classes='my-table-class', index=False)
+    else:
+        print(f"Driver file {driver} is empty. Skipping HTML table generation for this file.")
+        driver_table = "<p>No driver fusions identified.</p>"
                         
     html_table = prediction_data_subset.to_html(classes='my-table-class no-sort', index=False)
     ml_html_table = ml_prediction.to_html(classes='my-table-class no-sort', index=False)

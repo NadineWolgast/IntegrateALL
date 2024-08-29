@@ -814,11 +814,12 @@ rule final_classification:
 
     output:
         csv="Final_classification/{sample}_output_report.csv",
-        text="Final_classification/{sample}_output_txt.csv"
+        text="Final_classification/{sample}_output_txt.csv",
+        driver="Final_classification/{sample}_driver.csv"
 
     shell:
         """
-        python scripts/make_final_classification.py {wildcards.sample} {input.allcatchr_file} {input.karyotype} {input.fusioncatcher_file} {input.arriba_file} {input.hotspots} {input.classification_file} {output.csv} {output.text}
+        python scripts/make_final_classification.py {wildcards.sample} {input.allcatchr_file} {input.karyotype} {input.fusioncatcher_file} {input.arriba_file} {input.hotspots} {input.classification_file} {output.csv} {output.text} {output.driver}
         """
 
 
@@ -837,7 +838,8 @@ rule interactive_report:
         comparison_file="comparison/{sample}.csv",
         hotspots="Hotspots/{sample}",
         karyotype="karyotype_prediction/{sample}.csv",
-        text="Final_classification/{sample}_output_txt.csv"
+        text="Final_classification/{sample}_output_txt.csv",
+        driver="Final_classification/{sample}_driver.csv"
 
     output:
         html="interactive_output/{sample}/output_report_{sample}.html"
@@ -857,5 +859,5 @@ rule interactive_report:
         cp {input.rna_seq_cnv_plot} interactive_output/{wildcards.sample}/RNAseqCNV &&
         cp scripts/logo.png interactive_output/{wildcards.sample}/ &&
 
-        python scripts/generate_report.py  {input.prediction_file} {input.fusioncatcher_file} {input.arriba_file} {input.rna_seq_cnv_log2foldchange_file} {input.rna_seq_cnv_manual_an_table_file} {input.star_log_final_out_file}  {input.comparison_file} {input.hotspots} {wildcards.sample} {input.karyotype} {input.text} {output.html}
+        python scripts/generate_report.py  {input.prediction_file} {input.fusioncatcher_file} {input.arriba_file} {input.rna_seq_cnv_log2foldchange_file} {input.rna_seq_cnv_manual_an_table_file} {input.star_log_final_out_file}  {input.comparison_file} {input.hotspots} {wildcards.sample} {input.karyotype} {input.text} {input.driver} {output.html}
         """

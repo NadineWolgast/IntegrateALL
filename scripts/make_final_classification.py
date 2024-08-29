@@ -216,19 +216,21 @@ def check_hotspot_files(hotspot_dir):
 def filter_fusions(fusion_genes, unique_genes, df):
     filtered_fusions = []
 
-    for gene_1, gene_2 in fusion_genes:
+    for gene_1, gene_2, caller, unique_spanning_reads in fusion_genes:
         if gene_1.startswith("IGH"):
             gene_1 = "IGH@"
         if gene_2.startswith("IGH"):
             gene_2 = "IGH@"
-        if gene_1 in unique_genes and gene_2 in unique_genes:
+        if gene_1 in unique_genes and gene_2 in unique_genes and int(unique_spanning_reads) >= 3:
+        #if gene_1 in unique_genes and gene_2 in unique_genes:
+            print(gene_1, gene_2, )
             # Check if the pair exists in the df
             match_df = df[
                 (df['Gene_1_symbol(5end_fusion_partner)'] == gene_1) &
                 (df['Gene_2_symbol(3end_fusion_partner)'] == gene_2)
-            ]
+                ]
             if not match_df.empty:
-                filtered_fusions.append((gene_1, gene_2))
+                filtered_fusions.append((gene_1, gene_2, caller, unique_spanning_reads))
     return filtered_fusions
 
 
@@ -258,15 +260,16 @@ def gather_data(allcatchr_file, karyotype_file, fusioncatcher_file, arriba_file,
         next(f)  # Überspringen der Header-Zeile
         for line in f:
             parts = line.strip().split('\t')
-            fusion_genes.append((parts[0], parts[1]))
+            fusion_genes.append((parts[0], parts[1], 'fusioncatcher', parts[5])) 
 
     with open(arriba_file, 'r') as f:
         next(f)  # Überspringen der Header-Zeile
         for line in f:
             parts = line.strip().split('\t')
-            fusion_genes.append((parts[0], parts[1]))
+            fusion_genes.append((parts[0], parts[1], 'arriba', parts[11]))
 
     return subgruppe, confidence, bcr_abl1_maincluster_pred, karyotype, relevant_files, fusion_genes
+
 
 
 def all_false_first_two(relevant_files):
@@ -282,20 +285,14 @@ def check_conditions(subgruppe, confidence, bcr_abl1_maincluster_pred, karyotype
           "relevant_files: ", relevant_files)
     filtered_subtype = subgruppe if subgruppe in df['ALLCatchR'].values else None
     filtered_karyotype = karyotype if karyotype in df['karyotype classifier'].values else None
-    #print("filtered_subtype", filtered_subtype)
-    #print("filtered_karyotype", filtered_karyotype)
-    #print("bcr_abl1_maincluster_pred", bcr_abl1_maincluster_pred)
 
-    if filtered_subtype and filtered_karyotype and not filtered_fusions:
-        print("Keine fusionen")
+    if subgruppe and karyotype and not filtered_fusions:
         df_filtered = df[
             (df['Gene_1_symbol(5end_fusion_partner)'].isna()) & (df['Gene_2_symbol(3end_fusion_partner)'].isna())]
 
         for index, row in df_filtered.iterrows():
-            #print("row", row)
             if (row['ALLCatchR'] == filtered_subtype and row['karyotype classifier'] == filtered_karyotype
                     and row['Ph-pos'] == bcr_abl1_maincluster_pred):
-                print(row['ALLCatchR'], filtered_subtype, row['karyotype classifier'], filtered_karyotype)
                 if (filtered_subtype == "PAX5 P80R" and relevant_files["PAX5_P80R"]
                         and not relevant_files["IKZF1_N159Y"]):
                     row['Confidence'] = confidence
@@ -340,7 +337,6 @@ def check_conditions(subgruppe, confidence, bcr_abl1_maincluster_pred, karyotype
             else:
                 print("Different subtype and karyotype")
     else:
-        print("Mit fusionen:", filtered_fusions)
         for index, row in df.iterrows():
             all_conditions_met = True
             gene_1 = row['Gene_1_symbol(5end_fusion_partner)']
@@ -370,8 +366,24 @@ def check_conditions(subgruppe, confidence, bcr_abl1_maincluster_pred, karyotype
     return results
 
 
-def main(sample, allcatchr_file, karyotype_file, fusioncatcher_file, arriba_file, hotspot_dir, classification_file, output_csv,
-         output_text):
+def create_fusion_table(filtered_fusions):
+    table_data = []
+
+    for fusion in filtered_fusions:
+        gene1, gene2, fusioncaller, unique_spanning_reads = fusion
+        table_data.append({
+            'Gene1': gene1,
+            'Gene2': gene2,
+            'Fusioncaller': fusioncaller,
+            'unique_spanning_reads': unique_spanning_reads
+        })
+
+    fusion_table = pd.DataFrame(table_data)
+
+    return fusion_table
+
+def main(sample, allcatchr_file, karyotype_file, fusioncatcher_file, arriba_file, hotspot_dir, classification_file,
+         output_csv, output_text, output_driver):
     subgruppe, confidence, bcr_abl1_maincluster_pred, karyotype, relevant_files, fusion_genes = gather_data(
         allcatchr_file, karyotype_file, fusioncatcher_file, arriba_file, hotspot_dir)
     df = pd.read_csv(classification_file, sep='\t')
@@ -423,11 +435,8 @@ def main(sample, allcatchr_file, karyotype_file, fusioncatcher_file, arriba_file
 
             # Wenn es mehr als ein Fusionspaar gibt, schreiben Sie die gefilterten Fusionsgene, die keinen Match hatten
             if len(filtered_fusions) > 1:
-                unique_filtered_genes = get_filtered_fusion_genes(filtered_fusions, matched_fusions)
-                f.write("IntegrateALL identified additional driver fusions:\n")
-                for gene_1, gene_2 in unique_filtered_genes:
-                    f.write(f"{gene_1}::{gene_2}\n")
-
+                fusion_table = create_fusion_table(filtered_fusions)
+                fusion_table.to_csv(output_driver, index=False)
         print(f"Detailed results written to {output_text}")
 
     else:
@@ -462,6 +471,7 @@ if __name__ == "__main__":
     hotspot_dir = sys.argv[6]
     classification_file = sys.argv[7]
     output_csv = sys.argv[8]
-    output_text = sys.argv[9]
-    main(sample, allcatchr_file, karyotype_file, fusioncatcher_file, arriba_file, hotspot_dir, classification_file, output_csv,
-         output_text)
+    output_driver = sys.argv[10]
+    main(sample, allcatchr_file, karyotype_file, fusioncatcher_file, arriba_file, hotspot_dir, classification_file,
+         output_csv, output_text, output_driver)
+

@@ -802,7 +802,6 @@ rule aggregate_output:
         bash scripts/process_data.sh {output.csv} {input.star_log_final_out_file} {wildcards.sample} {input.multiqc_fqc_left} {input.multiqc_fqc_right} {input.prediction_file} {input.fusioncatcher_file} {input.arriba_file} {input.rna_seq_cnv_manual_an_table_file} {input.rna_seq_cnv_log2foldchange_file} {input.comparison_file}
         """
 
-
 rule final_classification:
     input:
         allcatchr_file="allcatch_output/{sample}/predictions.tsv",
@@ -810,7 +809,7 @@ rule final_classification:
         fusioncatcher_file="fusioncatcher_output/{sample}/final-list_candidate-fusion-genes.txt",
         arriba_file="fusions/{sample}.tsv",
         hotspots="Hotspots/{sample}",
-        classification_file="data/annotation/Classification_new.csv"
+        classification_file="data/annotation/Class_test.csv"
 
     output:
         csv="Final_classification/{sample}_output_report.csv",
@@ -821,7 +820,6 @@ rule final_classification:
         """
         python scripts/make_final_classification.py {wildcards.sample} {input.allcatchr_file} {input.karyotype} {input.fusioncatcher_file} {input.arriba_file} {input.hotspots} {input.classification_file} {output.csv} {output.text} {output.driver}
         """
-
 
 rule interactive_report:
     input:

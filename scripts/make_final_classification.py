@@ -2,11 +2,6 @@ import csv
 import os
 import pandas as pd
 
-no_driver_subtypes_list = ["Hyperdiploid", "Low hypodiploid", "Near haploid", "iAMP21", "IKZF1 N159Y", "PAX5 P80R",
-                           "PAX5alt", "Ph-like", "ETV6::RUNX1-like", "ZNF384", "KMT2A", "CEBP"]
-
-no_driver_karyotype_list = ["Hyperdiploid", "Low hypodiploid", "Near haploid", "iAMP21", "other"]
-
 driver_fusion_list = [
     "ABL1",
     "ABL2",
@@ -207,7 +202,7 @@ def check_hotspot_files(hotspot_dir):
             relevant_files["PAX5_P80R"] = True
         elif file.startswith("IKZF1_N159Y"):
             relevant_files["IKZF1_N159Y"] = True
-        elif file.startswith("ZEB2_H1038R"):
+        elif file.startswith("ZEB2_H1038"):
             relevant_files["ZEB2_H1038R"] = True
 
     return relevant_files
@@ -215,258 +210,317 @@ def check_hotspot_files(hotspot_dir):
 
 def filter_fusions(fusion_genes, unique_genes, df):
     filtered_fusions = []
-
     for gene_1, gene_2, caller, unique_spanning_reads in fusion_genes:
+        # Anpassen von IGH
         if gene_1.startswith("IGH"):
             gene_1 = "IGH@"
         if gene_2.startswith("IGH"):
             gene_2 = "IGH@"
-        if gene_1 in unique_genes and gene_2 in unique_genes and int(unique_spanning_reads) >= 3:
-        #if gene_1 in unique_genes and gene_2 in unique_genes:
-            print(gene_1, gene_2, )
-            # Check if the pair exists in the df
+
+        # Überprüfen, ob beide Gene in unique_genes enthalten sind und ob unique_spanning_reads > 3 ist
+        if gene_1 in unique_genes and gene_2 in unique_genes:
+
+            # Überprüfen, ob das Gen-Paar in der df vorhanden ist
             match_df = df[
                 (df['Gene_1_symbol(5end_fusion_partner)'] == gene_1) &
                 (df['Gene_2_symbol(3end_fusion_partner)'] == gene_2)
                 ]
             if not match_df.empty:
-                filtered_fusions.append((gene_1, gene_2, caller, unique_spanning_reads))
+                filtered_fusions.append((gene_1, gene_2, caller,unique_spanning_reads))
     return filtered_fusions
 
 
-def filter_subtype(subgruppe, unique_subtypes):
-    filtered_subtype = []
-    if subgruppe in unique_subtypes:
-        filtered_subtype.append(subgruppe)
-
-    return filtered_subtype
-
-
-def filter_karyotype(karyotype, unique_karyotypes):
-    filtered_karyotype = []
-    if karyotype in unique_karyotypes:
-        filtered_karyotype.append(karyotype)
-
-    return filtered_karyotype
-
-
-def gather_data(allcatchr_file, karyotype_file, fusioncatcher_file, arriba_file, hotspot_dir):
+def gather_data(allcatchr_file, karyotype_file, fusioncatcher_file, arriba_file, hotspot_dir, classification_file):
+    # Extrahiere die notwendigen Informationen aus den Eingabedateien
     subgruppe, confidence, bcr_abl1_maincluster_pred = get_allcatchr_data(allcatchr_file)
     karyotype, score = get_karyotype_and_probabilities(karyotype_file)
     relevant_files = check_hotspot_files(hotspot_dir)
 
     fusion_genes = []
+    # Lese Fusionen aus FusionCatcher-Datei ein
     with open(fusioncatcher_file, 'r') as f:
         next(f)  # Überspringen der Header-Zeile
         for line in f:
             parts = line.strip().split('\t')
-            fusion_genes.append((parts[0], parts[1], 'fusioncatcher', parts[5])) 
+            fusion_genes.append((parts[0], parts[1], 'FusionCatcher', parts[5]))
 
+    # Lese Fusionen aus Arriba-Datei ein
     with open(arriba_file, 'r') as f:
         next(f)  # Überspringen der Header-Zeile
         for line in f:
             parts = line.strip().split('\t')
-            fusion_genes.append((parts[0], parts[1], 'arriba', parts[11]))
+            fusion_genes.append((parts[0], parts[1], 'Arriba', parts[11]))
 
-    return subgruppe, confidence, bcr_abl1_maincluster_pred, karyotype, relevant_files, fusion_genes
+    # Lese die Klassifikationsdatei ein
+    df = pd.read_csv(classification_file, sep=',')  # Hier ',' als Delimiter verwenden
 
-
-
-def all_false_first_two(relevant_files):
-    keys = list(relevant_files.keys())
-    return relevant_files[keys[0]] is False and relevant_files[keys[1]] is False
-
-
-def check_conditions(subgruppe, confidence, bcr_abl1_maincluster_pred, karyotype, relevant_files, fusion_genes, df):
-    results = []
+    # Filtere die Fusionen
     filtered_fusions = filter_fusions(fusion_genes, driver_fusion_list, df)
-    print("filtered_fusions: ", filtered_fusions, "subgruppe: ", subgruppe, "confidence: ", confidence,
-          "bcr_abl1_maincluster_pred: ", bcr_abl1_maincluster_pred, "karyotype: ", karyotype,
-          "relevant_files: ", relevant_files)
-    filtered_subtype = subgruppe if subgruppe in df['ALLCatchR'].values else None
-    filtered_karyotype = karyotype if karyotype in df['karyotype classifier'].values else None
 
-    if subgruppe and karyotype and not filtered_fusions:
-        df_filtered = df[
-            (df['Gene_1_symbol(5end_fusion_partner)'].isna()) & (df['Gene_2_symbol(3end_fusion_partner)'].isna())]
-
-        for index, row in df_filtered.iterrows():
-            if (row['ALLCatchR'] == filtered_subtype and row['karyotype classifier'] == filtered_karyotype
-                    and row['Ph-pos'] == bcr_abl1_maincluster_pred):
-                if (filtered_subtype == "PAX5 P80R" and relevant_files["PAX5_P80R"]
-                        and not relevant_files["IKZF1_N159Y"]):
-                    row['Confidence'] = confidence
-                    row['Ph-pos'] = bcr_abl1_maincluster_pred
-                    row['PAX5_P80R'] = relevant_files["PAX5_P80R"]
-                    row['IKZF1_N159Y'] = relevant_files["IKZF1_N159Y"]
-                    row['ZEB2_H1038R'] = relevant_files["ZEB2_H1038R"]
-                    results.append(row)
-                elif subgruppe == "IKZF1 N159Y" and relevant_files["IKZF1_N159Y"] and not relevant_files["PAX5_P80R"]:
-                    row['Confidence'] = confidence
-                    row['Ph-pos'] = bcr_abl1_maincluster_pred
-                    row['PAX5_P80R'] = relevant_files["PAX5_P80R"]
-                    row['IKZF1_N159Y'] = relevant_files["IKZF1_N159Y"]
-                    row['ZEB2_H1038R'] = relevant_files["ZEB2_H1038R"]
-                    results.append(row)
-                elif (subgruppe == "CEBP" and relevant_files["ZEB2_H1038R"] and not relevant_files["PAX5_P80R"]
-                      and not relevant_files["IKZF1_N159Y"] and confidence == row['Confidence']):
-                        row['Confidence'] = confidence
-                        row['Ph-pos'] = bcr_abl1_maincluster_pred
-                        row['PAX5_P80R'] = relevant_files["PAX5_P80R"]
-                        row['IKZF1_N159Y'] = relevant_files["IKZF1_N159Y"]
-                        row['ZEB2_H1038R'] = relevant_files["ZEB2_H1038R"]
-                        results.append(row)
-                elif (filtered_subtype in ["PAX5alt", "Ph-like", "ETV6::RUNX1-like", "ZNF384", "KMT2A", "DUX4", "BCL2/MYC"] and
-                      confidence == "high-confidence" and not relevant_files["PAX5_P80R"] and not relevant_files["IKZF1_N159Y"]):
-                    row['Confidence'] = confidence
-                    row['Ph-pos'] = bcr_abl1_maincluster_pred
-                    row['PAX5_P80R'] = relevant_files["PAX5_P80R"]
-                    row['IKZF1_N159Y'] = relevant_files["IKZF1_N159Y"]
-                    row['ZEB2_H1038R'] = relevant_files["ZEB2_H1038R"]
-                    results.append(row)
-                elif (filtered_subtype in ["Hyperdiploid", "Low hypodiploid", "Near haploid", "iAMP21", "KMT2A"] and
-                      not relevant_files["PAX5_P80R"] and not relevant_files["IKZF1_N159Y"]):
-                    row['Confidence'] = confidence
-                    row['Ph-pos'] = bcr_abl1_maincluster_pred
-                    row['PAX5_P80R'] = relevant_files["PAX5_P80R"]
-                    row['IKZF1_N159Y'] = relevant_files["IKZF1_N159Y"]
-                    row['ZEB2_H1038R'] = relevant_files["ZEB2_H1038R"]
-                    results.append(row)
-                else:
-                    print("no match")
-            else:
-                print("Different subtype and karyotype")
+    if not filtered_fusions:
+        # Erstelle einen DataFrame mit einer Zeile und allen notwendigen Werten
+        result_df = pd.DataFrame([{
+            'ALLCatchR': subgruppe,
+            'Ph-pos': bcr_abl1_maincluster_pred,
+            'Confidence': confidence,
+            'Gene_1_symbol(5end_fusion_partner)': None,
+            'Gene_2_symbol(3end_fusion_partner)': None,
+            'Fusioncaller': None,
+            'Unique_spanning_reads': None,
+            'karyotype_classifier': karyotype,
+            'PAX5_P80R': relevant_files["PAX5_P80R"],
+            'IKZF1_N159Y': relevant_files["IKZF1_N159Y"],
+            'ZEB2_H1038R': relevant_files["ZEB2_H1038R"]
+        }])
     else:
-        for index, row in df.iterrows():
-            all_conditions_met = True
-            gene_1 = row['Gene_1_symbol(5end_fusion_partner)']
-            gene_2 = row['Gene_2_symbol(3end_fusion_partner)']
-            if gene_1 and gene_2:
-                match_found = any(
-                    (fusion_gene_1 == gene_1 and fusion_gene_2 == gene_2) for fusion_gene_1, fusion_gene_2 in
-                    filtered_fusions
+        # Erstellen des DataFrames für den Rückgabewert
+        result_df = pd.DataFrame(filtered_fusions, columns=[
+            'Gene_1_symbol(5end_fusion_partner)',
+            'Gene_2_symbol(3end_fusion_partner)',
+            'Fusioncaller',
+            'Unique_spanning_reads'
+        ])
+
+        # Hinzufügen der konstanten Spalten
+        result_df['ALLCatchR'] = subgruppe
+        result_df['Ph-pos'] = bcr_abl1_maincluster_pred
+        result_df['Confidence'] = confidence
+        result_df['karyotype_classifier'] = karyotype
+        result_df['PAX5_P80R'] = relevant_files["PAX5_P80R"]
+        result_df['IKZF1_N159Y'] = relevant_files["IKZF1_N159Y"]
+        result_df['ZEB2_H1038R'] = relevant_files["ZEB2_H1038R"]
+
+        # Spalten neu anordnen
+        result_df = result_df[[
+            'ALLCatchR',
+            'Ph-pos',
+            'Confidence',
+            'Gene_1_symbol(5end_fusion_partner)',
+            'Gene_2_symbol(3end_fusion_partner)',
+            'Fusioncaller',
+            'Unique_spanning_reads',
+            'karyotype_classifier',
+            'PAX5_P80R',
+            'IKZF1_N159Y',
+            'ZEB2_H1038R'
+        ]]
+
+    return result_df
+
+
+import pandas as pd
+
+def check_conditions(data_df, df_classification):
+    comparison_df = df_classification
+    matched_rows = []
+
+    if not data_df['Gene_1_symbol(5end_fusion_partner)'].isnull().all():
+        for _, data_row in data_df.iterrows():
+            for _, class_row in comparison_df.iterrows():
+                match_found = (
+                    data_row['ALLCatchR'] == class_row['ALLCatchR'] and
+                    data_row['Ph-pos'] == class_row['Ph-pos'] and
+                    data_row['Gene_1_symbol(5end_fusion_partner)'] == class_row['Gene_1_symbol(5end_fusion_partner)'] and
+                    data_row['Gene_2_symbol(3end_fusion_partner)'] == class_row['Gene_2_symbol(3end_fusion_partner)'] and
+                    data_row['karyotype_classifier'] == class_row['karyotype classifier'] and
+                    data_row['PAX5_P80R'] == class_row['PAX5 P80R'] and
+                    data_row['IKZF1_N159Y'] == class_row['IKZF1 N159Y'] and
+                    data_row['ZEB2_H1038R'] == class_row['ZEB2 H1038R']
                 )
-                if not match_found:
-                    all_conditions_met = False
-            if row['ALLCatchR'] != subgruppe or row['karyotype classifier'] != karyotype:
-                all_conditions_met = False
-            if relevant_files["PAX5_P80R"] and row['PAX5 P80R'] != 'yes':
-                all_conditions_met = False
-            if relevant_files["IKZF1_N159Y"] and row['IKZF1 N159Y'] != 'yes':
-                all_conditions_met = False
-            if row['Ph-pos'] != bcr_abl1_maincluster_pred:
-                all_conditions_met = False
-            if all_conditions_met:
-                row['Confidence'] = confidence
-                row['Ph-pos'] = bcr_abl1_maincluster_pred
-                row['PAX5 P80R'] = relevant_files["PAX5_P80R"]
-                row['IKZF1 N159Y'] = relevant_files["IKZF1_N159Y"]
-                row['ZEB2 H1038R'] = relevant_files["ZEB2_H1038R"]
-                results.append(row)
-    return results
 
+                if match_found:
+                    data_row['WHO-HAEM5'] = class_row['WHO-HAEM5']
+                    data_row['ICC'] = class_row['ICC']
+                    matched_rows.append(data_row)
 
-def create_fusion_table(filtered_fusions):
-    table_data = []
+    else:
+        for _, data_row in data_df.iterrows():
+            for _, class_row in comparison_df.iterrows():
+                match_found = (
+                    data_row['ALLCatchR'] == class_row['ALLCatchR'] and
+                    data_row['Confidence'] == class_row['Confidence'] and
+                    data_row['karyotype_classifier'] == class_row['karyotype classifier'] and
+                    data_row['PAX5_P80R'] == class_row['PAX5 P80R'] and
+                    data_row['IKZF1_N159Y'] == class_row['IKZF1 N159Y'] and
+                    data_row['ZEB2_H1038R'] == class_row['ZEB2 H1038R']
+                )
 
-    for fusion in filtered_fusions:
-        gene1, gene2, fusioncaller, unique_spanning_reads = fusion
-        table_data.append({
-            'Gene1': gene1,
-            'Gene2': gene2,
-            'Fusioncaller': fusioncaller,
-            'unique_spanning_reads': unique_spanning_reads
-        })
+                if match_found:
+                    data_row['WHO-HAEM5'] = class_row['WHO-HAEM5']
+                    data_row['ICC'] = class_row['ICC']
+                    matched_rows.append(data_row)
 
-    fusion_table = pd.DataFrame(table_data)
+    if matched_rows:
+        return pd.DataFrame(matched_rows)
+    else:
+        return None
 
-    return fusion_table
 
 def main(sample, allcatchr_file, karyotype_file, fusioncatcher_file, arriba_file, hotspot_dir, classification_file,
          output_csv, output_text, output_driver):
-    subgruppe, confidence, bcr_abl1_maincluster_pred, karyotype, relevant_files, fusion_genes = gather_data(
-        allcatchr_file, karyotype_file, fusioncatcher_file, arriba_file, hotspot_dir)
-    df = pd.read_csv(classification_file, sep='\t')
-    filtered_fusions = filter_fusions(fusion_genes, driver_fusion_list, df)
+    df = pd.read_csv(classification_file, sep=',')
+    data_df = gather_data(
+        allcatchr_file, karyotype_file, fusioncatcher_file, arriba_file, hotspot_dir, classification_file)
 
+    results = check_conditions(data_df, df)
+    output_df = pd.DataFrame(results)
+    if output_df.empty:
+        # Ergänze die `WHO-HAEM5` und `ICC` Spalten mit Standardwerten
+        data_df['WHO-HAEM5'] = "IntegrateALL couldn't confirm the subtype in concordance with WHO or ICC classification"
+        data_df['ICC'] = ""  # Leerer Eintrag für `ICC`
+        data_df.to_csv(output_csv, index=False)
+        handle_driver_fusions(data_df, output_driver)
+        write_no_match(output_text, data_df)
 
-    results = check_conditions(subgruppe, confidence, bcr_abl1_maincluster_pred, karyotype, relevant_files,
-                               fusion_genes, df)
-
-    def format_fusion(result):
-        gene_1 = result['Gene_1_symbol(5end_fusion_partner)']
-        gene_2 = result['Gene_2_symbol(3end_fusion_partner)']
-        if pd.isna(gene_1) or pd.isna(gene_2):
-            return "no fusion"
-        return f"{gene_1}::{gene_2}"
-
-    def get_filtered_fusion_genes(filtered_fusions, matched_fusions):
-        filtered_gene_pairs = set()
-        for fusion in filtered_fusions:
-            gene_1, gene_2 = fusion[0], fusion[1]
-            if not pd.isna(gene_1) and not pd.isna(gene_2):
-                pair = (gene_1, gene_2)
-                if pair not in matched_fusions:
-                    filtered_gene_pairs.add(pair)
-        return list(filtered_gene_pairs)
-
-    matched_fusions = set()
-
-    # Ergebnisse in die Ausgabedatei schreiben
-    if results:
-        output_df = pd.DataFrame(results)
+    elif len(output_df) > 1:
+        handle_multiple_entries(output_df, output_text)
         output_df.to_csv(output_csv, index=False)
-        print(f"Results written to {output_csv}")
-
-        with open(output_text, 'w') as f:
-            for result in results:
-                fusion_text = format_fusion(result)
-                if fusion_text != "no fusion":
-                    gene_1, gene_2 = result['Gene_1_symbol(5end_fusion_partner)'], result['Gene_2_symbol(3end_fusion_partner)']
-                    matched_fusions.add((gene_1, gene_2))
-                f.write(f"Consistency between gene expression-based subtype-allocation (ALLCatchR: {subgruppe} subtype, {confidence} confidence) "
-                        f"and the genomic driver profile (fusioncatcher/arriba: {fusion_text}, "
-                        f"RNA-Seq CNV karyotype classifier: {karyotype}, subtype defining SNPs: "
-                        f"{'PAX5 P80R present' if relevant_files['PAX5_P80R'] else 'absent'}, "
-                        f"{'IKZF1 N159Y present' if relevant_files['IKZF1_N159Y'] else 'absent'}) "
-                        f"supports a classification as\n\n"
-                        f"{result['WHO-HAEM5']} according to WHO-HAEM5 (Alaggio R et al. Leukemia, 2022) and\n"
-                        f"{result['ICC']} according to ICC (Arber D et al. Blood, 2022).\n\n")
-
-            # Wenn es mehr als ein Fusionspaar gibt, schreiben Sie die gefilterten Fusionsgene, die keinen Match hatten
-            if len(filtered_fusions) > 1:
-                fusion_table = create_fusion_table(filtered_fusions)
-                fusion_table.to_csv(output_driver, index=False)
-            else:
-                # Wenn keine Fusionen gefunden werden, schreibe eine leere Datei
-                with open(output_driver, 'w') as empty_file:
-                    pass  # Erstelle eine leere Datei ohne Inhalt
-                print("No fusions found, empty file created.")
-              
-        print(f"Detailed results written to {output_text}")
+        handle_driver_fusions(data_df, output_driver)
 
     else:
-        with open(output_csv, 'w') as f:
-            writer = csv.writer(f)
-            writer.writerow(["Message"])
-            writer.writerow(
-                ["IntegrateALL couldn't confirm the subtype in concordance with WHO or ICC classification"])
-        print(f"No matches found. Message written to {output_csv}")
+        write_single_entry_text(output_df.iloc[0], output_text)
+        output_df.to_csv(output_csv, index=False)
+        handle_driver_fusions(data_df, output_driver)
 
-        with open(output_text, 'w') as f:
-            f.write(f"IntegretALL classification:\n\n"
-                    f"Gene expression-based subtype-allocation (ALLCatchR: {subgruppe} subtype, {confidence} confidence) "
-                    f"and the genomic driver profile (fusioncatcher/arriba: no fusion, "
-                    f"RNA-Seq CNV karyotype classifier: {karyotype}, subtype defining SNPs: "
-                    f"{'PAX5 P80R present' if relevant_files['PAX5_P80R'] else 'absent'}, "
-                    f"{'IKZF1 N159Y present' if relevant_files['IKZF1_N159Y'] else 'absent'}) "
-                    f"seem not to be consistent with an unambiguous diagnostic classification according to WHO-HAEM5 "
-                    f"(Alaggio R et al. Leukemia, 2022) / ICC (Arber D et al. Blood, 2022).")
-        print(f"Detailed message written to {output_text}")
-      
+
+
+
+
+def write_no_match(output_text, output_entry_text):
+    fusion_details = ""
+    if output_entry_text['Fusioncaller'].isnull().all():
+        # Platzhalterwerte für den Fall, dass keine Fusionen vorhanden sind
+        fusion_details = "No driver fusions identified"
+    else:
+        # Wenn Fusionen vorhanden sind, sammle die Details
+        fusion_details = ""
+        for _, row in output_entry_text.iterrows():
+            fusion_details += (
+                f"{row['Fusioncaller']}: {row['Gene_1_symbol(5end_fusion_partner)']}::{row['Gene_2_symbol(3end_fusion_partner)']}, "
+            )
+        fusion_details = fusion_details.rstrip(", ")
+
+    output_entry_text = output_entry_text.iloc[0]
+
+    with open(output_text, 'w') as f:
+        f.write(f"IntegretALL classification:\n\n"
+                f"Gene expression-based subtype-allocation (ALLCatchR: {output_entry_text['ALLCatchR']} subtype, Confidence: {output_entry_text['Confidence']}) "
+                f"and the genomic driver profile ({fusion_details}, "
+                f"RNA-Seq CNV karyotype classifier: {output_entry_text['karyotype_classifier']}, subtype defining SNPs: "
+                f"{'PAX5 P80R present' if output_entry_text['PAX5_P80R'] else 'PAX5 P80R absent'}, "
+                f"{'IKZF1 N159Y present' if output_entry_text['IKZF1_N159Y'] else 'IKZF1 N159Y absent'}) "
+                f"seem not to be consistent with an unambiguous diagnostic classification according to WHO-HAEM5 "
+                f"(Alaggio R et al. Leukemia, 2022) / ICC (Arber D et al. Blood, 2022).")
+
+
+def handle_multiple_entries(output_df, output_text):
+    if output_df['ICC'].nunique() == 1:
+        write_multiple_entry_text(output_df, output_text)
+
+    else:
+        output_df['Unique_spanning_reads'] = pd.to_numeric(output_df['Unique_spanning_reads'], errors='coerce')
+        filtered_output_df = output_df[output_df['Unique_spanning_reads'] > 2]
+
+        if filtered_output_df.empty:
+            write_no_match(output_text, output_df)
+
+        elif len(filtered_output_df) > 1:
+            write_multiple_entry_with_different_ICC_text(filtered_output_df, output_text)
+        else:
+            selected_entry = filtered_output_df.iloc[0].copy()
+            write_single_entry_text(selected_entry, output_text)
+
+
+
+def write_single_entry_text(entry, output_text):
+    with open(output_text, 'w') as f:
+        f.write(
+            f"Consistency between gene expression-based subtype-allocation (ALLCatchR: {entry['ALLCatchR']} subtype, Confidence: {entry['Confidence']}) "
+            f"and the genomic driver profile ({entry['Fusioncaller']}: {entry['Gene_1_symbol(5end_fusion_partner)']}::{entry['Gene_2_symbol(3end_fusion_partner)']}, "
+            f"RNA-Seq CNV karyotype classifier: {entry['karyotype_classifier']}, subtype defining SNPs: "
+            f"{'PAX5 P80R present' if entry['PAX5_P80R'] else 'PAX5 P80R absent'}, "
+            f"{'IKZF1 N159Y present' if entry['IKZF1_N159Y'] else 'IKZF1 N159Y absent'}) "
+            f"supports a classification as\n\n"
+            f"{entry['WHO-HAEM5']} according to WHO-HAEM5 (Alaggio R et al. Leukemia, 2022) and\n"
+            f"{entry['ICC']} according to ICC (Arber D et al. Blood, 2022).\n\n")
+
+
+def write_multiple_entry_with_different_ICC_text(output_df, output_text):
+    fusion_details = ""
+    for _, row in output_df.iterrows():
+        fusion_details += (
+            f"{row['Fusioncaller']}: {row['Gene_1_symbol(5end_fusion_partner)']}::{row['Gene_2_symbol(3end_fusion_partner)']}, "
+        )
+    fusion_details = fusion_details.rstrip(", ")
+
+    output_entry_text = output_df.iloc[0]
+
+    with open(output_text, 'w') as f:
+        f.write(f"IntegretALL classification:\n\n"
+                f"Gene expression-based subtype-allocation (ALLCatchR: {output_entry_text['ALLCatchR']} subtype, Confidence: {output_entry_text['Confidence']}) "
+                f"and the genomic driver profile ({fusion_details}, "
+                f"RNA-Seq CNV karyotype classifier: {output_entry_text['karyotype_classifier']}, subtype defining SNPs: "
+                f"{'PAX5 P80R present' if output_entry_text['PAX5_P80R'] else 'PAX5 P80R absent'}, "
+                f"{'IKZF1 N159Y present' if output_entry_text['IKZF1_N159Y'] else 'IKZF1 N159Y absent'}) "
+                f"seem not to be consistent with an unambiguous diagnostic classification according to WHO-HAEM5 "
+                f"(Alaggio R et al. Leukemia, 2022) / ICC (Arber D et al. Blood, 2022).")
+
+
+def write_multiple_entry_text(output_df, output_text):
+    if output_df['ICC'].nunique() == 1:
+        selected_entry = output_df.iloc[0].copy()
+        entry = selected_entry
+
+        # Überprüfen, ob es verschiedene Fusioncaller gibt und ergänze sie
+        additional_fusioncallers = output_df['Fusioncaller'].unique()
+        if len(additional_fusioncallers) > 1:
+            # Kombiniere alle unterschiedlichen Fusioncaller zu einem String
+            combined_fusioncallers = " & ".join(additional_fusioncallers)
+            entry.loc['Fusioncaller'] = combined_fusioncallers
+
+    with open(output_text, 'w') as f:
+        f.write(
+            f"Consistency between gene expression-based subtype-allocation (ALLCatchR: {entry['ALLCatchR']} subtype, Confidence: {entry['Confidence']}) "
+            f"and the genomic driver profile ({entry['Fusioncaller']}: {entry['Gene_1_symbol(5end_fusion_partner)']}::{entry['Gene_2_symbol(3end_fusion_partner)']}, "
+            f"RNA-Seq CNV karyotype classifier: {entry['karyotype_classifier']}, subtype defining SNPs: "
+            f"{'PAX5 P80R present' if entry['PAX5_P80R'] else 'PAX5 P80R absent'}, "
+            f"{'IKZF1 N159Y present' if entry['IKZF1_N159Y'] else 'IKZF1 N159Y absent'}) "
+            f"supports a classification as\n\n"
+            f"{entry['WHO-HAEM5']} according to WHO-HAEM5 (Alaggio R et al. Leukemia, 2022) and\n"
+            f"{entry['ICC']} according to ICC (Arber D et al. Blood, 2022).\n\n")
+
+
+def handle_driver_fusions(data_df, output_driver):
+    data_df['Unique_spanning_reads'] = pd.to_numeric(data_df['Unique_spanning_reads'], errors='coerce')
+
+    if 'DUX4' in data_df['ALLCatchR'].values:
+        # Wenn DUX4 vorhanden ist, filtere ohne die DUX4-Einträge zu entfernen
+        filtered_df = data_df[
+            ~((data_df['Unique_spanning_reads'].isna()) |  # Schließt NaN-Werte aus
+              (data_df['Unique_spanning_reads'] < 3))  # Schließt Werte < 3 aus
+        ]
+    else:
+        # Normale Filterung, DUX4-Einträge werden ausgeschlossen
+        filtered_df = data_df[
+            ~((data_df['Gene_1_symbol(5end_fusion_partner)'] == 'DUX4') |
+              (data_df['Gene_2_symbol(3end_fusion_partner)'] == 'DUX4') |
+              (data_df['Unique_spanning_reads'].isna()) |  # Schließt NaN-Werte aus
+              (data_df['Unique_spanning_reads'] < 3))  # Schließt Werte < 3 aus
+        ]
+    if filtered_df.empty:
         with open(output_driver, 'w') as empty_file:
             pass  # Erstelle eine leere Datei ohne Inhalt
-        print("No fusions found, empty file created.")
+
+    else:
+        filtered_df = filtered_df[[
+            'Gene_1_symbol(5end_fusion_partner)',
+            'Gene_2_symbol(3end_fusion_partner)',
+            'Unique_spanning_reads',
+            'Fusioncaller'
+        ]]
+
+        # Schreibe die Daten in eine CSV-Datei
+        filtered_df.to_csv(output_driver, index=False, header=True)
 
 
 
@@ -481,7 +535,7 @@ if __name__ == "__main__":
     hotspot_dir = sys.argv[6]
     classification_file = sys.argv[7]
     output_csv = sys.argv[8]
+    output_text = sys.argv[9]
     output_driver = sys.argv[10]
     main(sample, allcatchr_file, karyotype_file, fusioncatcher_file, arriba_file, hotspot_dir, classification_file,
          output_csv, output_text, output_driver)
-

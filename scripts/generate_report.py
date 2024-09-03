@@ -88,64 +88,68 @@ from collections import defaultdict
 def generate_html_table(directory):
     table_dict = defaultdict(list)
     html_content = ""
-    print(os.getcwd())
+    #print(os.getcwd())
     # Überprüfe, ob das Verzeichnis existiert und ob Dateien darin enthalten sind
     if os.path.exists(directory) and os.listdir(directory):
+        sorted_content = ""
+        files = os.listdir(directory)
+        if len(files) > 1:
+            # Iteriere über die Dateien im Verzeichnis
+            for filename in os.listdir(directory):
+                # print("filename", filename)
+                # Filtere die Dateien mit der Endung '_output:file.csv' oder '_with_bases.csv'
+                if filename.endswith('_output_file.csv'):
+                    print("in if")
+                    file_path = os.path.join(directory, filename)
 
-        # Iteriere über die Dateien im Verzeichnis
-        for filename in os.listdir(directory):
-            # print("filename", filename)
-            # Filtere die Dateien mit der Endung '_output:file.csv' oder '_with_bases.csv'
-            if filename.endswith('_output_file.csv'):
-                print("in if")
-                file_path = os.path.join(directory, filename)
+                    # Lese die CSV-Datei
+                    table_data = pd.read_csv(file_path, delimiter=',')
+                    print("table_data", table_data)
+                    # Konvertiere die Daten in eine HTML-Tabelle
+                    html_table = table_data.to_html(classes='my-table-class no-sort', index=False)
+                    display_name = filename.split('_output_file.csv')[0].replace('_', ': ')
+                    # Füge die HTML-Tabelle zum HTML-Inhalt hinzu
+                    html_content += f"<h3>{display_name}</h3>"
+                    html_content += html_table
+                    table_dict[display_name].append(f"<h3>{display_name}</h3>" + html_table)
 
-                # Lese die CSV-Datei
-                table_data = pd.read_csv(file_path, delimiter=',')
-                print("table_data", table_data)
-                # Konvertiere die Daten in eine HTML-Tabelle
-                html_table = table_data.to_html(classes='my-table-class no-sort', index=False)
-                display_name = filename.split('_output_file.csv')[0].replace('_', ': ')
-                # Füge die HTML-Tabelle zum HTML-Inhalt hinzu
-                html_content += f"<h3>{display_name}</h3>"
-                html_content += html_table
-                table_dict[display_name].append(f"<h3>{display_name}</h3>" + html_table)
+                elif filename.endswith('_with_bases.tsv'):
+                    print("in elif")
+                    file_path = os.path.join(directory, filename)
+                    columns = ["chrom", "pos", "ref", "reads_pp", "mismatches_pp", "deletions_pp", "insertions_pp", "A_pp",
+                               "C_pp", "T_pp", "G_pp", "N_pp", "new_base"]
 
-            elif filename.endswith('_with_bases.tsv'):
-                print("in elif")
-                file_path = os.path.join(directory, filename)
-                columns = ["chrom", "pos", "ref", "reads_pp", "mismatches_pp", "deletions_pp", "insertions_pp", "A_pp",
-                           "C_pp", "T_pp", "G_pp", "N_pp", "new_base"]
+                    # Lese die CSV-Datei
+                    table_data = pd.read_csv(file_path, delimiter=' ', skiprows=1, names=columns)
+                    print("_with_bases table_data", table_data)
+                    # Konvertiere die Daten in eine HTML-Tabelle
+                    html_table = table_data.to_html(classes='my-table-class no-sort', index=False)
+                    display_name = filename.split('_with_bases.tsv')[0].replace('_', ': ')
+                    # Füge die HTML-Tabelle zum HTML-Inhalt hinzu
+                    html_content += f"<h3>{display_name} variants</h3>"
+                    html_content += html_table
+                    table_dict[display_name + " variants"].append(f"<h3>{display_name} variants</h3>" + html_table)
 
-                # Lese die CSV-Datei
-                table_data = pd.read_csv(file_path, delimiter=' ', skiprows=1, names=columns)
-                print("_with_bases table_data", table_data)
-                # Konvertiere die Daten in eine HTML-Tabelle
-                html_table = table_data.to_html(classes='my-table-class no-sort', index=False)
-                display_name = filename.split('_with_bases.tsv')[0].replace('_', ': ')
-                # Füge die HTML-Tabelle zum HTML-Inhalt hinzu
-                html_content += f"<h3>{display_name} variants</h3>"
-                html_content += html_table
-                table_dict[display_name + " variants"].append(f"<h3>{display_name} variants</h3>" + html_table)
-
-            elif filename.endswith('_gatk_result.tsv'):
-                print("in elif ctat")
-                file_path = os.path.join(directory, filename)
-                # Lese die CSV-Datei
-                table_data = pd.read_csv(file_path, delimiter='\t')
-                print("_gatk_result table_data", table_data)
-                # Konvertiere die Daten in eine HTML-Tabelle
-                html_table = table_data.to_html(classes='my-table-class no-sort', index=False)
-                display_name = filename.split('_gatk_result.tsv')[0].replace('_', ': ')
-                # Füge die HTML-Tabelle zum HTML-Inhalt hinzu
-                html_content += f"<h3>{display_name} CTAT Result</h3>"
-                html_content += html_table
-                table_dict[display_name + " GATK Result"].append(f"<h3>{display_name} GATK Result</h3>" + html_table)
-            # Erstelle den sortierten HTML-Content
-    sorted_content = ""
+                elif filename.endswith('_gatk_result.tsv'):
+                    print("in elif ctat")
+                    file_path = os.path.join(directory, filename)
+                    # Lese die CSV-Datei
+                    table_data = pd.read_csv(file_path, delimiter='\t')
+                    print("_gatk_result table_data", table_data)
+                    # Konvertiere die Daten in eine HTML-Tabelle
+                    html_table = table_data.to_html(classes='my-table-class no-sort', index=False)
+                    display_name = filename.split('_gatk_result.tsv')[0].replace('_', ': ')
+                    # Füge die HTML-Tabelle zum HTML-Inhalt hinzu
+                    html_content += f"<h3>{display_name} GATK Result</h3>"
+                    html_content += html_table
+                    table_dict[display_name + " GATK Result"].append(f"<h3>{display_name} GATK Result</h3>" + html_table)
+                # Erstelle den sortierten HTML-Content
+                elif filename.endswith('.snakemake_timestamp'):
+                    pass
+        else:
+            sorted_content = "<p>No hotspot found</p>"
     for key in sorted(table_dict.keys()):
         sorted_content += "<br>".join(table_dict[key])
-
     return sorted_content
 
 #pysamstats_files_IKZF1, pysamstats_files_PAX5, pysamstats_files_coverage,
@@ -158,9 +162,7 @@ def generate_report(prediction_file, fusioncatcher_file, arriba_file,
     ml_prediction = pd.read_csv(karyotype, delimiter=',')
     final_text = pd.read_csv(text, delimiter='\t')
     html_table_text = final_text.to_html(classes='my-table-class no-sort', index=False)
-    #pysamstats_files_IKZF1 = pd.read_csv(pysamstats_files_IKZF1, delimiter='\t')
-    #pysamstats_files_PAX5 = pd.read_csv(pysamstats_files_PAX5, delimiter='\t')
-    #pysamstats_files_coverage = pd.read_csv(pysamstats_files_coverage, delimiter='\t')
+
     star_log_final_out_file = pd.read_csv(star_log_final_out_file, delimiter='\t')
 
     print("sample_id", sample_id)
@@ -186,8 +188,8 @@ def generate_report(prediction_file, fusioncatcher_file, arriba_file,
         driver_table = driver_file.to_html(classes='my-table-class', index=False)
     else:
         print(f"Driver file {driver} is empty. Skipping HTML table generation for this file.")
-        driver_table = "<p>No driver fusions identified.</p>"
-                        
+        driver_table = "<p>No driver fusions identified</p>"
+
     html_table = prediction_data_subset.to_html(classes='my-table-class no-sort', index=False)
     ml_html_table = ml_prediction.to_html(classes='my-table-class no-sort', index=False)
     first_section_end = star_log_final_out_file[star_log_final_out_file.iloc[:, 0].str.endswith(':')].index[0]
@@ -318,7 +320,6 @@ def generate_report(prediction_file, fusioncatcher_file, arriba_file,
     karyotype_html_table = custom_css + ml_html_table
     arriba_html_table_with_style = custom_css + arriba_html_table
     driver_html_table = custom_css + driver_table
-
     # Construct HTML output
     html_output = f"""
     <!DOCTYPE html>
@@ -391,11 +392,12 @@ def generate_report(prediction_file, fusioncatcher_file, arriba_file,
         <iframe src= {arriba_fusion_pdf_path} name="arriba_fusion_pdf_path" width="100%" height="600" frameborder="0"></iframe>
         
         <h1 id="section12">Driver Fusions</h1>
-        <h2>IntegrateALL identified the following driver fusions:
+        <h3>IntegrateALL identified the following driver fusions:</h3>
         {driver_html_table}
         
         <h1 id="section13">Fusioncatcher Fusions</h1>
         {fusioncatcher_html_table}
+        
 
 
         <script>
@@ -427,3 +429,4 @@ if __name__ == "__main__":
                     rna_seq_cnv_log2foldchange_file, rna_seq_cnv_manual_an_table_file,
                     star_log_final_out_file,
                     comparison_file, hotspots, sample_id, karyotype, text, driver, output_file)
+

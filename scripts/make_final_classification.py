@@ -360,7 +360,7 @@ def check_conditions(data_df, df_classification):
 
 
 def main(sample, allcatchr_file, karyotype_file, fusioncatcher_file, arriba_file, hotspot_dir, classification_file,
-         output_csv, output_text, output_driver):
+         output_csv, output_text, output_curation, output_driver):
     # Lade die Klassifikationsdatei
     df = pd.read_csv(classification_file, sep=',')
 
@@ -385,25 +385,25 @@ def main(sample, allcatchr_file, karyotype_file, fusioncatcher_file, arriba_file
         # Speichere die Daten und bearbeite die Fusions- und Textdateien
         data_df.to_csv(output_csv, index=False)
         handle_driver_fusions(data_df, output_driver)
-        write_no_match(output_text, data_df)
+        write_no_match(output_text, output_curation, data_df)
 
     else:
         # Wenn `output_df` die gleiche Länge wie `data_df` hat, verarbeite es weiter
         if len(output_df) > 1:
             print("Mehrere Einträge in output_df")
             # Wenn mehrere Einträge vorhanden sind, handle die Mehrfacheinträge
-            handle_multiple_entries(output_df, output_text)
+            handle_multiple_entries(output_df, output_text, output_curation)
             output_df.to_csv(output_csv, index=False)
             handle_driver_fusions(data_df, output_driver)
         else:
             print("Einzelner Eintrag in output_df")
             # Wenn nur ein Eintrag vorhanden ist, verarbeite den Einzelnen
-            write_single_entry_text(output_df.iloc[0], output_text)
+            write_single_entry_text(output_df.iloc[0], output_text, output_curation)
             output_df.to_csv(output_csv, index=False)
             handle_driver_fusions(data_df, output_driver)
 
 
-def write_no_match(output_text, output_entry_text):
+def write_no_match(output_text, output_curation, output_entry_text):
     fusion_details = ""
     if output_entry_text['Fusioncaller'].isnull().all():
         # Platzhalterwerte für den Fall, dass keine Fusionen vorhanden sind
@@ -429,27 +429,38 @@ def write_no_match(output_text, output_entry_text):
                 f"seem not to be consistent with an unambiguous diagnostic classification according to WHO-HAEM5 "
                 f"(Alaggio R et al. Leukemia, 2022) / ICC (Arber D et al. Blood, 2022).")
 
+    with open(output_curation, 'w') as c:
+        c.write(
+            "Classification, Subtype,Confidence,Fusion_details,Karyotype_classifier,PAX5_P80R,IKZF1_N159Y,ZEB2_H1038R,WHO-HAEM5,ICC\n")
+        c.write(f"{'Manual Curation'}, "
+            f"{output_entry_text['ALLCatchR']}, {output_entry_text['Confidence']}, {fusion_details}, {output_entry_text['karyotype_classifier']}, "
+            f"{'PAX5 P80R present' if output_entry_text['PAX5_P80R'] else 'PAX5 P80R absent'}, "
+            f"{'IKZF1 N159Y present' if output_entry_text['IKZF1_N159Y'] else 'IKZF1 N159Y absent'}, "
+            f"{'ZEB2 H1038R present' if output_entry_text['ZEB2_H1038R'] else 'ZEB2 H1038R absent'}, "
+            f"{''}, {''}\n"
+            )
 
-def handle_multiple_entries(output_df, output_text):
+
+def handle_multiple_entries(output_df, output_text, output_curation):
     if output_df['ICC'].nunique() == 1:
-        write_multiple_entry_text(output_df, output_text)
+        write_multiple_entry_text(output_df, output_text, output_curation)
 
     else:
         output_df['Unique_spanning_reads'] = pd.to_numeric(output_df['Unique_spanning_reads'], errors='coerce')
         filtered_output_df = output_df[output_df['Unique_spanning_reads'] > 2]
 
         if filtered_output_df.empty:
-            write_no_match(output_text, output_df)
+            write_no_match(output_text, output_df, output_curation)
 
         elif len(filtered_output_df) > 1:
-            write_multiple_entry_with_different_ICC_text(filtered_output_df, output_text)
+            write_multiple_entry_with_different_ICC_text(filtered_output_df, output_text, output_curation)
         else:
             selected_entry = filtered_output_df.iloc[0].copy()
-            write_single_entry_text(selected_entry, output_text)
+            write_single_entry_text(selected_entry, output_text, output_curation)
 
 
 
-def write_single_entry_text(entry, output_text):
+def write_single_entry_text(entry, output_text, output_curation):
     with open(output_text, 'w') as f:
         f.write(
             f"Consistency between gene expression-based subtype-allocation (ALLCatchR: {entry['ALLCatchR']} subtype, Confidence: {entry['Confidence']}) "
@@ -461,8 +472,21 @@ def write_single_entry_text(entry, output_text):
             f"{entry['WHO-HAEM5']} according to WHO-HAEM5 (Alaggio R et al. Leukemia, 2022) and\n"
             f"{entry['ICC']} according to ICC (Arber D et al. Blood, 2022).\n\n")
 
+    with open(output_curation, 'w') as c:
+        c.write(
+            "Classification, Subtype,Confidence,Fusion_details,Karyotype_classifier,PAX5_P80R,IKZF1_N159Y,ZEB2_H1038R,WHO-HAEM5,ICC\n")
+        c.write(f"{'Automatic Classification'}, "
+            f"{entry['ALLCatchR']}, {entry['Confidence']}, {entry['Fusioncaller']}: {entry['Gene_1_symbol(5end_fusion_partner)']}::{entry['Gene_2_symbol(3end_fusion_partner)']}, {entry['karyotype_classifier']}, "
+            f"{'PAX5 P80R present' if entry['PAX5_P80R'] else 'PAX5 P80R absent'}, "
+            f"{'IKZF1 N159Y present' if entry['IKZF1_N159Y'] else 'IKZF1 N159Y absent'}, "
+            f"{'ZEB2 H1038R present' if entry['ZEB2_H1038R'] else 'ZEB2 H1038R absent'}, "
+            f"{entry['WHO-HAEM5']}, "
+            f"{entry['ICC']}"
+            )
 
-def write_multiple_entry_with_different_ICC_text(output_df, output_text):
+
+
+def write_multiple_entry_with_different_ICC_text(output_df, output_text, output_curation):
     fusion_details = ""
     for _, row in output_df.iterrows():
         fusion_details += (
@@ -482,8 +506,20 @@ def write_multiple_entry_with_different_ICC_text(output_df, output_text):
                 f"seem not to be consistent with an unambiguous diagnostic classification according to WHO-HAEM5 "
                 f"(Alaggio R et al. Leukemia, 2022) / ICC (Arber D et al. Blood, 2022).")
 
+    with open(output_curation, 'w') as c:
+        c.write(
+            "Classification, Subtype,Confidence,Fusion_details,Karyotype_classifier,PAX5_P80R,IKZF1_N159Y,ZEB2_H1038R,WHO-HAEM5,ICC\n")
+        c.write(f"{'Manual Curation'}, "
+            f"{output_entry_text['ALLCatchR']}, {output_entry_text['Confidence']}, {fusion_details}, {output_entry_text['karyotype_classifier']}, "
+            f"{'PAX5 P80R present' if output_entry_text['PAX5_P80R'] else 'PAX5 P80R absent'}, "
+            f"{'IKZF1 N159Y present' if output_entry_text['IKZF1_N159Y'] else 'IKZF1 N159Y absent'}, "
+            f"{'ZEB2 H1038R present' if output_entry_text['ZEB2_H1038R'] else 'ZEB2 H1038R absent'}, "
+             f"{''}, {''}\n"
+            )
 
-def write_multiple_entry_text(output_df, output_text):
+
+
+def write_multiple_entry_text(output_df, output_text, output_curation):
     if output_df['ICC'].nunique() == 1:
         selected_entry = output_df.iloc[0].copy()
         entry = selected_entry
@@ -505,6 +541,19 @@ def write_multiple_entry_text(output_df, output_text):
             f"supports a classification as\n\n"
             f"{entry['WHO-HAEM5']} according to WHO-HAEM5 (Alaggio R et al. Leukemia, 2022) and\n"
             f"{entry['ICC']} according to ICC (Arber D et al. Blood, 2022).\n\n")
+
+    with open(output_curation, 'w') as c:
+        c.write(
+            "Classification, Subtype,Confidence,Fusion_details,Karyotype_classifier,PAX5_P80R,IKZF1_N159Y,ZEB2_H1038R,WHO-HAEM5,ICC\n")
+        c.write(f"{'Automatic Classification'}, "
+            f"{entry['ALLCatchR']}, {entry['Confidence']}, {entry['Fusioncaller']}: {entry['Gene_1_symbol(5end_fusion_partner)']}::{entry['Gene_2_symbol(3end_fusion_partner)']}, {entry['karyotype_classifier']}, "
+            f"{'PAX5 P80R present' if entry['PAX5_P80R'] else 'PAX5 P80R absent'}, "
+            f"{'IKZF1 N159Y present' if entry['IKZF1_N159Y'] else 'IKZF1 N159Y absent'}, "
+            f"{'ZEB2 H1038R present' if entry['ZEB2_H1038R'] else 'ZEB2 H1038R absent'}, "
+            f"{entry['WHO-HAEM5']}, "
+            f"{entry['ICC']}"
+            )
+
 
 
 def handle_driver_fusions(data_df, output_driver):
@@ -553,6 +602,7 @@ if __name__ == "__main__":
     classification_file = sys.argv[7]
     output_csv = sys.argv[8]
     output_text = sys.argv[9]
-    output_driver = sys.argv[10]
+    output_curation = sys.argv[10]
+    output_driver = sys.argv[11]
     main(sample, allcatchr_file, karyotype_file, fusioncatcher_file, arriba_file, hotspot_dir, classification_file,
-         output_csv, output_text, output_driver)
+         output_csv, output_text, output_curation, output_driver)

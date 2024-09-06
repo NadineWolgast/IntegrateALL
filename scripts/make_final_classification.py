@@ -413,9 +413,9 @@ def write_no_match(output_text, output_curation, output_entry_text):
         fusion_details = ""
         for _, row in output_entry_text.iterrows():
             fusion_details += (
-                f"{row['Fusioncaller']}: {row['Gene_1_symbol(5end_fusion_partner)']}::{row['Gene_2_symbol(3end_fusion_partner)']}, "
+                f"{row['Fusioncaller']}: {row['Gene_1_symbol(5end_fusion_partner)']}::{row['Gene_2_symbol(3end_fusion_partner)']}; "
             )
-        fusion_details = fusion_details.rstrip(", ")
+        fusion_details = fusion_details.rstrip("; ")
 
     output_entry_text = output_entry_text.iloc[0]
 
@@ -472,17 +472,30 @@ def write_single_entry_text(entry, output_text, output_curation):
             f"{entry['WHO-HAEM5']} according to WHO-HAEM5 (Alaggio R et al. Leukemia, 2022) and\n"
             f"{entry['ICC']} according to ICC (Arber D et al. Blood, 2022).\n\n")
 
-    with open(output_curation, 'w') as c:
-        c.write(
-            "Classification, Subtype,Confidence,Fusion_details,Karyotype_classifier,PAX5_P80R,IKZF1_N159Y,ZEB2_H1038R,WHO-HAEM5,ICC\n")
-        c.write(f"{'Automatic Classification'}, "
-            f"{entry['ALLCatchR']}, {entry['Confidence']}, {entry['Fusioncaller']}: {entry['Gene_1_symbol(5end_fusion_partner)']}::{entry['Gene_2_symbol(3end_fusion_partner)']}, {entry['karyotype_classifier']}, "
-            f"{'PAX5 P80R present' if entry['PAX5_P80R'] else 'PAX5 P80R absent'}, "
-            f"{'IKZF1 N159Y present' if entry['IKZF1_N159Y'] else 'IKZF1 N159Y absent'}, "
-            f"{'ZEB2 H1038R present' if entry['ZEB2_H1038R'] else 'ZEB2 H1038R absent'}, "
-            f"{entry['WHO-HAEM5']}, "
-            f"{entry['ICC']}"
-            )
+    with open(output_curation, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+
+        # Schreibe den Header
+        writer.writerow([
+            "Classification", "Subtype", "Confidence", "Fusion_details",
+            "Karyotype_classifier", "PAX5_P80R", "IKZF1_N159Y",
+            "ZEB2_H1038R", "WHO-HAEM5", "ICC"
+        ])
+
+        # Schreibe die Daten
+        writer.writerow([
+            "Automatic Classification",
+            entry['ALLCatchR'],
+            entry['Confidence'],
+            f"{entry['Fusioncaller']}: {entry['Gene_1_symbol(5end_fusion_partner)']}::{entry['Gene_2_symbol(3end_fusion_partner)']}",
+            entry['karyotype_classifier'],
+            "PAX5 P80R present" if entry['PAX5_P80R'] else "PAX5 P80R absent",
+            "IKZF1 N159Y present" if entry['IKZF1_N159Y'] else "IKZF1 N159Y absent",
+            "ZEB2 H1038R present" if entry['ZEB2_H1038R'] else "ZEB2 H1038R absent",
+            entry['WHO-HAEM5'],
+            entry['ICC']
+        ])
+
 
 
 
@@ -490,9 +503,9 @@ def write_multiple_entry_with_different_ICC_text(output_df, output_text, output_
     fusion_details = ""
     for _, row in output_df.iterrows():
         fusion_details += (
-            f"{row['Fusioncaller']}: {row['Gene_1_symbol(5end_fusion_partner)']}::{row['Gene_2_symbol(3end_fusion_partner)']}, "
+            f"{row['Fusioncaller']}: {row['Gene_1_symbol(5end_fusion_partner)']}::{row['Gene_2_symbol(3end_fusion_partner)']}; "
         )
-    fusion_details = fusion_details.rstrip(", ")
+    fusion_details = fusion_details.rstrip("; ")
 
     output_entry_text = output_df.iloc[0]
 
@@ -542,17 +555,29 @@ def write_multiple_entry_text(output_df, output_text, output_curation):
             f"{entry['WHO-HAEM5']} according to WHO-HAEM5 (Alaggio R et al. Leukemia, 2022) and\n"
             f"{entry['ICC']} according to ICC (Arber D et al. Blood, 2022).\n\n")
 
-    with open(output_curation, 'w') as c:
-        c.write(
-            "Classification, Subtype,Confidence,Fusion_details,Karyotype_classifier,PAX5_P80R,IKZF1_N159Y,ZEB2_H1038R,WHO-HAEM5,ICC\n")
-        c.write(f"{'Automatic Classification'}, "
-            f"{entry['ALLCatchR']}, {entry['Confidence']}, {entry['Fusioncaller']}: {entry['Gene_1_symbol(5end_fusion_partner)']}::{entry['Gene_2_symbol(3end_fusion_partner)']}, {entry['karyotype_classifier']}, "
-            f"{'PAX5 P80R present' if entry['PAX5_P80R'] else 'PAX5 P80R absent'}, "
-            f"{'IKZF1 N159Y present' if entry['IKZF1_N159Y'] else 'IKZF1 N159Y absent'}, "
-            f"{'ZEB2 H1038R present' if entry['ZEB2_H1038R'] else 'ZEB2 H1038R absent'}, "
-            f"{entry['WHO-HAEM5']}, "
-            f"{entry['ICC']}"
-            )
+    with open(output_curation, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+
+        # Schreibe den Header
+        writer.writerow([
+            "Classification", "Subtype", "Confidence", "Fusion_details",
+            "Karyotype_classifier", "PAX5_P80R", "IKZF1_N159Y",
+            "ZEB2_H1038R", "WHO-HAEM5", "ICC"
+        ])
+
+        # Schreibe die Daten
+        writer.writerow([
+            "Automatic Classification",
+            entry['ALLCatchR'],
+            entry['Confidence'],
+            f"{entry['Fusioncaller']}: {entry['Gene_1_symbol(5end_fusion_partner)']}::{entry['Gene_2_symbol(3end_fusion_partner)']}",
+            entry['karyotype_classifier'],
+            "PAX5 P80R present" if entry['PAX5_P80R'] else "PAX5 P80R absent",
+            "IKZF1 N159Y present" if entry['IKZF1_N159Y'] else "IKZF1 N159Y absent",
+            "ZEB2 H1038R present" if entry['ZEB2_H1038R'] else "ZEB2 H1038R absent",
+            entry['WHO-HAEM5'],
+            entry['ICC']
+        ])
 
 
 

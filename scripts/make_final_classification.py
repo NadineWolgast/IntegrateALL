@@ -371,14 +371,16 @@ def main(sample, allcatchr_file, karyotype_file, fusioncatcher_file, arriba_file
     # Führe die Überprüfung der Bedingungen durch
     results = check_conditions(data_df, df)
     output_df = pd.DataFrame(results)
-
+    data_df['Unique_spanning_reads'] = pd.to_numeric(data_df['Unique_spanning_reads'], errors='coerce')
+    filtered_data_df = data_df[data_df['Unique_spanning_reads'] > 2]
     # Debugging Informationen
-    print("Längen von data_df und output_df", len(data_df), len(output_df))
+    print("Längen von filtered_data_df und output_df", len(filtered_data_df), len(output_df))
+    print("in main data_df", data_df)
     print("in main output_df", output_df)
-
+    print("in main data_df", filtered_data_df)
     # Prüfe, ob `output_df` leer ist oder die Längen unterschiedlich sind
-    if output_df.empty or len(output_df) != len(data_df):
-        print("Unterschiedliche Längen oder leeres output_df")
+    if output_df.empty:
+        print("Leeres output_df")
         # Ergänze die `WHO-HAEM5` und `ICC` Spalten mit Standardwerten
         data_df['WHO-HAEM5'] = "IntegrateALL couldn't confirm the subtype in concordance with WHO or ICC classification"
         data_df['ICC'] = ""  # Leerer Eintrag für `ICC`
@@ -386,6 +388,33 @@ def main(sample, allcatchr_file, karyotype_file, fusioncatcher_file, arriba_file
         data_df.to_csv(output_csv, index=False)
         handle_driver_fusions(data_df, output_driver)
         write_no_match(output_text, output_curation, data_df)
+    elif (not output_df.empty) and (len(output_df) != len(filtered_data_df)):
+        print("Unterschiedliche len()")
+
+        if len(filtered_data_df) > len(output_df):
+            print("Zusaetzliche Treiber gefunden -> Manual curation!")
+            filtered_data_df[
+                'WHO-HAEM5'] = "IntegrateALL couldn't confirm the subtype in concordance with WHO or ICC classification"
+            filtered_data_df['ICC'] = ""  # Leerer Eintrag für `ICC`
+            # Speichere die Daten und bearbeite die Fusions- und Textdateien
+            filtered_data_df.to_csv(output_csv, index=False)
+            handle_driver_fusions(filtered_data_df, output_driver)
+            write_no_match(output_text, output_curation, filtered_data_df)
+        else:
+            print("else len(filtered_data_df) <= len(output_df):", len(filtered_data_df) , len(output_df))
+            if len(output_df) > 1:
+                print("Mehrere Einträge in output_df")
+                # Wenn mehrere Einträge vorhanden sind, handle die Mehrfacheinträge
+                handle_multiple_entries(output_df, output_text, output_curation)
+                output_df.to_csv(output_csv, index=False)
+                handle_driver_fusions(data_df, output_driver)
+            else:
+                print("Einzelner Eintrag in output_df")
+                # Wenn nur ein Eintrag vorhanden ist, verarbeite den Einzelnen
+                write_single_entry_text(output_df.iloc[0], output_text, output_curation)
+                output_df.to_csv(output_csv, index=False)
+                handle_driver_fusions(data_df, output_driver)
+
 
     else:
         # Wenn `output_df` die gleiche Länge wie `data_df` hat, verarbeite es weiter
@@ -452,7 +481,7 @@ def handle_multiple_entries(output_df, output_text, output_curation):
         if filtered_output_df.empty:
             write_no_match(output_text, output_df, output_curation)
 
-        elif len(filtered_output_df) > 1:
+        elif filtered_output_df['ICC'].nunique() != 1:
             write_multiple_entry_with_different_ICC_text(filtered_output_df, output_text, output_curation)
         else:
             selected_entry = filtered_output_df.iloc[0].copy()

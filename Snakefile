@@ -337,7 +337,7 @@ rule pysamstat:
 
     resources:
         threads=config['threads'],
-        mem_mb=5000
+        mem_mb=20000
 
     shell:
         """
@@ -622,7 +622,7 @@ rule splitncigarreads:
         mem_mb=10000,
     threads: config['threads']
     wrapper:
-        "v3.10.2/bio/gatk/splitncigarreads"
+        ""v4.3.0/bio/gatk/splitncigarreads"
 
 
 
@@ -644,7 +644,7 @@ rule gatk_baserecalibrator:
         mem_mb=10000,
     threads: config['threads']
     wrapper:
-        "v3.10.2/bio/gatk/baserecalibrator"
+        "v4.3.0/bio/gatk/baserecalibrator"
 
 
 rule gatk_applybqsr:
@@ -665,7 +665,7 @@ rule gatk_applybqsr:
         mem_mb=10000,
     threads: config['threads']
     wrapper:
-        "v3.10.2/bio/gatk/applybqsr"
+        "v4.3.0/bio/gatk/applybqsr"
 
 rule haplotype_caller:
     input:
@@ -676,16 +676,14 @@ rule haplotype_caller:
     output:
         vcf=temporary("Variants_RNA_Seq_Reads/{sample}/calls/{sample}.vcf"),
 
-    log:
-        "logs/gatk/haplotypecaller/{sample}.log",
     params:
-        extra="-ERC GVCF --output-mode EMIT_ALL_CONFIDENT_SITES --dont-use-soft-clipped-bases -stand-call-conf 20.0",  # optional
+        extra="",  # optional
         java_opts="",  # optional
     threads: config['threads']
     resources:
         mem_mb=10000,
     wrapper:
-        "v3.10.2/bio/gatk/haplotypecaller"
+        "v4.3.0/bio/gatk/haplotypecaller"
 
 rule gatk_filter:
     input:
@@ -704,7 +702,7 @@ rule gatk_filter:
         mem_mb=10000,
     threads: config['threads']
     wrapper:
-        "v3.10.2/bio/gatk/variantfiltration"
+        "v4.3.0/bio/gatk/variantfiltration"
 
 
 rule prepare_vcf_files_from_GATK:

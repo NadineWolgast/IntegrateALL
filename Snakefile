@@ -692,8 +692,7 @@ rule gatk_filter:
 
     output:
         vcf="Variants_RNA_Seq_Reads/{sample}/filter/{sample}.snvs.filtered.vcf",
-    log:
-        "logs/gatk/filter/{sample}.snvs.log",
+
     params:
         filters={"myfilter": "AB < 0.2 || MQ0 > 50"},
         extra="",  # optional arguments, see GATK docs

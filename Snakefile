@@ -676,6 +676,9 @@ rule haplotype_caller:
     output:
         vcf=temporary("Variants_RNA_Seq_Reads/{sample}/calls/{sample}.vcf")
 
+    log:
+        "logs/gatk/haplotypecaller/{sample}.log"
+
     params:
         extra="",  # optional
         java_opts="",  # optional

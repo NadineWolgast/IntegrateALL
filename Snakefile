@@ -674,32 +674,41 @@ rule haplotype_caller:
         #known= "refs/STAR/dbSNP.vcf" #optional
 
     output:
-        vcf=temporary("Variants_RNA_Seq_Reads/{sample}/calls/{sample}.vcf"),
+        vcf=temporary("Variants_RNA_Seq_Reads/{sample}/calls/{sample}.vcf")
 
     params:
         extra="",  # optional
         java_opts="",  # optional
+
     threads: config['threads']
+
     resources:
-        mem_mb=10000,
+        mem_mb=10000
+
     wrapper:
         "v4.3.0/bio/gatk/haplotypecaller"
 
 rule gatk_filter:
     input:
         vcf="Variants_RNA_Seq_Reads/{sample}/calls/{sample}.vcf",
-        ref= "refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa",
+        ref= "refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
 
     output:
-        vcf="Variants_RNA_Seq_Reads/{sample}/filter/{sample}.snvs.filtered.vcf",
+        vcf="Variants_RNA_Seq_Reads/{sample}/filter/{sample}.snvs.filtered.vcf"
+
+    log:
+        "logs/gatk/filter/{sample}.snvs.log"
 
     params:
-        filters={"myfilter": "AB < 0.2 || MQ0 > 50"},
+        filters={"myfilter": "FS > 30.0 || QD < 2.0"},
         extra="",  # optional arguments, see GATK docs
         java_opts="",  # optional
+
     resources:
-        mem_mb=10000,
+        mem_mb=10000
+
     threads: config['threads']
+
     wrapper:
         "v4.3.0/bio/gatk/variantfiltration"
 

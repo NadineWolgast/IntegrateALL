@@ -622,7 +622,7 @@ rule splitncigarreads:
         mem_mb=10000,
     threads: config['threads']
     wrapper:
-        ""v4.3.0/bio/gatk/splitncigarreads"
+        "v4.3.0/bio/gatk/splitncigarreads"
 
 
 

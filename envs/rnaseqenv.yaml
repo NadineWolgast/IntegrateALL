@@ -138,6 +138,7 @@ dependencies:
   - r-dplyr
   - r-ggplot2
   - r-tidyr
+  - r-matrix>=1.6.0
   - r-data.table
   - r-scales
   - bioconductor-deseq2
@@ -172,6 +173,8 @@ dependencies:
   - r-shiny=1.7.4=r41h785f33e_0
   - r-sourcetools=0.1.7_1=r41h38f115c_0
   - r-rstatix
+  - r-quantreg
+  - r-car
   - r-stringi=1.7.6=r41h337692f_1
   - r-stringr=1.5.0=r41h785f33e_0
   - r-sys=3.4.2=r41h57805ef_0

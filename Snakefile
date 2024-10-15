@@ -154,7 +154,7 @@ rule install_all:
             snakemake --use-conda --cores {config[threads]} index_star &&
             snakemake --use-conda --cores {config[threads]} install_arriba_draw_fusions &&
             snakemake --use-conda --cores {config[threads]} install_allcatchr &&
-            snakemake --use-conda --cores {config[threads]} seq_cnv &&
+            snakemake --use-conda --cores {config[threads]} install_rnaseq_cnv &&
             snakemake --use-conda --cores {config[threads]} download_rda &&
             snakemake --use-conda --cores {config[threads]} install_fusioncatcher
         """

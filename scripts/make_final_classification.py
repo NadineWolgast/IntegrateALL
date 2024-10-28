@@ -225,6 +225,7 @@ def filter_fusions(fusion_genes, unique_genes, df, subgruppe):
                 (df['Gene_2_symbol(3end_fusion_partner)'] == gene_2)
                 ]
             print(gene_1, gene_2, caller, unique_spanning_reads)
+            print(subgruppe)
             if not match_df.empty and (subgruppe == 'DUX4' or ('DUX4' not in [gene_1, gene_2])):
                 print("DUX4 cases", gene_1, gene_2, caller, unique_spanning_reads)
                 filtered_fusions.append((gene_1, gene_2, caller, unique_spanning_reads))
@@ -314,6 +315,8 @@ def gather_data(allcatchr_file, karyotype_file, fusioncatcher_file, arriba_file,
 import pandas as pd
 
 def check_conditions(data_df, df_classification):
+    print("in check conditions")
+    print(data_df)
     comparison_df = df_classification
     matched_rows = []
 
@@ -373,12 +376,38 @@ def main(sample, allcatchr_file, karyotype_file, fusioncatcher_file, arriba_file
     output_df = pd.DataFrame(results)
     data_df['Unique_spanning_reads'] = pd.to_numeric(data_df['Unique_spanning_reads'], errors='coerce')
     filtered_data_df = data_df[data_df['Unique_spanning_reads'] > 2]
+    helper_df = []
     # Debugging Informationen
-    print("Längen von filtered_data_df und output_df", len(filtered_data_df), len(output_df))
-    print("in main data_df", data_df)
-    print("in main output_df", output_df)
-    print("in main data_df", filtered_data_df)
-    # Prüfe, ob `output_df` leer ist oder die Längen unterschiedlich sind
+    print("Längen von filtered_data_df und output_df", len(filtered_data_df), len(output_df), type(len(output_df)), type(len(filtered_data_df)))
+    if (len(filtered_data_df) and len(output_df)) == int(0):
+        print("in helper df")
+        matched_rows = []
+        helper_df = data_df.iloc[0]
+        helper_df = helper_df[["ALLCatchR", "Confidence", "karyotype_classifier", "PAX5_P80R", "IKZF1_N159Y", "ZEB2_H1038R"]]
+        print(helper_df)
+        for _, class_row in df.iterrows():
+            match_found = (
+                    helper_df['ALLCatchR'] == class_row['ALLCatchR'] and
+                    helper_df['Confidence'] == class_row['Confidence'] and
+                    helper_df['karyotype_classifier'] == class_row['karyotype classifier'] and
+                    helper_df['PAX5_P80R'] == class_row['PAX5 P80R'] and
+                    helper_df['IKZF1_N159Y'] == class_row['IKZF1 N159Y'] and
+                    helper_df['ZEB2_H1038R'] == class_row['ZEB2 H1038R']
+            )
+
+            if match_found:
+                helper_df['WHO-HAEM5'] = class_row['WHO-HAEM5']
+                helper_df['ICC'] = class_row['ICC']
+                helper_df['Gene_1_symbol(5end_fusion_partner)'] = None
+                helper_df['Gene_2_symbol(3end_fusion_partner)'] = None
+                helper_df['Fusioncaller'] = None
+                helper_df['Unique_spanning_reads'] = None
+                matched_rows.append(helper_df)
+                output_df = pd.DataFrame(matched_rows)
+    else:
+        print("Everything normal")
+
+    # Prüfe, ob `output_df` leer ist
     if output_df.empty:
         print("Leeres output_df")
         # Ergänze die `WHO-HAEM5` und `ICC` Spalten mit Standardwerten

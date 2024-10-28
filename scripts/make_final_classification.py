@@ -224,10 +224,7 @@ def filter_fusions(fusion_genes, unique_genes, df, subgruppe):
                 (df['Gene_1_symbol(5end_fusion_partner)'] == gene_1) &
                 (df['Gene_2_symbol(3end_fusion_partner)'] == gene_2)
                 ]
-            print(gene_1, gene_2, caller, unique_spanning_reads)
-            print(subgruppe)
             if not match_df.empty and (subgruppe == 'DUX4' or ('DUX4' not in [gene_1, gene_2])):
-                print("DUX4 cases", gene_1, gene_2, caller, unique_spanning_reads)
                 filtered_fusions.append((gene_1, gene_2, caller, unique_spanning_reads))
 
     return filtered_fusions
@@ -259,7 +256,6 @@ def gather_data(allcatchr_file, karyotype_file, fusioncatcher_file, arriba_file,
 
     # Filtere die Fusionen
     filtered_fusions = filter_fusions(fusion_genes, driver_fusion_list, df, subgruppe)
-    print("filtered_fusions", filtered_fusions)
 
     if not filtered_fusions:
         # Erstelle einen DataFrame mit einer Zeile und allen notwendigen Werten
@@ -315,8 +311,6 @@ def gather_data(allcatchr_file, karyotype_file, fusioncatcher_file, arriba_file,
 import pandas as pd
 
 def check_conditions(data_df, df_classification):
-    print("in check conditions")
-    print(data_df)
     comparison_df = df_classification
     matched_rows = []
 
@@ -377,14 +371,10 @@ def main(sample, allcatchr_file, karyotype_file, fusioncatcher_file, arriba_file
     data_df['Unique_spanning_reads'] = pd.to_numeric(data_df['Unique_spanning_reads'], errors='coerce')
     filtered_data_df = data_df[data_df['Unique_spanning_reads'] > 2]
     helper_df = []
-    # Debugging Informationen
-    print("Längen von filtered_data_df und output_df", len(filtered_data_df), len(output_df), type(len(output_df)), type(len(filtered_data_df)))
     if (len(filtered_data_df) and len(output_df)) == int(0):
-        print("in helper df")
         matched_rows = []
         helper_df = data_df.iloc[0]
         helper_df = helper_df[["ALLCatchR", "Confidence", "karyotype_classifier", "PAX5_P80R", "IKZF1_N159Y", "ZEB2_H1038R"]]
-        print(helper_df)
         for _, class_row in df.iterrows():
             match_found = (
                     helper_df['ALLCatchR'] == class_row['ALLCatchR'] and
@@ -405,11 +395,10 @@ def main(sample, allcatchr_file, karyotype_file, fusioncatcher_file, arriba_file
                 matched_rows.append(helper_df)
                 output_df = pd.DataFrame(matched_rows)
     else:
-        print("Everything normal")
+        print(" ")
 
     # Prüfe, ob `output_df` leer ist
     if output_df.empty:
-        print("Leeres output_df")
         # Ergänze die `WHO-HAEM5` und `ICC` Spalten mit Standardwerten
         data_df['WHO-HAEM5'] = "IntegrateALL couldn't confirm the subtype in concordance with WHO or ICC classification"
         data_df['ICC'] = ""  # Leerer Eintrag für `ICC`
@@ -418,10 +407,8 @@ def main(sample, allcatchr_file, karyotype_file, fusioncatcher_file, arriba_file
         handle_driver_fusions(data_df, output_driver)
         write_no_match(output_text, output_curation, data_df)
     elif (not output_df.empty) and (len(output_df) != len(filtered_data_df)):
-        print("Unterschiedliche len()")
 
         if len(filtered_data_df) > len(output_df):
-            print("Zusaetzliche Treiber gefunden -> Manual curation!")
             filtered_data_df[
                 'WHO-HAEM5'] = "IntegrateALL couldn't confirm the subtype in concordance with WHO or ICC classification"
             filtered_data_df['ICC'] = ""  # Leerer Eintrag für `ICC`
@@ -430,15 +417,12 @@ def main(sample, allcatchr_file, karyotype_file, fusioncatcher_file, arriba_file
             handle_driver_fusions(filtered_data_df, output_driver)
             write_no_match(output_text, output_curation, filtered_data_df)
         else:
-            print("else len(filtered_data_df) <= len(output_df):", len(filtered_data_df) , len(output_df))
             if len(output_df) > 1:
-                print("Mehrere Einträge in output_df")
                 # Wenn mehrere Einträge vorhanden sind, handle die Mehrfacheinträge
                 handle_multiple_entries(output_df, output_text, output_curation)
                 output_df.to_csv(output_csv, index=False)
                 handle_driver_fusions(data_df, output_driver)
             else:
-                print("Einzelner Eintrag in output_df")
                 # Wenn nur ein Eintrag vorhanden ist, verarbeite den Einzelnen
                 write_single_entry_text(output_df.iloc[0], output_text, output_curation)
                 output_df.to_csv(output_csv, index=False)
@@ -448,13 +432,11 @@ def main(sample, allcatchr_file, karyotype_file, fusioncatcher_file, arriba_file
     else:
         # Wenn `output_df` die gleiche Länge wie `data_df` hat, verarbeite es weiter
         if len(output_df) > 1:
-            print("Mehrere Einträge in output_df")
             # Wenn mehrere Einträge vorhanden sind, handle die Mehrfacheinträge
             handle_multiple_entries(output_df, output_text, output_curation)
             output_df.to_csv(output_csv, index=False)
             handle_driver_fusions(data_df, output_driver)
         else:
-            print("Einzelner Eintrag in output_df")
             # Wenn nur ein Eintrag vorhanden ist, verarbeite den Einzelnen
             write_single_entry_text(output_df.iloc[0], output_text, output_curation)
             output_df.to_csv(output_csv, index=False)
@@ -641,7 +623,6 @@ def write_multiple_entry_text(output_df, output_text, output_curation):
 
 def handle_driver_fusions(data_df, output_driver):
     data_df['Unique_spanning_reads'] = pd.to_numeric(data_df['Unique_spanning_reads'], errors='coerce')
-    print("data_df in handle_driver_fusions", data_df['Unique_spanning_reads'])
     if 'DUX4' in data_df['ALLCatchR'].values:
         # Wenn DUX4 subtype vorhanden ist, filtere ohne die DUX4-Einträge zu entfernen
         filtered_df = data_df[

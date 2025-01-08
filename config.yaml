@@ -2,5 +2,5 @@ sample_file: samples.csv
 
 absolute_path: /IntegrateALL
 
-star_mem: 50000
-threads: 4
+star_mem: 60000
+threads: 8

@@ -27,7 +27,6 @@ def creatingfolders(specificfolder: str) -> str:
 
 creatingfolders('STAR_output')
 creatingfolders('Variants_RNA_Seq_Reads')
-creatingfolders('data/combined_counts')
 creatingfolders('refs/fusioncatcher')
 creatingfolders('refs/GATK')
 

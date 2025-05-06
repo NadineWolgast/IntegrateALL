@@ -178,7 +178,6 @@ rule download_ref:
         vcf= "refs/GATK/GRCH38/dbSNP.vcf",
         ref= "refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
     shell:
-        "rm -rf {input.star_directory} && "
         "mkdir -p {input.star_directory} &&"
         "cd {input.star_directory} && "
         "wget 'http://141.2.194.197/rnaeditor_annotations/GRCH38.tar.gz' && "
@@ -218,8 +217,6 @@ rule index_star:
 rule install_arriba_draw_fusions:
     shell:
         '''
-        rm -rf arriba_v2.4.0 &&
-        rm -f arriba_v2.4.0.tar.gz &&
         wget 'https://github.com/suhrig/arriba/releases/download/v2.4.0/arriba_v2.4.0.tar.gz' &&
         tar -xzf arriba_v2.4.0.tar.gz
         '''

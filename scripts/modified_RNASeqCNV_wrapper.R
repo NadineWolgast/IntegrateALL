@@ -1218,21 +1218,61 @@ RNAseqCNV_wrapper <- function(config, metadata, snv_format, adjust = TRUE, arm_l
     #################
     # Funktion zum Lesen und Filtern der Dateien
     read_and_filter <- function(counts, sample_name, source) {
-      data <- readRDS(counts)  # Hier counts verwenden
-      filtered_data <- data %>% filter(chr == 21)
-      filtered_data$sample_id <- sample_name
-      filtered_data$Source <- source
-      filtered_data$chr <- NULL
-      filtered_data$normPos <- NULL
-      filtered_data$weight <- NULL
-      formatted_data <- dcast(filtered_data, sample_id + Source ~ end, value.var = "count_nor_med")
-      formatted_data$Source <- NULL
-      subset_formatted <- subset_with_zero(formatted_data, c('sample_id', '36386148', '39428528', '37203112', '36990236', '39183488', '25772460',
-                           '33491716', '39349647', '37526358', '37101343', '37221736', '33643926', '37073170',
-                           '39321559', '38661780', '39236020', '32771792', '37267919', '32393012', '39314962',
-                           '36079389', '32279049', '33543491', '38747460'))
-      return(subset_formatted)
+	  library(dplyr)
+	  library(data.table)
+	  library(tidyr)
+
+	  # Load data
+	  data <- readRDS(counts)
+	  
+	  if (!"chr" %in% names(data)) {
+	    stop("Spalte 'chr' fehlt im Datensatz.")
+	  }
+	  
+	  # Filter chr 21
+	  filtered_data <- data %>% filter(chr == 21)
+	  
+	  if (nrow(filtered_data) == 0) {
+	    warning(paste("Keine chr21 Daten für Sample:", sample_name))
+	    # Gib Dummy-Daten zurück, damit Snakemake weitermachen kann
+	    dummy <- data.frame(sample_id = sample_name, Source = source)
+	    return(dummy)
+	  }
+	  
+	  # Zusatzspalten setzen
+	  filtered_data$sample_id <- sample_name
+	  filtered_data$Source <- source
+	  
+	  # sicherstellen, dass nötige Spalten existieren
+	  required_cols <- c("sample_id", "Source", "end", "count_nor_med")
+	  if (!all(required_cols %in% colnames(filtered_data))) {
+	    stop("Fehlende Spalten für dcast:", paste(setdiff(required_cols, colnames(filtered_data)), collapse=", "))
+	  }
+	  
+	  setDT(filtered_data)
+	  
+	  # Dcast sicher machen
+	  formatted_data <- tryCatch(
+	    {
+	      dcast(filtered_data, sample_id + Source ~ end, value.var = "count_nor_med")
+	    },
+	    error = function(e) {
+	      warning(paste("dcast Fehler:", e$message))
+	      return(data.table(sample_id = sample_name))  # Notlösung
+	    }
+	  )
+	  
+	  if (ncol(formatted_data) <= 2) {
+	    warning(paste("Daten für", sample_name, "haben zu wenige Spalten nach dcast."))
+	    formatted_data <- data.table(sample_id = sample_name)  # minimal zurückgeben
+	  }
+	  
+	  formatted_data$Source <- NULL
+	  
+	  return(formatted_data)
     }
+
+
 
     in_file <- file.path(out_dir, paste0(sample_name,"_count_ns_final.RDS"))
     print(in_file)
@@ -1339,4 +1379,5 @@ writeLines(unlist(config_data), new_config)
 print(config_data)
 
 RNAseqCNV_wrapper(config = new_config, metadata = new_meta, snv_format = "custom", CNV_matrix = T, arm_lvl = F, batch = F, generate_weights = F)
+
 

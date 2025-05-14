@@ -50,6 +50,16 @@ if new.shape[1] < 185:
     generate_dummy_output(outfile, sample_id)
 else:
     new_data = new.iloc[:, 1:]
+    # Stelle sicher, dass die Spalten in new_data genau denen entsprechen, die der Scaler kennt
+    expected_features = scaler.feature_names_in_
+
+    # Fehlende Spalten hinzufügen mit 0
+    for feature in expected_features:
+        if feature not in new_data.columns:
+            new_data[feature] = 0
+
+    # Unbekannte Spalten entfernen
+    new_data = new_data[expected_features]
 
     # Skalierung der Daten mit dem geladenen Scaler
     scaled_data = scaler.transform(new_data)

@@ -385,7 +385,7 @@ rule run_arriba:
         default_blacklist=False,         # Optional
         default_known_fusions=True,      # Optional
         sv_file="",                      # File containing information from structural variant analysis
-        extra="-i 1,2"                  # Optional parameters
+        extra=""                         # Optional parameters
     threads: config['threads']
     wrapper:
         "v3.10.2/bio/arriba"

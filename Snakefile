@@ -387,6 +387,8 @@ rule run_arriba:
         sv_file="",                      # File containing information from structural variant analysis
         extra=""                         # Optional parameters
     threads: config['threads']
+    resources:
+        mem_mb=32000
     wrapper:
         "v3.10.2/bio/arriba"
 

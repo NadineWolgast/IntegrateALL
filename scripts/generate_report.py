@@ -167,7 +167,8 @@ def generate_report(prediction_file, fusioncatcher_file, arriba_file,
 
     print("sample_id", sample_id)
     hotspot_table = generate_html_table(hotspots)
-    prediction_data_subset = prediction_data.iloc[:, :9]
+    prediction_data_subset = prediction_data.iloc[:, :14]
+    cell_of_origin_data_subset = prediction_data.iloc[:, 15:21]
     arriba_fusion_pdf_path = generate_pdf_path(sample_id)
     rnaseqcnv_png_path = generate_RNASeq_cnv_png_path(sample_id)
     multiqc_left_path = generate_multiqc_left_path()
@@ -191,6 +192,7 @@ def generate_report(prediction_file, fusioncatcher_file, arriba_file,
         driver_table = "<p>No driver fusions identified</p>"
 
     html_table = prediction_data_subset.to_html(classes='my-table-class no-sort', index=False)
+    cell_of_origin_table = cell_of_origin_data_subset.to_html(classes='my-table-class no-sort', index=False)
     ml_html_table = ml_prediction.to_html(classes='my-table-class no-sort', index=False)
     first_section_end = star_log_final_out_file[star_log_final_out_file.iloc[:, 0].str.endswith(':')].index[0]
     first_part = star_log_final_out_file.iloc[:first_section_end, :]
@@ -317,6 +319,7 @@ def generate_report(prediction_file, fusioncatcher_file, arriba_file,
     """
 
     html_table_with_style = custom_css + html_table
+    cell_of_origin_table_with_style = custom_css + cell_of_origin_table
     karyotype_html_table = custom_css + ml_html_table
     arriba_html_table_with_style = custom_css + arriba_html_table
     driver_html_table = custom_css + driver_table
@@ -357,6 +360,8 @@ def generate_report(prediction_file, fusioncatcher_file, arriba_file,
         
         <h1 id="section2">ALLCatchR Prediction Data</h1>
         {html_table_with_style}
+        <h1 id="section2">ALLCatchR Cell of origin</h1>
+        {cell_of_origin_table_with_style}
         
         <h1 id="section2">Karyotype Prediction</h1>
         {karyotype_html_table}
@@ -429,4 +434,3 @@ if __name__ == "__main__":
                     rna_seq_cnv_log2foldchange_file, rna_seq_cnv_manual_an_table_file,
                     star_log_final_out_file,
                     comparison_file, hotspots, sample_id, karyotype, text, driver, output_file)
-

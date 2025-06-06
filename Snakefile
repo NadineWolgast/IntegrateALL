@@ -388,7 +388,7 @@ rule run_arriba:
         extra=""                         # Optional parameters
     threads: config['threads']
     resources:
-        mem_mb=32000
+        mem_mb=20000
     wrapper:
         "v3.10.2/bio/arriba"
 
@@ -406,6 +406,9 @@ rule run_draw_arriba_fusion:
 
     conda:
         "envs/arriba_draw_fusions.yaml"
+
+    resources:
+        mem_mb=20000
 
     shell:
         '''

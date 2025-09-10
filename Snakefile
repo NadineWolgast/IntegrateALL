@@ -49,49 +49,42 @@ absolute_path = config["absolute_path"]
 rule all:
     input:
         "check_samples.txt",
-        expand("STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",sample_id=list(samples.keys())),
-        expand("STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam.bai", sample_id=list(samples.keys())),
+        #expand("STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",sample_id=list(samples.keys())),
+        #expand("STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam.bai", sample_id=list(samples.keys())),
         #expand("Variants_RNA_Seq_Reads/{sample_id}/fixed-rg/{sample_id}.bam", sample_id=list(samples.keys())),
         #expand("Variants_RNA_Seq_Reads/{sample_id}/deduped_bam/{sample_id}.bam.bai", sample_id=list(samples.keys())),
         #expand("Variants_RNA_Seq_Reads/{sample_id}/split/{sample_id}.bam", sample_id=list(samples.keys())),
         #expand("Variants_RNA_Seq_Reads/{sample_id}/recal/{sample_id}_recal.table", sample_id=list(samples.keys())),
         #expand("Variants_RNA_Seq_Reads/{sample_id}/recal/{sample_id}.bam", sample_id=list(samples.keys())),
-        expand("Variants_RNA_Seq_Reads/{sample_id}/filter/{sample_id}.snvs.filtered.vcf", sample_id=list(samples.keys())),
-        expand("fusions/{sample_id}.pdf",sample_id=samples.keys()),
-        expand("fusions/{sample_id}.tsv",sample_id=samples.keys()),
+        #expand("Variants_RNA_Seq_Reads/{sample_id}/filter/{sample_id}.snvs.filtered.vcf", sample_id=list(samples.keys())),
+        #expand("fusions/{sample_id}.pdf",sample_id=samples.keys()),
+        #expand("fusions/{sample_id}.tsv",sample_id=samples.keys()),
 
-        expand("multiqc/{sample}/multiqc_data/multiqc_fastqc.txt", sample=fastq_dataframe['sample_id']),
-        expand("fusioncatcher_output/{sample_id}/final-list_candidate-fusion-genes.txt",sample_id=list(samples.keys())),
-        expand("data/vcf_files/GATK/{sample_id}_Gatk.tsv", sample_id=samples.keys()),     
-        expand("data/tpm/{sample_id}.tsv", sample_id=list(samples.keys())),
+        #expand("multiqc/{sample}/multiqc_data/multiqc_fastqc.txt", sample=fastq_dataframe['sample_id']),
+        #expand("fusioncatcher_output/{sample_id}/final-list_candidate-fusion-genes.txt",sample_id=list(samples.keys())),
+        #expand("data/vcf_files/GATK/{sample_id}_Gatk.tsv", sample_id=samples.keys()),
+        #expand("data/tpm/{sample_id}.tsv", sample_id=list(samples.keys())),
         #expand("data/cpm/{sample_id}.tsv", sample_id=list(samples.keys())),        
-        expand("pysamstats_output_dir/{sample_id}/", sample_id=list(samples.keys())),
-        expand("Hotspots/{sample_id}",sample_id=list(samples.keys())),
-        expand("comparison/{sample_id}.csv", sample_id= samples.keys()),
-        expand("data/single_counts/{sample_id}.txt", sample_id=samples.keys()),
-        expand("allcatch_output/{sample_id}/predictions.tsv", sample_id= samples.keys()),        
-        expand("aggregated_output/{sample}.csv", sample=list(samples.keys())),        
-        expand("RNAseqCNV_output/gatk/{sample_id}_gatk", sample_id=samples.keys()),      
-        expand("Final_classification/{sample_id}_output_report.csv",sample_id=list(samples.keys())),
-        expand("interactive_output/{sample}/output_report_{sample}.html",  sample=list(samples.keys()))
-
+        #expand("pysamstats_output_dir/{sample_id}/", sample_id=list(samples.keys())),
+        #expand("Hotspots/{sample_id}",sample_id=list(samples.keys())),
+        #expand("comparison/{sample_id}.csv", sample_id= samples.keys()),
+        #expand("data/single_counts/{sample_id}.txt", sample_id=samples.keys()),
+        #expand("allcatch_output/{sample_id}/predictions.tsv", sample_id= samples.keys()),
+        #expand("aggregated_output/{sample}.csv", sample=list(samples.keys())),
+        #expand("RNAseqCNV_output/gatk/{sample_id}_gatk", sample_id=samples.keys()),
+        #expand("Final_classification/{sample_id}_output_report.csv",sample_id=list(samples.keys())),
+        #expand("interactive_output/{sample}/output_report_{sample}.html",  sample=list(samples.keys()))
 
 
 
 rule check_samples:
     input:
-        samples_csv= config["sample_file"]
+        samples_csv=config["sample_file"]
     output:
         "check_samples.txt"
+    script:
+        "scripts/check_samples.py"
 
-    run:
-        errors = validate_input(input.samples_csv)
-        with open(output[0], "w") as output_file:
-            if errors:
-                for error in errors:
-                    output_file.write(f"Error: {error}\n")
-            else:
-                output_file.write("Sample format and file existence checks passed")
 
 
 
@@ -102,73 +95,23 @@ def get_input_fastqs(wildcards):
     return fastq_file
 
 
-rule fastqc:
-    input:
-        get_input_fastqs
-    output:
-        html="fastqc/{sample}.html",
-        zip="fastqc/{sample}.zip"
-    log:
-        "logs/fastqc/{sample}/fastqc.log"
-
-    benchmark:
-        "benchmarks/{sample}.fastqc.benchmark.txt"
-
-    wrapper:
-        "0.31.1/bio/fastqc"
-
-rule unzip:
-    input:
-        sample="fastqc/{sample}.zip"
-    output:
-        directory=directory("fastqc/{sample}"),
-        sentinel="fastqc/{sample}/unzip_done.sentinel"
-    shell:
-        "unzip -q {input.sample} -d {output.directory} && touch {output.sentinel}"
-
-
-rule multiqc_file:
-    input:
-        "fastqc/{sample}/"
-    output:
-        multiqc_report="multiqc/{sample}/multiqc_report.html",
-        multiqc_fqc= "multiqc/{sample}/multiqc_data/multiqc_fastqc.txt"
-
-    params:
-        output_dir= "multiqc/{sample}/"
-
-    benchmark:
-        "benchmarks/{sample}.multiqc.benchmark.txt"
-
-    shell:
-        "multiqc {input} -o {params.output_dir} --force"
-
 
 rule install_all:
-    input: []
-    shell:
-        """
-            snakemake --use-conda --cores {config[threads]} download_ref &&
-            snakemake --use-conda --cores {config[threads]} index_ref &&
-            snakemake --use-conda --cores {config[threads]} index_star &&
-            snakemake --use-conda --cores {config[threads]} install_arriba_draw_fusions &&
-            snakemake --use-conda --cores {config[threads]} install_allcatchr &&
-            snakemake --use-conda --cores {config[threads]} install_rnaseq_cnv &&
-            snakemake --use-conda --cores {config[threads]} download_rda &&
-            snakemake --use-conda --cores {config[threads]} install_fusioncatcher
-        """
-
-
-rule download_rda:
-    output:
-        dbsnp="scripts/dbSNP_hg38.rda",
-        par="scripts/pseudoautosomal_regions_hg38.rda"
-    shell:
-        """
-        wget -O {output.dbsnp} https://github.com/honzee/RNAseqCNV/raw/master/data/dbSNP_hg38.rda &&
-        wget -O {output.par} https://github.com/honzee/RNAseqCNV/raw/master/data/pseudoautosomal_regions_hg38.rda
-        """
-
+    input: 
+        # Reference files
+        "refs/GATK/GRCH38/dbSNP.vcf",
+        "refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa",
+        "refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa.fai", 
+        directory(absolute_path + "/refs/GATK/STAR/ensembl_94_100"),
+        "scripts/dbSNP_hg38.rda",
+        "scripts/pseudoautosomal_regions_hg38.rda",
+        # Tool installations (via marker files)
+        "logs/install_arriba_draw_fusions.done",
+        "logs/install_allcatchr.done",
+        "logs/install_rnaseq_cnv.done",
+        # Large downloads (optional - comment out for testing)
+        directory(absolute_path + "/refs/fusioncatcher/fusioncatcher-master/data/human_v102")
+    message: "All reference files and tools installed successfully!"
 
 rule download_ref:
     input:
@@ -181,6 +124,17 @@ rule download_ref:
         "cd {input.star_directory} && "
         "wget 'http://141.2.194.197/rnaeditor_annotations/GRCH38.tar.gz' && "
         "tar -xzf GRCH38.tar.gz "
+
+
+rule download_rda:
+    output:
+        dbsnp="scripts/dbSNP_hg38.rda",
+        par="scripts/pseudoautosomal_regions_hg38.rda"
+    shell:
+        """
+        wget -O {output.dbsnp} https://github.com/honzee/RNAseqCNV/raw/master/data/dbSNP_hg38.rda &&
+        wget -O {output.par} https://github.com/honzee/RNAseqCNV/raw/master/data/pseudoautosomal_regions_hg38.rda
+        """
 
 
 rule index_ref:
@@ -214,27 +168,38 @@ rule index_star:
 
 
 rule install_arriba_draw_fusions:
+    output:
+        touch("logs/install_arriba_draw_fusions.done")
+    benchmark:
+        "benchmarks/install_arriba_draw_fusions.benchmark.txt"
     shell:
         '''
         wget 'https://github.com/suhrig/arriba/releases/download/v2.4.0/arriba_v2.4.0.tar.gz' &&
-        tar -xzf arriba_v2.4.0.tar.gz
+        tar -xzf arriba_v2.4.0.tar.gz &&
+        touch {output}
         '''
 
 
 rule install_allcatchr:
+    output:
+        touch("logs/install_allcatchr.done")
     conda:
         "envs/install_allcatchr.yaml"
-
+    benchmark:
+        "benchmarks/install_allcatchr.benchmark.txt"
     shell:
-        "Rscript -e 'devtools::install_github(\"ThomasBeder/ALLCatchR_bcrabl1\", Ncpus = {config[threads]})'"
+        "Rscript -e 'devtools::install_github(\"ThomasBeder/ALLCatchR_bcrabl1\", Ncpus = {config[threads]})' && touch {output}"
 
 
 rule install_rnaseq_cnv:
+    output:
+        touch("logs/install_rnaseq_cnv.done")
     conda:
         "envs/rnaseqenv.yaml"
-
+    benchmark:
+        "benchmarks/install_rnaseq_cnv.benchmark.txt"
     shell:
-        "Rscript -e 'devtools::install_github(\"honzee/RNAseqCNV\", dependencies = TRUE, Ncpus = {config[threads]})'"
+        "Rscript -e 'devtools::install_github(\"honzee/RNAseqCNV\", dependencies = TRUE, Ncpus = {config[threads]})' && touch {output}"
         
 
 rule install_fusioncatcher:
@@ -251,6 +216,56 @@ rule install_fusioncatcher:
         cd fusioncatcher-master/data && 
         ./download-human-db.sh
         """
+
+
+rule fastqc:
+    input:
+        get_input_fastqs
+    output:
+        html="fastqc/{sample}.html",
+        zip="fastqc/{sample}.zip"
+    log:
+        "logs/fastqc/{sample}/fastqc.log"
+
+    resources:
+        mem_mb=1000
+
+    benchmark:
+        "benchmarks/{sample}.fastqc.benchmark.txt"
+
+    wrapper:
+        "v3.10.2/bio/fastqc"
+
+rule unzip:
+    input:
+        sample="fastqc/{sample}.zip"
+    output:
+        dir=directory("fastqc/{sample}"),
+	    sentinel="fastqc/{sample}/unzip_done.sentinel"
+    resources:
+        mem_mb=1000
+    shell:
+        "unzip -q {input.sample} -d {output.dir} && touch {output.sentinel}"
+
+
+rule multiqc_file:
+    input:
+        "fastqc/{sample}/"
+    output:
+        multiqc_report="multiqc/{sample}/multiqc_report.html",
+        multiqc_fqc= "multiqc/{sample}/multiqc_data/multiqc_fastqc.txt"
+
+    params:
+        output_dir= "multiqc/{sample}/"
+
+    resources:
+        mem_mb=1000
+
+    benchmark:
+        "benchmarks/{sample}.multiqc.benchmark.txt"
+
+    shell:
+        "multiqc {input} -o {params.output_dir} --force"
 
 
 rule run_star_aligner:
@@ -326,7 +341,7 @@ rule pysamstat:
         out_dir="pysamstats_output_dir/{sample_id}/"
 
     output:
-        pysamstats_output_dir = temporary(directory("pysamstats_output_dir/{sample_id}/")),
+        pysamstats_output_dir = directory("pysamstats_output_dir/{sample_id}/"),
         ikzf1="pysamstats_output_dir/{sample_id}/{sample_id}_IKZF1.csv"
 
     threads: config['threads']
@@ -390,7 +405,7 @@ rule run_arriba:
     resources:
         mem_mb=20000
     wrapper:
-        "v3.10.2/bio/arriba"
+        "v7.2.0/bio/arriba"
 
 
 rule run_draw_arriba_fusion:

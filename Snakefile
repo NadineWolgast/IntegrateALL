@@ -102,7 +102,7 @@ rule install_all:
         "refs/GATK/GRCH38/dbSNP.vcf",
         "refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa",
         "refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa.fai", 
-        directory(absolute_path + "/refs/GATK/STAR/ensembl_94_100"),
+        absolute_path + "/refs/GATK/STAR/ensembl_94_100/SA",
         "scripts/dbSNP_hg38.rda",
         "scripts/pseudoautosomal_regions_hg38.rda",
         # Tool installations (via marker files)
@@ -110,7 +110,7 @@ rule install_all:
         "logs/install_allcatchr.done",
         "logs/install_rnaseq_cnv.done",
         # Large downloads (optional - comment out for testing)
-        directory(absolute_path + "/refs/fusioncatcher/fusioncatcher-master/data/human_v102")
+        absolute_path + "/refs/fusioncatcher/fusioncatcher-master/data/human_v102/version.txt"
     message: "All reference files and tools installed successfully!"
 
 rule download_ref:

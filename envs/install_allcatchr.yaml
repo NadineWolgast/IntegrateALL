@@ -1,11 +1,26 @@
 channels:
-  - defaults
-  - bioconda
   - conda-forge
+  - bioconda
+  - defaults
   - r
+  
 dependencies:
-  - r
+  # Core R environment  
+  - r-base=4.3
   - r-devtools
+  
+  # ALLCatchR dependencies
   - r-kknn
-  - r-randomForest
+  - r-randomforest
   - r-ranger
+  
+  # Required bioconductor packages for ALLCatchR
+  - bioconductor-keggrest
+  - bioconductor-annotationdbi
+  - bioconductor-annotate
+  - bioconductor-gseabase
+  - bioconductor-singscore
+  
+  # System dependencies
+  - curl
+  - libcurl

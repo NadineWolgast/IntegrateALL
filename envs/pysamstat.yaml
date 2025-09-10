@@ -1,12 +1,12 @@
 channels:
-  - defaults
   - conda-forge
   - bioconda
+  - defaults
+  
 dependencies:
-  - python=3.8
-  - pysam
+  - python=3.11
+  - pysam>=0.22
   - pysamstats
-  - htslib
-  - samtools
-  - libdeflate
-  - pandas
+  - htslib>=1.19
+  - samtools>=1.19
+  - pandas>=2.0

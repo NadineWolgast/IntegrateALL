@@ -5,29 +5,29 @@ channels:
   - r
 
 dependencies:
-  - python=3.8
-  - r-base=4.2
-  - r-essentials
-  - icu=58.2
-  - r-stringi
-  - r-devtools
-  - r-car
-  - r-matrix
-  - r-matrixmodels
-  - r-quantreg
-  - r-ggpubr
-  - r-shinyfiles
+  # Core environment
+  - python=3.11
+  - r-base=4.3
+  
+  # R packages for RNAseqCNV
   - r-devtools
   - r-ggplot2
   - r-dplyr
   - r-tidyr
   - r-data.table
-  - bioconductor-deseq2
+  - r-car
+  - r-matrix
+  - r-matrixmodels
+  - r-quantreg
+  - r-ggpubr
   - r-randomforest
   - r-scales
+  
+  # Bioconductor packages
+  - bioconductor-deseq2
+  
+  # System tools
   - git
   - cmake
   - curl
   - make
-  - openssl
-  - zlib

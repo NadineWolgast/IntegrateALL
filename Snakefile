@@ -296,7 +296,7 @@ rule install_fusioncatcher:
         data_directory=absolute_path + "/refs/fusioncatcher"
     output:
         directory(absolute_path + "/refs/fusioncatcher/fusioncatcher-master/data/human_v102")
-    message: "Installing FusionCatcher database - checking for existing references first"
+    message: "Installing FusionCatcher database - checking if already present"
     benchmark:
         "benchmarks/install_fusioncatcher.benchmark.txt"
     resources:
@@ -307,55 +307,37 @@ rule install_fusioncatcher:
         """
         cd {input.data_directory} &&
         
-        # Check if we can copy from existing installation first
-        EXISTING_DB="/media/nadine/InternalMaybe/Blast-o-Matic-Fusioninator_cluster/refs/fusioncatcher/fusioncatcher-master/data/human_v102"
-        
-        if [ -d "$EXISTING_DB" ] && [ -f "$EXISTING_DB/version.txt" ]; then
-            echo "🔍 Found existing FusionCatcher database, copying instead of downloading..."
-            echo "📁 Source: $EXISTING_DB"
-            
-            # Download FusionCatcher source code first
-            if [ ! -f "master.zip" ]; then
-                echo "📦 Downloading FusionCatcher source code..."
-                wget --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 3 \
-                     --progress=bar --show-progress \
-                     'https://github.com/ndaniel/fusioncatcher/archive/refs/heads/master.zip' && 
-                unzip -q master.zip
-            fi
-            
-            # Copy existing database (much faster than download)
-            echo "📋 Copying FusionCatcher database (~4.4GB)..."
-            mkdir -p fusioncatcher-master/data
-            cp -r "$EXISTING_DB" fusioncatcher-master/data/ &&
-            echo "✅ FusionCatcher database copied successfully! (Saved 30+ minutes download time)"
-            
-        else
-            echo "❌ No existing database found at $EXISTING_DB"
-            echo "📦 Falling back to download method..."
-            
-            # Download FusionCatcher source code with robust retry logic
-            echo "📦 Downloading FusionCatcher source code..."
-            wget --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 3 \
-                 --progress=bar --show-progress \
-                 'https://github.com/ndaniel/fusioncatcher/archive/refs/heads/master.zip' && 
-            
-            # Verify download before extraction
-            if [ -f "master.zip" ]; then
-                echo "✅ FusionCatcher source download successful, extracting..."
-                unzip -q master.zip &&
-                echo "✅ FusionCatcher source extracted successfully"
-            else
-                echo "❌ FusionCatcher source download failed" && exit 1
-            fi &&
-            
-            # Download the large human database (~4.4GB) 
-            cd fusioncatcher-master/data && 
-            echo "📦 Starting FusionCatcher human database download (~4.4GB)..."
-            echo "⏰ This will take 30+ minutes depending on your internet connection"
-            echo "💡 Speed issues? Consider copying from existing installation next time!"
-            ./download-human-db.sh &&
-            echo "✅ FusionCatcher database installation completed successfully!"
+        # Check if target already exists (skip if already installed)
+        if [ -d "fusioncatcher-master/data/human_v102" ] && [ -f "fusioncatcher-master/data/human_v102/version.txt" ]; then
+            echo "✅ FusionCatcher database already exists locally - skipping installation"
+            exit 0
         fi
+        
+        echo "📦 FusionCatcher database not found locally"
+        echo "💡 Tip: You can manually copy existing databases to speed up installation"
+        echo "📦 Proceeding with download and installation..."
+        
+        # Download FusionCatcher source code with robust retry logic
+        echo "📦 Downloading FusionCatcher source code..."
+        wget --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 3 \
+             --progress=bar --show-progress \
+             'https://github.com/ndaniel/fusioncatcher/archive/refs/heads/master.zip' && 
+        
+        # Verify download before extraction
+        if [ -f "master.zip" ]; then
+            echo "✅ FusionCatcher source download successful, extracting..."
+            unzip -q master.zip &&
+            echo "✅ FusionCatcher source extracted successfully"
+        else
+            echo "❌ FusionCatcher source download failed" && exit 1
+        fi &&
+        
+        # Download the large human database (~4.4GB) 
+        cd fusioncatcher-master/data && 
+        echo "📦 Starting FusionCatcher human database download (~4.4GB)..."
+        echo "⏰ This will take 30+ minutes depending on your internet connection"
+        ./download-human-db.sh &&
+        echo "✅ FusionCatcher database installation completed successfully!"
         """
 
 

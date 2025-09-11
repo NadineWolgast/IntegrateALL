@@ -51,12 +51,12 @@ rule all:
         "check_samples.txt",
         #expand("STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",sample_id=list(samples.keys())),
         #expand("STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam.bai", sample_id=list(samples.keys())),
-        #expand("Variants_RNA_Seq_Reads/{sample_id}/fixed-rg/{sample_id}.bam", sample_id=list(samples.keys())),
-        #expand("Variants_RNA_Seq_Reads/{sample_id}/deduped_bam/{sample_id}.bam.bai", sample_id=list(samples.keys())),
-        #expand("Variants_RNA_Seq_Reads/{sample_id}/split/{sample_id}.bam", sample_id=list(samples.keys())),
-        #expand("Variants_RNA_Seq_Reads/{sample_id}/recal/{sample_id}_recal.table", sample_id=list(samples.keys())),
-        #expand("Variants_RNA_Seq_Reads/{sample_id}/recal/{sample_id}.bam", sample_id=list(samples.keys())),
-        #expand("Variants_RNA_Seq_Reads/{sample_id}/filter/{sample_id}.snvs.filtered.vcf", sample_id=list(samples.keys())),
+        expand("Variants_RNA_Seq_Reads/{sample_id}/fixed-rg/{sample_id}.bam", sample_id=list(samples.keys())),
+        expand("Variants_RNA_Seq_Reads/{sample_id}/deduped_bam/{sample_id}.bam.bai", sample_id=list(samples.keys())),
+        expand("Variants_RNA_Seq_Reads/{sample_id}/split/{sample_id}.bam", sample_id=list(samples.keys())),
+        expand("Variants_RNA_Seq_Reads/{sample_id}/recal/{sample_id}_recal.table", sample_id=list(samples.keys())),
+        expand("Variants_RNA_Seq_Reads/{sample_id}/recal/{sample_id}.bam", sample_id=list(samples.keys())),
+        expand("Variants_RNA_Seq_Reads/{sample_id}/filter/{sample_id}.snvs.filtered.vcf", sample_id=list(samples.keys())),
         #expand("fusions/{sample_id}.pdf",sample_id=samples.keys()),
         #expand("fusions/{sample_id}.tsv",sample_id=samples.keys()),
 
@@ -73,7 +73,7 @@ rule all:
         #expand("aggregated_output/{sample}.csv", sample=list(samples.keys())),
         #expand("RNAseqCNV_output/gatk/{sample_id}_gatk", sample_id=samples.keys()),
         #expand("Final_classification/{sample_id}_output_report.csv",sample_id=list(samples.keys())),
-        #expand("interactive_output/{sample}/output_report_{sample}.html",  sample=list(samples.keys()))
+        expand("interactive_output/{sample}/output_report_{sample}.html",  sample=list(samples.keys()))
 
 
 
@@ -467,13 +467,14 @@ rule run_fusioncatcher:
 
     shell:
         '''
+        mkdir -p logs/fusioncatcher
         fusioncatcher \
         -d {input.data_directory} \
         -i {input.left},{input.right} \
         -o {output.dir} \
         --skip-blat \
         --threads={config[threads]} \
-        > logs/fusioncatcher/{wildcards.sample_id}.log \
+        > logs/fusioncatcher/{wildcards.sample_id}.log 2>&1 \
         && touch {output.sentinel}
         '''
 

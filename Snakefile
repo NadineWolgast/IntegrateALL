@@ -206,12 +206,28 @@ rule index_star:
 rule install_arriba_draw_fusions:
     output:
         touch("logs/install_arriba_draw_fusions.done")
+    message: "Installing Arriba draw_fusions tool (~10MB)"
     benchmark:
         "benchmarks/install_arriba_draw_fusions.benchmark.txt"
+    resources:
+        mem_mb=1000
+    retries: 3
     shell:
         '''
-        wget 'https://github.com/suhrig/arriba/releases/download/v2.4.0/arriba_v2.4.0.tar.gz' &&
-        tar -xzf arriba_v2.4.0.tar.gz &&
+        # Robust download with retry logic and verification
+        wget --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 3 \
+             --progress=bar --show-progress \
+             'https://github.com/suhrig/arriba/releases/download/v2.4.0/arriba_v2.4.0.tar.gz' &&
+        
+        # Verify download success before extraction
+        if [ -f "arriba_v2.4.0.tar.gz" ]; then
+            echo "✅ Arriba download successful, extracting..."
+            tar -xzf arriba_v2.4.0.tar.gz &&
+            echo "✅ Arriba installation completed successfully"
+        else
+            echo "❌ Arriba download failed" && exit 1
+        fi &&
+        
         touch {output}
         '''
 

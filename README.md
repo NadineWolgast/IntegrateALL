@@ -148,3 +148,25 @@ Furthermore, the pipline produces the following files for your downstream analys
 * data/counts/YOUR_SAMPLE_ID.tsv
 * data/reads_per_gene/YOUR_SAMPLE_IDReadsPerGene.out.tab
 
+## NEW: Two-Workflow Architecture
+
+IntegrateALL now uses **two separate workflows** for better stability:
+
+### 1. Setup Workflow (Run Once)
+```bash
+snakemake --snakefile setup.smk --use-conda --cores all
+```
+- Downloads and installs all references (~21GB)
+- Only needed once or when updating references
+- Much faster than the old `install_all` method
+
+### 2. Analysis Workflow (For Each Dataset)  
+```bash
+snakemake --use-conda --cores all
+```
+- Runs the main RNA-seq analysis
+- No more unexpected reference downloads during analysis
+- More stable and faster pipeline starts
+
+**Migration**: If you used the old system, just run the setup workflow once, then use the main workflow as before.
+

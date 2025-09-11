@@ -149,46 +149,35 @@ rule multiqc:
 
 rule run_star_aligner:
     input:
-        fastq1 = lambda wildcards: samples[wildcards.sample_id][0],  # Path to left FASTQ from sample sheet
-        fastq2 = lambda wildcards: samples[wildcards.sample_id][1],  # Path to right FASTQ from sample sheet
-        genome_index = absolute_path + "/refs/GATK/STAR/ensembl_94_100"  
-
+        fq1=lambda wildcards: samples[wildcards.sample_id][0],  # R1 FASTQ file
+        fq2=lambda wildcards: samples[wildcards.sample_id][1]   # R2 FASTQ file
     output:
-        directory = directory("STAR_output/{sample_id}"),
-        bam = "STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",
-        reads = "STAR_output/{sample_id}/ReadsPerGene.out.tab",
-        log_out="STAR_output/{sample_id}/Log.final.out"
-
+        aln="STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",
+        reads="STAR_output/{sample_id}/ReadsPerGene.out.tab", 
+        log_final="STAR_output/{sample_id}/Log.final.out"
+    log:
+        "logs/star/{sample_id}.log"
     benchmark:
         "benchmarks/{sample_id}.star_aligner.benchmark.txt"
-
-    conda:
-        "envs/star.yaml"
-
     threads: config['threads']
-
     resources:
-        threads=config['threads'],
-        mem_mb=config['star_mem']
-
-    shell:
-        'mkdir -p {output.directory} && '
-        'sleep .10;'
-        'STAR --runThreadN {config[threads]} '
-        '--runMode alignReads '
-        '--genomeDir {input.genome_index} '
-        '--readFilesIn {input.fastq1} {input.fastq2} '
-        '--outFileNamePrefix  {output.directory}/ '
-        '--quantMode GeneCounts '
-        '--sjdbOverhang 100 '
-        '--twopassMode Basic '
-        '--outSAMtype BAM SortedByCoordinate '
-        '--genomeLoad NoSharedMemory '
-        '--outFilterMultimapNmax 10 '
-        '--chimOutType WithinBAM '
-        '--chimSegmentMin 10 '
-        '--readFilesCommand zcat && '
-        'rm -r {output.directory}/_STARgenome {output.directory}/_STARpass1 '
+        mem_mb=config['star_mem'],
+        tmpdir="/tmp"
+    params:
+        # Reference genome index
+        index=absolute_path + "/refs/GATK/STAR/ensembl_94_100",
+        # STAR parameters optimized for RNA-seq fusion detection
+        extra="--quantMode GeneCounts "
+              "--sjdbOverhang 100 "
+              "--twopassMode Basic "
+              "--outSAMtype BAM SortedByCoordinate "
+              "--genomeLoad NoSharedMemory "
+              "--outFilterMultimapNmax 10 "
+              "--chimOutType WithinBAM "
+              "--chimSegmentMin 10 "
+              "--readFilesCommand zcat"
+    wrapper:
+        "v3.3.6/bio/star/align"
 
 
 rule samtools_index:
@@ -198,13 +187,15 @@ rule samtools_index:
         "STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam.bai"
     log:
         "logs/samtools_index/{sample_id}.log"
-    params:
-        extra=""  # optional params string
     benchmark:
         "benchmarks/{sample_id}.samtools_index.benchmark.txt"
-    threads: config['threads']
+    threads: 1  # samtools index doesn't benefit much from multiple threads
+    resources:
+        mem_mb=1000  # Indexing is lightweight
+    params:
+        extra=""  # optional params string
     wrapper:
-        "v2.6.0/bio/samtools/index"
+        "v3.3.6/bio/samtools/index"
 
 
 rule pysamstat:

@@ -38,8 +38,8 @@ with open(sample_file,"r") as f:
         sample_id, left, right = line.strip().split(",")
         samples[sample_id] = (left, right)
 
-# Get FASTQs for QC
-fastq_dataframe = create_sample_dataframe(sample_file)
+# Get FASTQs for QC (using standard paired-end approach)
+# fastq_dataframe = create_sample_dataframe(sample_file)  # Legacy approach - not needed
 
 #Create config.txt and meta.txt for RNASeqCNV
 generate_files(sample_file, 'data/')
@@ -60,7 +60,7 @@ rule all:
         expand("fusions/{sample_id}.pdf",sample_id=samples.keys()),
         expand("fusions/{sample_id}.tsv",sample_id=samples.keys()),
 
-        expand("multiqc/{sample}/multiqc_data/multiqc_fastqc.txt", sample=fastq_dataframe['sample_id']),
+        "qc/multiqc_report.html",  # Single MultiQC report for all samples
         expand("fusioncatcher_output/{sample_id}/final-list_candidate-fusion-genes.txt",sample_id=list(samples.keys())),
         expand("data/vcf_files/GATK/{sample_id}_Gatk.tsv", sample_id=samples.keys()),
         expand("data/tpm/{sample_id}.tsv", sample_id=list(samples.keys())),
@@ -88,11 +88,11 @@ rule check_samples:
 
 
 
-# Function to get input FASTQ files based on sample_id
-def get_input_fastqs(wildcards):
-    sample_name = wildcards.sample
-    fastq_file = fastq_dataframe[fastq_dataframe['sample_id'] == sample_name]['FASTQ'].values[0]
-    return fastq_file
+# Function to get input FASTQ files for paired-end FastQC (legacy)
+# def get_input_fastqs(wildcards):  # No longer needed with standard approach
+#     sample_name = wildcards.sample
+#     fastq_file = fastq_dataframe[fastq_dataframe['sample_id'] == sample_name]['FASTQ'].values[0]
+#     return fastq_file
 
 
 
@@ -103,54 +103,50 @@ def get_input_fastqs(wildcards):
 # These rules are now only available in the setup workflow
 
 
-rule fastqc:
+rule fastqc_r1:
     input:
-        get_input_fastqs
+        lambda w: samples[w.sample][0]  # R1 FASTQ file
     output:
-        html="fastqc/{sample}.html",
-        zip="fastqc/{sample}.zip"
+        html="qc/fastqc/{sample}_R1_fastqc.html",
+        zip="qc/fastqc/{sample}_R1_fastqc.zip"
     log:
-        "logs/fastqc/{sample}/fastqc.log"
-
+        "logs/fastqc/{sample}_R1.log"
+    threads: 1
     resources:
         mem_mb=1000
-
-    benchmark:
-        "benchmarks/{sample}.fastqc.benchmark.txt"
-
     wrapper:
-        "v3.10.2/bio/fastqc"
+        "v3.3.6/bio/fastqc"
 
-rule unzip:
+rule fastqc_r2:
     input:
-        sample="fastqc/{sample}.zip"
+        lambda w: samples[w.sample][1]  # R2 FASTQ file
     output:
-        dir=directory("fastqc/{sample}"),
-	    sentinel="fastqc/{sample}/unzip_done.sentinel"
+        html="qc/fastqc/{sample}_R2_fastqc.html",
+        zip="qc/fastqc/{sample}_R2_fastqc.zip"
+    log:
+        "logs/fastqc/{sample}_R2.log"
+    threads: 1
     resources:
         mem_mb=1000
-    shell:
-        "unzip -q {input.sample} -d {output.dir} && touch {output.sentinel}"
+    wrapper:
+        "v3.3.6/bio/fastqc"
 
+# unzip rule removed - not needed with standard FastQC + MultiQC workflow
 
-rule multiqc_file:
+rule multiqc:
     input:
-        "fastqc/{sample}/"
+        expand("qc/fastqc/{sample}_{read}_fastqc.zip", 
+               sample=list(samples.keys()), 
+               read=["R1", "R2"])
     output:
-        multiqc_report="multiqc/{sample}/multiqc_report.html",
-        multiqc_fqc= "multiqc/{sample}/multiqc_data/multiqc_fastqc.txt"
-
+        "qc/multiqc_report.html",
+        directory("qc/multiqc_data")
+    log:
+        "logs/multiqc.log"
     params:
-        output_dir= "multiqc/{sample}/"
-
-    resources:
-        mem_mb=1000
-
-    benchmark:
-        "benchmarks/{sample}.multiqc.benchmark.txt"
-
-    shell:
-        "multiqc {input} -o {params.output_dir} --force"
+        extra=""  # Optional parameters for multiqc
+    wrapper:
+        "v3.3.6/bio/multiqc"
 
 
 rule run_star_aligner:
@@ -743,8 +739,7 @@ rule interactive_report:
         rna_seq_cnv_plot="RNAseqCNV_output/gatk/{sample}_gatk/{sample}/{sample}_CNV_main_fig.png",
         rna_seq_cnv_manual_an_table_file="RNAseqCNV_output/gatk/{sample}_gatk/manual_an_table.tsv",
         star_log_final_out_file="STAR_output/{sample}/Log.final.out",
-        multiqc_fqc_right="multiqc/{sample}_right/multiqc_report.html",
-        multiqc_fqc_left="multiqc/{sample}_left/multiqc_report.html",
+        multiqc_report="qc/multiqc_report.html",  # Single MultiQC report for all samples
         comparison_file="comparison/{sample}.csv",
         hotspots="Hotspots/{sample}",
         karyotype="karyotype_prediction/{sample}.csv",
@@ -759,11 +754,8 @@ rule interactive_report:
         mkdir -p interactive_output/{wildcards.sample}/fusions &&
         cp {input.arriba_file_fusion} interactive_output/{wildcards.sample}/fusions &&
 
-        mkdir -p interactive_output/{wildcards.sample}/multiqc_right &&
-        cp {input.multiqc_fqc_right} interactive_output/{wildcards.sample}/multiqc_right &&
-
-        mkdir -p interactive_output/{wildcards.sample}/multiqc_left &&
-        cp {input.multiqc_fqc_left} interactive_output/{wildcards.sample}/multiqc_left &&
+        mkdir -p interactive_output/{wildcards.sample}/qc &&
+        cp {input.multiqc_report} interactive_output/{wildcards.sample}/qc/ &&
 
         mkdir -p interactive_output/{wildcards.sample}/RNAseqCNV &&
         cp {input.rna_seq_cnv_plot} interactive_output/{wildcards.sample}/RNAseqCNV &&

@@ -235,23 +235,60 @@ rule install_arriba_draw_fusions:
 rule install_allcatchr:
     output:
         touch("logs/install_allcatchr.done")
+    message: "Installing ALLCatchR R package from GitHub"
     conda:
         "envs/install_allcatchr.yaml"
     benchmark:
         "benchmarks/install_allcatchr.benchmark.txt"
+    resources:
+        mem_mb=4000  # R package compilation needs memory
+    retries: 2  # GitHub API can be flaky
     shell:
-        "Rscript -e 'devtools::install_github(\"ThomasBeder/ALLCatchR_bcrabl1\", Ncpus = {config[threads]})' && touch {output}"
+        """
+        echo "📦 Installing ALLCatchR package..."
+        Rscript -e '
+            tryCatch({{
+                devtools::install_github("ThomasBeder/ALLCatchR_bcrabl1", 
+                                       Ncpus = {config[threads]},
+                                       force = TRUE,
+                                       upgrade = "never")
+                cat("✅ ALLCatchR installation completed successfully\\n")
+            }}, error = function(e) {{
+                cat("❌ ALLCatchR installation failed:", conditionMessage(e), "\\n")
+                quit(status = 1)
+            }})'
+        touch {output}
+        """
 
 
 rule install_rnaseq_cnv:
     output:
         touch("logs/install_rnaseq_cnv.done")
+    message: "Installing RNAseqCNV R package from GitHub"
     conda:
         "envs/rnaseqenv.yaml"
     benchmark:
         "benchmarks/install_rnaseq_cnv.benchmark.txt"
+    resources:
+        mem_mb=4000  # R package compilation needs memory
+    retries: 2  # GitHub API can be flaky
     shell:
-        "Rscript -e 'devtools::install_github(\"honzee/RNAseqCNV\", dependencies = TRUE, Ncpus = {config[threads]})' && touch {output}"
+        """
+        echo "📦 Installing RNAseqCNV package with dependencies..."
+        Rscript -e '
+            tryCatch({{
+                devtools::install_github("honzee/RNAseqCNV", 
+                                       dependencies = TRUE, 
+                                       Ncpus = {config[threads]},
+                                       force = TRUE,
+                                       upgrade = "never")
+                cat("✅ RNAseqCNV installation completed successfully\\n")
+            }}, error = function(e) {{
+                cat("❌ RNAseqCNV installation failed:", conditionMessage(e), "\\n")
+                quit(status = 1)
+            }})'
+        touch {output}
+        """
         
 
 rule install_fusioncatcher:

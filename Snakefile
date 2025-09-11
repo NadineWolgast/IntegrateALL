@@ -160,13 +160,14 @@ rule run_star_aligner:
     benchmark:
         "benchmarks/{sample_id}.star_aligner.benchmark.txt"
     threads: config['threads']
+    retries: 2  # Retry up to 2 times on failure
     resources:
-        mem_mb=config['star_mem'],
+        mem_mb=lambda wildcards, attempt: config['star_mem'] * (attempt + 1),  # Increase memory on retry
         tmpdir="/tmp"
     params:
         # Reference genome index
         index=absolute_path + "/refs/GATK/STAR/ensembl_94_100",
-        # STAR parameters optimized for RNA-seq fusion detection
+        # STAR parameters - retry-friendly settings with increased limits
         extra="--quantMode GeneCounts "
               "--sjdbOverhang 100 "
               "--twopassMode Basic "
@@ -175,7 +176,8 @@ rule run_star_aligner:
               "--outFilterMultimapNmax 10 "
               "--chimOutType WithinBAM "
               "--chimSegmentMin 10 "
-              "--readFilesCommand zcat"
+              "--readFilesCommand zcat "
+              "--limitSjdbInsertNsj 5000000"  # Increased splice junction limit to prevent crashes
     wrapper:
         "v3.3.6/bio/star/align"
 

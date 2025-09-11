@@ -60,7 +60,7 @@ rule all:
         expand("fusions/{sample_id}.pdf",sample_id=samples.keys()),
         expand("fusions/{sample_id}.tsv",sample_id=samples.keys()),
 
-        "qc/multiqc_report.html",  # Single MultiQC report for all samples
+        expand("qc/multiqc/{sample}/multiqc_report.html", sample=list(samples.keys())),  # Per-sample MultiQC reports
         expand("fusioncatcher_output/{sample_id}/final-list_candidate-fusion-genes.txt",sample_id=list(samples.keys())),
         expand("data/vcf_files/GATK/{sample_id}_Gatk.tsv", sample_id=samples.keys()),
         expand("data/tpm/{sample_id}.tsv", sample_id=list(samples.keys())),
@@ -135,16 +135,14 @@ rule fastqc_r2:
 
 rule multiqc:
     input:
-        expand("qc/fastqc/{sample}_{read}_fastqc.zip", 
-               sample=list(samples.keys()), 
-               read=["R1", "R2"])
+        expand("qc/fastqc/{{sample}}_{read}_fastqc.zip", read=["R1", "R2"])
     output:
-        "qc/multiqc_report.html",
-        directory("qc/multiqc_data")
+        report="qc/multiqc/{sample}/multiqc_report.html",
+        data_dir=directory("qc/multiqc/{sample}/multiqc_data")
     log:
-        "logs/multiqc.log"
+        "logs/multiqc/{sample}.log"
     params:
-        extra=""  # Optional parameters for multiqc
+        extra="--title 'Sample {sample} QC Report'"  # Sample-specific title
     wrapper:
         "v3.3.6/bio/multiqc"
 
@@ -739,7 +737,7 @@ rule interactive_report:
         rna_seq_cnv_plot="RNAseqCNV_output/gatk/{sample}_gatk/{sample}/{sample}_CNV_main_fig.png",
         rna_seq_cnv_manual_an_table_file="RNAseqCNV_output/gatk/{sample}_gatk/manual_an_table.tsv",
         star_log_final_out_file="STAR_output/{sample}/Log.final.out",
-        multiqc_report="qc/multiqc_report.html",  # Single MultiQC report for all samples
+        multiqc_report="qc/multiqc/{sample}/multiqc_report.html",  # Per-sample MultiQC report
         comparison_file="comparison/{sample}.csv",
         hotspots="Hotspots/{sample}",
         karyotype="karyotype_prediction/{sample}.csv",

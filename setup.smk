@@ -56,9 +56,9 @@ rule download_ref:
     input:
         star_directory = absolute_path + "/refs/GATK"
     output:
-        vcf= "refs/GATK/GRCH38/dbSNP.vcf",
-        ref= "refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
-    message: "Downloading reference files (~16GB): FASTA + dbSNP VCF"
+        vcf= protected("refs/GATK/GRCH38/dbSNP.vcf"),
+        ref= protected("refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa")
+    message: "Downloading reference files (~16GB): FASTA + dbSNP VCF - PROTECTED from deletion"
     resources:
         mem_mb=1000,
         tmpdir="/tmp"
@@ -83,9 +83,9 @@ rule download_ref:
 
 rule download_rda:
     output:
-        dbsnp="scripts/dbSNP_hg38.rda",
-        par="scripts/pseudoautosomal_regions_hg38.rda"
-    message: "Downloading RNAseqCNV reference data (~50MB)"
+        dbsnp=protected("scripts/dbSNP_hg38.rda"),
+        par=protected("scripts/pseudoautosomal_regions_hg38.rda")
+    message: "Downloading RNAseqCNV reference data (~50MB) - PROTECTED from deletion"
     resources:
         mem_mb=500
     retries: 3
@@ -106,8 +106,8 @@ rule download_rda:
 
 rule index_ref:
     input: "refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
-    output: "refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa.fai"
-    message: "Indexing reference genome"
+    output: protected("refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa.fai")
+    message: "Indexing reference genome - PROTECTED from deletion"
     shell:
         "samtools faidx {input}"
 
@@ -116,8 +116,8 @@ rule index_star:
             fa = absolute_path + "/refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa",
             gtf = absolute_path + "/refs/GATK/GRCH38/Homo_sapiens.GRCh38.83.gtf"
         output:
-            directory = directory(absolute_path + "/refs/GATK/STAR/ensembl_94_100")
-        message: "Building STAR genome index (~1GB)"
+            directory = protected(directory(absolute_path + "/refs/GATK/STAR/ensembl_94_100"))
+        message: "Building STAR genome index (~1GB) - PROTECTED from deletion"
         threads: config['threads']
         conda:
             "envs/star.yaml"
@@ -222,8 +222,8 @@ rule install_fusioncatcher:
     input:
         data_directory=absolute_path + "/refs/fusioncatcher"
     output:
-        directory(absolute_path + "/refs/fusioncatcher/fusioncatcher-master/data/human_v102")
-    message: "Installing FusionCatcher database - checking if already present"
+        protected(directory(absolute_path + "/refs/fusioncatcher/fusioncatcher-master/data/human_v102"))
+    message: "Installing FusionCatcher database - PROTECTED from deletion"
     benchmark:
         "benchmarks/install_fusioncatcher.benchmark.txt"
     resources:

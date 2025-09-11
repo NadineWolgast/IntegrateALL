@@ -150,7 +150,8 @@ rule multiqc:
 rule run_star_aligner:
     input:
         fq1=lambda wildcards: samples[wildcards.sample_id][0],  # R1 FASTQ file
-        fq2=lambda wildcards: samples[wildcards.sample_id][1]   # R2 FASTQ file
+        fq2=lambda wildcards: samples[wildcards.sample_id][1],  # R2 FASTQ file
+        idx=absolute_path + "/refs/GATK/STAR/ensembl_94_100"    # STAR genome index
     output:
         aln="STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",
         reads="STAR_output/{sample_id}/ReadsPerGene.out.tab", 
@@ -165,8 +166,6 @@ rule run_star_aligner:
         mem_mb=lambda wildcards, attempt: config['star_mem'] * (attempt + 1),  # Increase memory on retry
         tmpdir="/tmp"
     params:
-        # Reference genome index
-        index=absolute_path + "/refs/GATK/STAR/ensembl_94_100",
         # STAR parameters - retry-friendly settings with increased limits
         extra="--quantMode GeneCounts "
               "--sjdbOverhang 100 "
@@ -176,8 +175,8 @@ rule run_star_aligner:
               "--outFilterMultimapNmax 10 "
               "--chimOutType WithinBAM "
               "--chimSegmentMin 10 "
-              "--readFilesCommand zcat "
               "--limitSjdbInsertNsj 5000000"  # Increased splice junction limit to prevent crashes
+              # NOTE: --readFilesCommand is handled automatically by wrapper for .gz files
     wrapper:
         "v3.3.6/bio/star/align"
 

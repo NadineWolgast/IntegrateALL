@@ -160,25 +160,35 @@ rule run_star_aligner:
         "logs/star/{sample_id}.log"
     benchmark:
         "benchmarks/{sample_id}.star_aligner.benchmark.txt"
+    conda:
+        "envs/star.yaml"  # STAR v2.7.1a environment for index compatibility
     threads: config['threads']
     retries: 2  # Retry up to 2 times on failure
     resources:
         mem_mb=lambda wildcards, attempt: config['star_mem'] * (attempt + 1),  # Increase memory on retry
         tmpdir="/tmp"
-    params:
-        # STAR parameters - retry-friendly settings with increased limits
-        extra="--quantMode GeneCounts "
-              "--sjdbOverhang 100 "
-              "--twopassMode Basic "
-              "--outSAMtype BAM SortedByCoordinate "
-              "--genomeLoad NoSharedMemory "
-              "--outFilterMultimapNmax 10 "
-              "--chimOutType WithinBAM "
-              "--chimSegmentMin 10 "
-              "--limitSjdbInsertNsj 5000000"  # Increased splice junction limit to prevent crashes
-              # NOTE: --readFilesCommand is handled automatically by wrapper for .gz files
-    wrapper:
-        "v3.3.6/bio/star/align"
+    shell:
+        """
+        mkdir -p STAR_output/{wildcards.sample_id} logs/star &&
+        STAR --runThreadN {threads} \
+             --runMode alignReads \
+             --genomeDir {input.idx} \
+             --readFilesIn {input.fq1} {input.fq2} \
+             --outFileNamePrefix STAR_output/{wildcards.sample_id}/ \
+             --quantMode GeneCounts \
+             --sjdbOverhang 100 \
+             --twopassMode Basic \
+             --outSAMtype BAM SortedByCoordinate \
+             --genomeLoad NoSharedMemory \
+             --outFilterMultimapNmax 10 \
+             --chimOutType WithinBAM \
+             --chimSegmentMin 10 \
+             --readFilesCommand zcat \
+             --limitSjdbInsertNsj 5000000 \
+             2> {log} &&
+        # Clean up temporary files to save space
+        rm -rf STAR_output/{wildcards.sample_id}/_STARgenome STAR_output/{wildcards.sample_id}/_STARpass1 || true
+        """
 
 
 rule samtools_index:

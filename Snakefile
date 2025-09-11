@@ -296,14 +296,38 @@ rule install_fusioncatcher:
         data_directory=absolute_path + "/refs/fusioncatcher"
     output:
         directory(absolute_path + "/refs/fusioncatcher/fusioncatcher-master/data/human_v102")
-
+    message: "Installing FusionCatcher database (~4.4GB) - this may take 30+ minutes"
+    benchmark:
+        "benchmarks/install_fusioncatcher.benchmark.txt"
+    resources:
+        mem_mb=2000,
+        tmpdir="/tmp"
+    retries: 2
     shell:
         """
-        cd  {input.data_directory} &&
-        wget 'https://github.com/ndaniel/fusioncatcher/archive/refs/heads/master.zip' && 
-        unzip master.zip && 
+        cd {input.data_directory} &&
+        
+        # Download FusionCatcher source code with robust retry logic
+        echo "📦 Downloading FusionCatcher source code..."
+        wget --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 3 \
+             --progress=bar --show-progress \
+             'https://github.com/ndaniel/fusioncatcher/archive/refs/heads/master.zip' && 
+        
+        # Verify download before extraction
+        if [ -f "master.zip" ]; then
+            echo "✅ FusionCatcher source download successful, extracting..."
+            unzip -q master.zip &&
+            echo "✅ FusionCatcher source extracted successfully"
+        else
+            echo "❌ FusionCatcher source download failed" && exit 1
+        fi &&
+        
+        # Download the large human database (~4.4GB)
         cd fusioncatcher-master/data && 
-        ./download-human-db.sh
+        echo "📦 Starting FusionCatcher human database download (~4.4GB)..."
+        echo "⏰ This will take 30+ minutes depending on your internet connection"
+        ./download-human-db.sh &&
+        echo "✅ FusionCatcher database installation completed successfully!"
         """
 
 

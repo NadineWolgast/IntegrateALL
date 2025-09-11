@@ -49,30 +49,30 @@ absolute_path = config["absolute_path"]
 rule all:
     input:
         "check_samples.txt",
-        #expand("STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",sample_id=list(samples.keys())),
-        #expand("STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam.bai", sample_id=list(samples.keys())),
+        expand("STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",sample_id=list(samples.keys())),
+        expand("STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam.bai", sample_id=list(samples.keys())),
         expand("Variants_RNA_Seq_Reads/{sample_id}/fixed-rg/{sample_id}.bam", sample_id=list(samples.keys())),
         expand("Variants_RNA_Seq_Reads/{sample_id}/deduped_bam/{sample_id}.bam.bai", sample_id=list(samples.keys())),
         expand("Variants_RNA_Seq_Reads/{sample_id}/split/{sample_id}.bam", sample_id=list(samples.keys())),
         expand("Variants_RNA_Seq_Reads/{sample_id}/recal/{sample_id}_recal.table", sample_id=list(samples.keys())),
         expand("Variants_RNA_Seq_Reads/{sample_id}/recal/{sample_id}.bam", sample_id=list(samples.keys())),
         expand("Variants_RNA_Seq_Reads/{sample_id}/filter/{sample_id}.snvs.filtered.vcf", sample_id=list(samples.keys())),
-        #expand("fusions/{sample_id}.pdf",sample_id=samples.keys()),
-        #expand("fusions/{sample_id}.tsv",sample_id=samples.keys()),
+        expand("fusions/{sample_id}.pdf",sample_id=samples.keys()),
+        expand("fusions/{sample_id}.tsv",sample_id=samples.keys()),
 
         #expand("multiqc/{sample}/multiqc_data/multiqc_fastqc.txt", sample=fastq_dataframe['sample_id']),
-        #expand("fusioncatcher_output/{sample_id}/final-list_candidate-fusion-genes.txt",sample_id=list(samples.keys())),
-        #expand("data/vcf_files/GATK/{sample_id}_Gatk.tsv", sample_id=samples.keys()),
-        #expand("data/tpm/{sample_id}.tsv", sample_id=list(samples.keys())),
+        expand("fusioncatcher_output/{sample_id}/final-list_candidate-fusion-genes.txt",sample_id=list(samples.keys())),
+        expand("data/vcf_files/GATK/{sample_id}_Gatk.tsv", sample_id=samples.keys()),
+        expand("data/tpm/{sample_id}.tsv", sample_id=list(samples.keys())),
         #expand("data/cpm/{sample_id}.tsv", sample_id=list(samples.keys())),        
         #expand("pysamstats_output_dir/{sample_id}/", sample_id=list(samples.keys())),
-        #expand("Hotspots/{sample_id}",sample_id=list(samples.keys())),
+        expand("Hotspots/{sample_id}",sample_id=list(samples.keys())),
         #expand("comparison/{sample_id}.csv", sample_id= samples.keys()),
-        #expand("data/single_counts/{sample_id}.txt", sample_id=samples.keys()),
-        #expand("allcatch_output/{sample_id}/predictions.tsv", sample_id= samples.keys()),
+        expand("data/single_counts/{sample_id}.txt", sample_id=samples.keys()),
+        expand("allcatch_output/{sample_id}/predictions.tsv", sample_id= samples.keys()),
         #expand("aggregated_output/{sample}.csv", sample=list(samples.keys())),
-        #expand("RNAseqCNV_output/gatk/{sample_id}_gatk", sample_id=samples.keys()),
-        #expand("Final_classification/{sample_id}_output_report.csv",sample_id=list(samples.keys())),
+        expand("RNAseqCNV_output/gatk/{sample_id}_gatk", sample_id=samples.keys()),
+        expand("Final_classification/{sample_id}_output_report.csv",sample_id=list(samples.keys())),
         expand("interactive_output/{sample}/output_report_{sample}.html",  sample=list(samples.keys()))
 
 
@@ -98,20 +98,26 @@ def get_input_fastqs(wildcards):
 
 rule install_all:
     input: 
-        # Reference files
-        "refs/GATK/GRCH38/dbSNP.vcf",
-        "refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa",
-        "refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa.fai", 
-        absolute_path + "/refs/GATK/STAR/ensembl_94_100/SA",
-        "scripts/dbSNP_hg38.rda",
-        "scripts/pseudoautosomal_regions_hg38.rda",
+        # Reference files (~17GB total)
+        "refs/GATK/GRCH38/dbSNP.vcf",                                            # ~13GB
+        "refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa",         # ~3GB
+        "refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa.fai",     # ~3KB
+        absolute_path + "/refs/GATK/STAR/ensembl_94_100/SA",                     # ~1GB
+        "scripts/dbSNP_hg38.rda",                                                # ~50MB
+        "scripts/pseudoautosomal_regions_hg38.rda",                              # ~1KB
         # Tool installations (via marker files)
-        "logs/install_arriba_draw_fusions.done",
-        "logs/install_allcatchr.done",
-        "logs/install_rnaseq_cnv.done",
+        "logs/install_arriba_draw_fusions.done",                                 # ~10MB
+        "logs/install_allcatchr.done",                                           # R packages
+        "logs/install_rnaseq_cnv.done",                                          # R packages
         # Large downloads (optional - comment out for testing)
-        absolute_path + "/refs/fusioncatcher/fusioncatcher-master/data/human_v102/version.txt"
-    message: "All reference files and tools installed successfully!"
+        absolute_path + "/refs/fusioncatcher/fusioncatcher-master/data/human_v102/version.txt"  # ~4.4GB
+    message: "All reference files and tools installed successfully! Total size: ~21GB"
+    resources:
+        # Allow parallel downloads/installations
+        mem_mb=2000,
+        # Conservative retry logic for network downloads
+        tmpdir="/tmp"
+    retries: 3
 
 rule download_ref:
     input:
@@ -119,21 +125,51 @@ rule download_ref:
     output:
         vcf= "refs/GATK/GRCH38/dbSNP.vcf",
         ref= "refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
+    message: "Downloading reference files (~16GB): FASTA + dbSNP VCF"
+    resources:
+        mem_mb=1000,
+        tmpdir="/tmp"
+    retries: 3
     shell:
-        "mkdir -p {input.star_directory} &&"
-        "cd {input.star_directory} && "
-        "wget 'http://141.2.194.197/rnaeditor_annotations/GRCH38.tar.gz' && "
-        "tar -xzf GRCH38.tar.gz "
+        """
+        mkdir -p {input.star_directory} &&
+        cd {input.star_directory} && 
+        # Robust download with retry logic and progress bar
+        wget --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 3 \
+             --progress=bar --show-progress \
+             'http://141.2.194.197/rnaeditor_annotations/GRCH38.tar.gz' && 
+        # Verify download success before extraction
+        if [ -f "GRCH38.tar.gz" ]; then
+            echo "✅ Download successful, extracting..."
+            tar -xzf GRCH38.tar.gz &&
+            echo "✅ Reference files extracted successfully"
+        else
+            echo "❌ Download failed" && exit 1
+        fi
+        """
 
 
 rule download_rda:
     output:
         dbsnp="scripts/dbSNP_hg38.rda",
         par="scripts/pseudoautosomal_regions_hg38.rda"
+    message: "Downloading RNAseqCNV reference data (~50MB)"
+    resources:
+        mem_mb=500
+    retries: 3
     shell:
         """
-        wget -O {output.dbsnp} https://github.com/honzee/RNAseqCNV/raw/master/data/dbSNP_hg38.rda &&
-        wget -O {output.par} https://github.com/honzee/RNAseqCNV/raw/master/data/pseudoautosomal_regions_hg38.rda
+        # Download dbSNP with retry logic
+        wget --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 3 \
+             --progress=bar --show-progress \
+             -O {output.dbsnp} https://github.com/honzee/RNAseqCNV/raw/master/data/dbSNP_hg38.rda &&
+        echo "✅ dbSNP_hg38.rda downloaded successfully" &&
+        
+        # Download pseudoautosomal regions with retry logic
+        wget --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 3 \
+             --progress=bar --show-progress \
+             -O {output.par} https://github.com/honzee/RNAseqCNV/raw/master/data/pseudoautosomal_regions_hg38.rda &&
+        echo "✅ pseudoautosomal_regions_hg38.rda downloaded successfully"
         """
 
 

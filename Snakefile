@@ -343,20 +343,61 @@ rule run_fusioncatcher:
         "benchmarks/{sample_id}.fusioncatcher.benchmark.txt"
         
     resources:
-        threads=config['threads'],
-        mem_mb=config['star_mem']
-
+        threads=config['fusioncatcher_threads'],
+        mem_mb=config['fusioncatcher_mem'],
+        runtime=60*24*3  # 3 days maximum runtime for cluster scheduling
+        
     shell:
         '''
         mkdir -p logs/fusioncatcher
+        
+        # Resource monitoring - track memory and CPU usage
+        echo "=== FusionCatcher Resource Monitoring Started ===" >> {log}
+        echo "Timestamp: $(date)" >> {log}
+        echo "Memory allocated: {resources.mem_mb} MB" >> {log}
+        echo "Threads allocated: {resources.threads}" >> {log}
+        echo "Sample: {wildcards.sample_id}" >> {log}
+        echo "Input files: {input.left}, {input.right}" >> {log}
+        
+        # Start resource monitoring in background
+        (while true; do
+            echo "$(date): Memory: $(free -m | grep '^Mem:' | awk '{{print $3}}')MB used, CPU: $(top -bn1 | grep "Cpu(s)" | sed "s/.*, *\\([0-9.]*\\)%* id.*/\\1/" | awk '{{print 100 - $1}}')%" >> logs/fusioncatcher/{wildcards.sample_id}_resources.log
+            sleep 300  # Log every 5 minutes
+        done) &
+        MONITOR_PID=$!
+        
+        # Run FusionCatcher with safe performance optimizations
         fusioncatcher \
         -d {input.data_directory} \
         -i {input.left},{input.right} \
         -o {output.dir} \
         --skip-blat \
-        --threads={config[threads]} \
-        > logs/fusioncatcher/{wildcards.sample_id}.log 2>&1 \
-        && touch {output.sentinel}
+        --skip-update-check \
+        --skip-conversion-grch37 \
+        --parallel \
+        --threads={config[fusioncatcher_threads]} \
+        --tmp-dir=/tmp \
+        --keep-preliminary-files=no \
+        --memory-limit={config[fusioncatcher_mem]} \
+        > logs/fusioncatcher/{wildcards.sample_id}.log 2>&1
+        
+        FUSIONCATCHER_EXIT_CODE=$?
+        
+        # Stop resource monitoring
+        kill $MONITOR_PID 2>/dev/null || true
+        
+        # Log completion status
+        echo "=== FusionCatcher Completed ===" >> {log}
+        echo "Exit code: $FUSIONCATCHER_EXIT_CODE" >> {log}
+        echo "End timestamp: $(date)" >> {log}
+        
+        if [ $FUSIONCATCHER_EXIT_CODE -eq 0 ]; then
+            touch {output.sentinel}
+            echo "✅ FusionCatcher completed successfully" >> {log}
+        else
+            echo "❌ FusionCatcher failed with exit code $FUSIONCATCHER_EXIT_CODE" >> {log}
+            exit $FUSIONCATCHER_EXIT_CODE
+        fi
         '''
 
 

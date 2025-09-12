@@ -2,5 +2,10 @@ sample_file: samples.csv
 
 absolute_path: /media/nadine/InternalMaybe/IntegrateALL
 
+# Memory settings (in MB)
 star_mem: 50000
+fusioncatcher_mem: 64000  # High memory allocation for performance on cluster (64GB)
+
+# CPU settings  
 threads: 4
+fusioncatcher_threads: 8  # More threads for FusionCatcher performance

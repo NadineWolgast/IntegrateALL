@@ -1,3 +1,7 @@
+# Performance optimizations for cluster execution
+options(mc.cores = parallel::detectCores())  # Use all available cores
+data.table::setDTthreads(0)  # Use all threads for data.table operations
+
 library(dplyr)
 library(ggplot2)
 library(ggpubr)
@@ -11,6 +15,10 @@ library(magrittr)
 library(scales)
 library(randomForest)
 library(DESeq2)
+
+# Set parallel BLAS threads for matrix operations
+library(RhpcBLASctl)
+if(exists("blas_set_num_threads")) blas_set_num_threads(parallel::detectCores())
 
 
 library(RNAseqCNV)
@@ -84,8 +92,8 @@ get_norm_exp <- function(sample_table, sample_num, standard_samples, minReadCnt,
   count_file <- pull(sample_table, "count_path")[sample_num]
   sample_n <- pull(sample_table, 1)[sample_num]
 
-  #read the count table
-  count_table <- fread(file = count_file)
+  #read the count table with parallel processing
+  count_table <- fread(file = count_file, nThread = parallel::detectCores())
   data.table::setnames(count_table, colnames(count_table), c("ENSG", "count"))
 
   #check the count file format
@@ -143,9 +151,13 @@ get_norm_exp <- function(sample_table, sample_num, standard_samples, minReadCnt,
   ENSG <- count_filt$ENSG
   count_filt <- select(count_filt, -ENSG)
 
-  #sample Deseq normalization
+  #sample Deseq normalization with parallel processing
   count_col <- as.data.frame(colnames(count_filt))
-
+  
+  # Enable DESeq2 parallelization
+  BPPARAM <- BiocParallel::MulticoreParam(workers = parallel::detectCores())
+  BiocParallel::register(BPPARAM)
+  
   dds <- DESeq2::DESeqDataSetFromMatrix(colData = count_col, countData = count_filt, design= ~ 1)
   dds_vst <- DESeq2::varianceStabilizingTransformation(dds, blind=T, fitType='local')
   count_norm <- as.data.frame(SummarizedExperiment::assay(dds_vst))
@@ -1306,7 +1318,9 @@ RNAseqCNV_wrapper <- function(config, metadata, snv_format, adjust = TRUE, arm_l
 
     print(paste0("Plotting main figure: ", sample_name))
 
-    ggsave(plot = fig, filename = file.path(chr_dir, paste0(sample_name, "_CNV_main_fig.png")), device = 'png', width = 16, height = 10, dpi = 200)
+    ggsave(plot = fig, filename = file.path(chr_dir, paste0(sample_name, "_CNV_main_fig.png")), 
+           device = 'png', width = 16, height = 10, dpi = 200, 
+           bg = "white", create.dir = TRUE)
 
 
     #plot arm-level figures

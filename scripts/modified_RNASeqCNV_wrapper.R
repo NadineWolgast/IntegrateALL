@@ -1,30 +1,22 @@
-# Performance optimizations for cluster execution
-options(mc.cores = parallel::detectCores())  # Use all available cores
-data.table::setDTthreads(0)  # Use all threads for data.table operations
-
-library(dplyr)
-library(ggplot2)
-library(ggpubr)
-library(shiny)
-library(shinyFiles)
-library(stringr)
-library(tidyr)
-library(data.table)
-library(magrittr)
-
-library(scales)
-library(randomForest)
-library(DESeq2)
-
-# Set parallel BLAS threads for matrix operations
-library(RhpcBLASctl)
-if(exists("blas_set_num_threads")) blas_set_num_threads(parallel::detectCores())
-
-
-library(RNAseqCNV)
+# Suppress warnings and package startup messages for cleaner output
+options(warn = -1)  # Suppress warnings
+suppressPackageStartupMessages({
+  library(dplyr)
+  library(ggplot2)
+  library(ggpubr)
+  library(shiny)
+  library(shinyFiles)
+  library(stringr)
+  library(tidyr)
+  library(data.table)
+  library(magrittr)
+  library(scales)
+  library(randomForest)
+  library(DESeq2)
+  library(RNAseqCNV)
+})
 
 current_directory <- getwd()
-print(current_directory)
 
 load("scripts/gene_annot_hg38.rda")
 load("scripts/dbSNP_hg38.rda")
@@ -92,8 +84,8 @@ get_norm_exp <- function(sample_table, sample_num, standard_samples, minReadCnt,
   count_file <- pull(sample_table, "count_path")[sample_num]
   sample_n <- pull(sample_table, 1)[sample_num]
 
-  #read the count table with parallel processing
-  count_table <- fread(file = count_file, nThread = parallel::detectCores())
+  #read the count table
+  count_table <- fread(file = count_file)
   data.table::setnames(count_table, colnames(count_table), c("ENSG", "count"))
 
   #check the count file format
@@ -151,24 +143,20 @@ get_norm_exp <- function(sample_table, sample_num, standard_samples, minReadCnt,
   ENSG <- count_filt$ENSG
   count_filt <- select(count_filt, -ENSG)
 
-  #sample Deseq normalization with parallel processing
+  #sample Deseq normalization
   count_col <- as.data.frame(colnames(count_filt))
-  
-  # Enable DESeq2 parallelization
-  BPPARAM <- BiocParallel::MulticoreParam(workers = parallel::detectCores())
-  BiocParallel::register(BPPARAM)
-  
+
   dds <- DESeq2::DESeqDataSetFromMatrix(colData = count_col, countData = count_filt, design= ~ 1)
   dds_vst <- DESeq2::varianceStabilizingTransformation(dds, blind=T, fitType='local')
   count_norm <- as.data.frame(SummarizedExperiment::assay(dds_vst))
 
   if (batch == TRUE) {
     colnames(count_norm) <- pull(sample_table, 1)
-    print(paste0("Normalization completed"))
+    # Normalization completed
   } else {
     colnames(count_norm)[1] <- sample_n
     colnames(count_norm)[2:ncol(count_norm)] <- paste0("control_", 1:(ncol(count_norm)-1))
-    print(paste0("Normalization for sample: ", sample_n, " completed"))
+    # Normalization for sample completed
   }
 
   #Modify table for downstream analysis
@@ -205,7 +193,7 @@ prepare_snv <- function(sample_table, centr_ref, sample_num, minDepth, snv_forma
   sample_n <- pull(sample_table, 1)[sample_num]
 
   smpSNP=list()
-  print(paste("Preparing file with snv information for:", sample_n))
+  # Preparing SNV information
 
   #prepare data from custom table
   if (snv_format == "custom") {
@@ -637,7 +625,7 @@ find_y_0.5 <- function(vec) {
 adjust_dipl <- function(feat_tab_alt, count_ns) {
 
   if (sum(feat_tab_alt$chr_status == "dipl", na.rm = TRUE) < 1) {
-    print("Unable to adjust expression level")
+    # Unable to adjust expression level
     return(count_ns)
   }
 
@@ -892,7 +880,7 @@ weighted_quantile <- function (x, w, probs = seq(0, 1, 0.25), na.rm = TRUE) {
 RNAseqCNV_wrapper <- function(config, metadata, snv_format, adjust = TRUE, arm_lvl = TRUE, estimate_lab = TRUE, genome_version = "hg38", gene_annotation = NULL, SNP_to_keep = NULL, par_regions = NULL, centromeric_regions = NULL, weight_tab = weight_table, generate_weights = FALSE, model_gend = model_gender, model_dip = model_dipl, model_alter = model_alt,
                                 model_alter_noSNV = model_noSNV, batch = FALSE, standard_samples = NULL, CNV_matrix = FALSE, scale_cols = scaleCols, dpRatioChromEdge = dpRatioChrEdge, minDepth = 20, mafRange = c(0.1, 0.9), minReadCnt = 3, samp_prop = 0.8, weight_samp_prop = 1) {
 
-  print("Analysis initiated")
+  cat("[RNAseqCNV] Analysis initiated\n")
   #Check the config file
   out_dir <- NULL
   count_dir <- NULL
@@ -1005,7 +993,7 @@ RNAseqCNV_wrapper <- function(config, metadata, snv_format, adjust = TRUE, arm_l
   #If batch analysis was selected normalize the input samples together
   if(batch == TRUE) {
 
-    print("Normalizing gene expression and applying variance stabilizing transformation...")
+    cat("[RNAseqCNV] Normalizing gene expression\n")
 
     #calculate normalized count values with DESeq2 normalization method for batch of samples from the input
     count_norm <- get_norm_exp(sample_table = sample_table, sample_num = 1, standard_samples = standard_samples, minReadCnt = minReadCnt, samp_prop = samp_prop, weight_table = weight_tab, weight_samp_prop = weight_samp_prop, batch = TRUE, generate_weights)
@@ -1102,7 +1090,7 @@ RNAseqCNV_wrapper <- function(config, metadata, snv_format, adjust = TRUE, arm_l
       metr_dipl()
 
     #model alteration on chromosome arms an in case of problematic SNV graph, use model without this information included
-    print(paste0("Estimating chromosome arm CNV",": ", sample_name))
+    cat("[RNAseqCNV] Estimating chromosome arm CNV for:", sample_name, "\n")
     feat_tab_alt <- feat_tab_dipl %>% filter(chr_status != "unknown") %>% mutate(alteration = as.character(randomForest:::predict.randomForest(model_alter, ., type = "class")),
                                                                                  alteration_prob = apply(randomForest:::predict.randomForest(model_alter, ., type = "prob"), 1, max))
     if (any(feat_tab_dipl$chr_status == "unknown")) {
@@ -1182,7 +1170,7 @@ RNAseqCNV_wrapper <- function(config, metadata, snv_format, adjust = TRUE, arm_l
 
     data <- smpSNPdata[, (names(smpSNPdata) %in% c("chr","peak", "peak_max"))]
     filtered_df <- unique(data)
-    print(filtered_df)
+    # CNV estimation table generated
     header <- c()
     for (i in 1:22) {
       header <- c(header, paste0("chr", i, "_peak"), paste0("chr", i, "_peak_max"))
@@ -1287,7 +1275,7 @@ RNAseqCNV_wrapper <- function(config, metadata, snv_format, adjust = TRUE, arm_l
 
 
     in_file <- file.path(out_dir, paste0(sample_name,"_count_ns_final.RDS"))
-    print(in_file)
+    # Processing file
     formatted_data_frame <- read_and_filter(in_file, sample_name, source = "Other" )
     write.csv(formatted_data_frame, file = file.path(out_dir, paste0(sample_name,"_formatted_data.csv")))
     res_formatted <- formatted_data_frame[, -(1:2)]
@@ -1316,11 +1304,9 @@ RNAseqCNV_wrapper <- function(config, metadata, snv_format, adjust = TRUE, arm_l
 
     fig <- arrange_plots(gg_exp = gg_exp, gg_snv = gg_snv)
 
-    print(paste0("Plotting main figure: ", sample_name))
+    cat("[RNAseqCNV] Plotting main figure for:", sample_name, "\n")
 
-    ggsave(plot = fig, filename = file.path(chr_dir, paste0(sample_name, "_CNV_main_fig.png")), 
-           device = 'png', width = 16, height = 10, dpi = 200, 
-           bg = "white", create.dir = TRUE)
+    ggsave(plot = fig, filename = file.path(chr_dir, paste0(sample_name, "_CNV_main_fig.png")), device = 'png', width = 16, height = 10, dpi = 200)
 
 
     #plot arm-level figures
@@ -1330,12 +1316,12 @@ RNAseqCNV_wrapper <- function(config, metadata, snv_format, adjust = TRUE, arm_l
 
       centr_res <- rescale_centr(centr_ref, count_ns_final)
 
-      print(paste0("Plotting arm-level figures: ", sample_name))
+      # Plotting arm-level figures
 
       #plot every chromosome
       for (i in chr_to_plot) {
 
-        print(paste0("Plotting chr ", i, " arm-level figure"))
+        # Plotting chromosome arm-level figure
 
         gg_exp_zoom <- plot_exp_zoom(count_ns_final = count_ns_final, centr_res = centr_res, plot_chr = i,  estimate = estimate_lab, feat_tab_alt = feat_tab_alt)
 
@@ -1353,7 +1339,7 @@ RNAseqCNV_wrapper <- function(config, metadata, snv_format, adjust = TRUE, arm_l
 
     }
 
-    print(paste0("Analysis for sample: ", sample_name, " finished"))
+    cat("[RNAseqCNV] Analysis for sample:", sample_name, "finished\n")
   }
 
   #Order the per-arm median of log2 fold change table and write it into a file
@@ -1369,7 +1355,7 @@ RNAseqCNV_wrapper <- function(config, metadata, snv_format, adjust = TRUE, arm_l
 
 # Get input file path from command line arguments
 args <- commandArgs(trailingOnly = TRUE)
-print(args)
+# Arguments processed
 config_file <- args[1]
 metadata_file <- args[2]
 sample_id <- args[3]
@@ -1390,7 +1376,7 @@ config_data <- list(
 new_config <- paste0("data/",sample_id,"new_config.txt")
 writeLines(unlist(config_data), new_config)
 
-print(config_data)
+# Config data loaded
 
 RNAseqCNV_wrapper(config = new_config, metadata = new_meta, snv_format = "custom", CNV_matrix = T, arm_lvl = F, batch = F, generate_weights = F)
 

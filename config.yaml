@@ -7,8 +7,8 @@ star_mem: 50000
 fusioncatcher_mem: 32000  # High memory allocation for time-intensive job
 arriba_mem: 16000
 arriba_draw_mem: 8000
-picard_mem: 8000
-gatk_mem: 16000
+picard_mem: 16000  # Increased for BAM preprocessing performance
+gatk_mem: 32000  # High memory allocation for GATK variant calling
 vcf_mem: 4000
 
 # CPU settings  
@@ -18,4 +18,4 @@ arriba_threads: 4
 vcf_threads: 4
 
 # GATK settings
-gatk_java_opts: "-XX:+UseParallelGC"
+gatk_java_opts: "-XX:+UseParallelGC -XX:ParallelGCThreads=4"  # Optimized for multi-core performance

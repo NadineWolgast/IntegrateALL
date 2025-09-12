@@ -17,3 +17,7 @@ arriba_threads: 6  # Optimized threading for Arriba fusion detection
 gatk_mem: 32000  # High memory allocation for GATK variant calling (32GB)
 gatk_java_opts: "-Xmx30g -XX:+UseParallelGC -XX:ParallelGCThreads=4"
 picard_mem: 16000  # Memory for Picard preprocessing (16GB)
+
+# RNAseqCNV settings
+rnaseqcnv_mem: 24000  # High memory allocation for CNV analysis (24GB)
+rnaseqcnv_threads: 6  # Optimized threading for R-based analysis

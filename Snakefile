@@ -689,23 +689,41 @@ rule run_rnaseq_cnv_gatk:
         metadata_file="data/meta.txt",
         input_counts="data/single_counts/{sample_id}.txt",
         input_tsv="data/vcf_files/GATK/{sample_id}_Gatk.tsv"
-
     output:
         directory=directory("RNAseqCNV_output/gatk/{sample_id}_gatk/"),
         rna_seq_cnv_alteration_file="RNAseqCNV_output/gatk/{sample_id}_gatk/estimation_table.tsv",
         rna_seq_cnv_log2foldchange_file="RNAseqCNV_output/gatk/{sample_id}_gatk/log2_fold_change_per_arm.tsv",
         rna_seq_cnv_manual_an_table_file="RNAseqCNV_output/gatk/{sample_id}_gatk/manual_an_table.tsv",
         rna_seq_cnv_plot="RNAseqCNV_output/gatk/{sample_id}_gatk/{sample_id}/{sample_id}_CNV_main_fig.png",
-        ml_input="RNAseqCNV_output/gatk/{sample_id}_gatk/{sample_id}_ml_input.csv",
+        ml_input="RNAseqCNV_output/gatk/{sample_id}_gatk/{sample_id}_ml_input.csv"
+    log:
+        "logs/rnaseqcnv/{sample_id}.log"
+    benchmark:
+        "benchmarks/{sample_id}.rnaseqcnv.benchmark.txt"
     conda:
         "envs/rnaseqenv.yaml"
-        
+    threads: config['rnaseqcnv_threads']
     resources:
-        threads=config['threads'],
-        mem_mb=5000
-        
+        mem_mb=config['rnaseqcnv_mem']
     shell:
-        "Rscript {input.r_script} {input.config_file} {input.metadata_file} {wildcards.sample_id} {output.directory};"
+        '''
+        # Log RNAseqCNV analysis start
+        echo "=== Starting RNAseqCNV analysis for {wildcards.sample_id} ===" > {log}
+        echo "Memory allocated: {resources.mem_mb}MB" >> {log}
+        echo "Threads: {threads}" >> {log}
+        echo "Input counts: {input.input_counts}" >> {log}
+        echo "Input VCF: {input.input_tsv}" >> {log}
+        
+        # Set R memory and threading options for performance
+        export R_MAX_VSIZE=100Gb
+        export OMP_NUM_THREADS={threads}
+        export OPENBLAS_NUM_THREADS={threads}
+        
+        # Run RNAseqCNV with error handling
+        Rscript --max-ppsize=500000 {input.r_script} {input.config_file} {input.metadata_file} {wildcards.sample_id} {output.directory} >> {log} 2>&1
+        
+        echo "=== RNAseqCNV analysis completed successfully ===" >> {log}
+        '''
 
 
 

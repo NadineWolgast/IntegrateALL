@@ -1,1 +1,1 @@
-sample_id	sample_id.txt	sample_id.tsv
+test	test.txt	test.tsv

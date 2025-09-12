@@ -1,2 +1,2 @@
 sample_id,left,right
-test,/IntegrateALL/data/samples/reads_1.fq.gz,/IntegrateALL/data/samples/reads_2.fq.gz
+test,/media/nadine/InternalMaybe/IntegrateALL/data/samples/sub1_new.fq.gz,/media/nadine/InternalMaybe/IntegrateALL/data/samples/sub2_new.fq.gz

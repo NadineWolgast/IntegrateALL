@@ -44,7 +44,8 @@ rule setup_all:
         "logs/install_allcatchr.done",
         "logs/install_rnaseq_cnv.done",
         # FusionCatcher database (match rule 'install_fusioncatcher' output -> directory)
-        absolute_path + "/refs/fusioncatcher/fusioncatcher-master/data/human_v102"
+        absolute_path + "/refs/fusioncatcher/fusioncatcher-master/data/human_v102",
+        #"logs/install_fusioncatcher.done"
     message: "🎉 All reference files and tools installed successfully! Total size: ~21GB"
     shell:
         """
@@ -230,7 +231,8 @@ rule install_fusioncatcher:
     input:
         data_directory = absolute_path + "/refs/fusioncatcher"
     output:
-        protected(directory(absolute_path + "/refs/fusioncatcher/fusioncatcher-master/data/human_v102"))
+        directory_output = protected(directory(absolute_path + "/refs/fusioncatcher/fusioncatcher-master/data/human_v102")),
+        done_marker = "logs/install_fusioncatcher.done"
     message: "Installing FusionCatcher database - PROTECTED from deletion"
     benchmark:
         "benchmarks/install_fusioncatcher.benchmark.txt"
@@ -265,5 +267,6 @@ rule install_fusioncatcher:
         cd fusioncatcher-master/data &&
         echo "📦 Starting FusionCatcher human database download (~4.4GB)..."
         ./download-human-db.sh &&
-        echo "✅ FusionCatcher database installation completed successfully!"
+        echo "✅ FusionCatcher database installation completed successfully!" &&
+        touch {output.done_marker}
         """

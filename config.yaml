@@ -1,6 +1,6 @@
 sample_file: samples.csv
 
-absolute_path: /IntegrateALL
+absolute_path: /media/nadine/InternalMaybe/IntegrateALL
 
 star_mem: 50000
 threads: 4

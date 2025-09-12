@@ -1,18 +1,18 @@
 channels:
-  - defaults
-  - bioconda
   - conda-forge
+  - bioconda
+  - defaults
+channel_priority: strict
 dependencies:
-  - r-base = 4.1.3
-  - star = 2.7.11a
-  - arriba = 2.4.0
-  - ca-certificates
-  - libgcc-ng
-  - python = 3.7
+  - arriba=2.4.0
+  - r-base=4.3.*          # modernes R; besserer Solver
+  - r-circlize            # 0.4.x kommt passend aus conda-forge
   - bioconductor-genomicranges
   - bioconductor-genomicalignments
-  - r-circlize = 0.4.15
-  - libgcc-ng
-  - libstdcxx-ng
-  - htslib = 1.17
-  - samtools
+  - r-data.table
+  - r-optparse            # oft von draw_fusions.R genutzt
+  - libgcc-ng>=12
+  - libstdcxx-ng>=12
+  - ca-certificates
+  - openssl
+  - zlib

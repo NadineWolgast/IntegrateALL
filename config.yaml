@@ -4,24 +4,18 @@ absolute_path: /media/nadine/InternalMaybe/IntegrateALL
 
 # Memory settings (in MB)
 star_mem: 50000
-fusioncatcher_mem: 64000  # High memory allocation for performance on cluster (64GB)
-arriba_mem: 32000  # High memory allocation for Arriba fusion detection (32GB)
-arriba_draw_mem: 16000  # Memory for Arriba visualization
+fusioncatcher_mem: 32000  # High memory allocation for time-intensive job
+arriba_mem: 16000
+arriba_draw_mem: 8000
+picard_mem: 8000
+gatk_mem: 16000
+vcf_mem: 4000
 
 # CPU settings  
 threads: 4
 fusioncatcher_threads: 8  # More threads for FusionCatcher performance
-arriba_threads: 6  # Optimized threading for Arriba fusion detection
+arriba_threads: 4
+vcf_threads: 4
 
 # GATK settings
-gatk_mem: 32000  # High memory allocation for GATK variant calling (32GB)
-gatk_java_opts: "-XX:+UseParallelGC -XX:ParallelGCThreads=4"  # No -Xmx, handled by wrapper
-picard_mem: 16000  # Memory for Picard preprocessing (16GB)
-
-# RNAseqCNV settings
-rnaseqcnv_mem: 24000  # High memory allocation for CNV analysis (24GB)
-rnaseqcnv_threads: 6  # Optimized threading for R-based analysis
-
-# VCF processing settings
-vcf_mem: 8000  # Memory allocation for VCF processing (8GB)
-vcf_threads: 4  # Threading for VCF and R processing
+gatk_java_opts: "-XX:+UseParallelGC"

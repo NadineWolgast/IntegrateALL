@@ -284,8 +284,7 @@ rule run_arriba:
         extra="--min-anchor-length=13 --max-mate-gap=200000"  # Performance optimizations
     threads: config['arriba_threads']
     resources:
-        mem_mb=config['arriba_mem'],
-        runtime=60*60*2  # 2 hour runtime limit
+        mem_mb=config['arriba_mem']
     wrapper:
         "v7.2.0/bio/arriba"
 
@@ -311,8 +310,7 @@ rule run_draw_arriba_fusion:
         "logs/arriba/{sample_id}.draw.log"
 
     resources:
-        mem_mb=config['arriba_draw_mem'],
-        runtime=60*30  # 30 minute runtime limit
+        mem_mb=config['arriba_draw_mem']
 
     shell:
         '''
@@ -362,8 +360,7 @@ rule run_fusioncatcher:
         
     resources:
         threads=config['fusioncatcher_threads'],
-        mem_mb=config['fusioncatcher_mem'],
-        runtime=60*24*3  # 3 days maximum runtime for cluster scheduling
+        mem_mb=config['fusioncatcher_mem'] for cluster scheduling
         
     shell:
         '''

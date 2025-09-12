@@ -135,24 +135,26 @@ snakemake -n
 
 2. **Full analysis**:
 ```bash
-snakemake --use-conda --cores 20
+snakemake --cores 20 --use-conda --conda-frontend conda
 ```
+
+**Note**: The `--conda-frontend conda` flag prevents libmamba-related errors during conda environment creation.
 
 3. **Single sample**:
 ```bash
-snakemake --use-conda --cores 4 STAR_output/YOUR_SAMPLE_ID/Aligned.sortedByCoord.out.bam
+snakemake --cores 4 --use-conda --conda-frontend conda STAR_output/YOUR_SAMPLE_ID/Aligned.sortedByCoord.out.bam
 ```
 
 ### Cluster Execution
 
 **Simple SLURM:**
 ```bash
-srun -c 20 --mem 100G snakemake --use-conda --cores 20
+srun -c 20 --mem 100G snakemake --cores 20 --use-conda --conda-frontend conda
 ```
 
 **SLURM Executor:**
 ```bash
-snakemake --slurm --default-resources mem_mb=5000 threads=4 slurm_partition=YOUR_PARTITION --jobs 200 --use-conda --keep-going
+snakemake --slurm --default-resources mem_mb=5000 threads=4 slurm_partition=YOUR_PARTITION --jobs 200 --use-conda --conda-frontend conda --keep-going
 ```
 
 ---

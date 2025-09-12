@@ -10,12 +10,14 @@ arriba_draw_mem: 12000  # Increased memory for fusion visualization
 picard_mem: 16000  # Increased for BAM preprocessing performance
 gatk_mem: 32000  # High memory allocation for GATK variant calling
 vcf_mem: 4000
+rnaseqcnv_mem: 20000  # High memory allocation for R-based CNV analysis
 
 # CPU settings  
 threads: 4
 fusioncatcher_threads: 8  # More threads for FusionCatcher performance
 arriba_threads: 6  # Optimized threading for fusion detection
 vcf_threads: 4
+rnaseqcnv_threads: 6  # Optimized threading for R-based analysis
 
 # GATK settings
 gatk_java_opts: "-XX:+UseParallelGC -XX:ParallelGCThreads=4"  # Optimized for multi-core performance

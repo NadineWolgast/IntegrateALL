@@ -281,7 +281,7 @@ rule run_arriba:
         default_blacklist=False,         # Optional
         default_known_fusions=True,      # Optional
         sv_file="",                      # File containing information from structural variant analysis
-        extra="--min-anchor-length=13 --max-mate-gap=200000"  # Performance optimizations
+        extra=""  # Performance optimizations
     threads: config['arriba_threads']
     resources:
         mem_mb=config['arriba_mem']
@@ -361,58 +361,17 @@ rule run_fusioncatcher:
     resources:
         threads=config['fusioncatcher_threads'],
         mem_mb=config['fusioncatcher_mem']
-        
+
     shell:
         '''
-        mkdir -p logs/fusioncatcher
-        
-        # Resource monitoring - track memory and CPU usage
-        echo "=== FusionCatcher Resource Monitoring Started ===" >> {log}
-        echo "Timestamp: $(date)" >> {log}
-        echo "Memory allocated: {resources.mem_mb} MB" >> {log}
-        echo "Threads allocated: {resources.threads}" >> {log}
-        echo "Sample: {wildcards.sample_id}" >> {log}
-        echo "Input files: {input.left}, {input.right}" >> {log}
-        
-        # Start resource monitoring in background
-        (while true; do
-            echo "$(date): Memory: $(free -m | grep '^Mem:' | awk '{{print $3}}')MB used, CPU: $(top -bn1 | grep "Cpu(s)" | sed "s/.*, *\\([0-9.]*\\)%* id.*/\\1/" | awk '{{print 100 - $1}}')%" >> logs/fusioncatcher/{wildcards.sample_id}_resources.log
-            sleep 300  # Log every 5 minutes
-        done) &
-        MONITOR_PID=$!
-        
-        # Run FusionCatcher with safe performance optimizations
         fusioncatcher \
         -d {input.data_directory} \
         -i {input.left},{input.right} \
         -o {output.dir} \
         --skip-blat \
-        --skip-update-check \
-        --skip-conversion-grch37 \
-        --parallel \
-        --threads={config[fusioncatcher_threads]} \
-        --tmp-dir=/tmp \
-        --keep-preliminary-files=no \
-        --memory-limit={config[fusioncatcher_mem]} \
-        > logs/fusioncatcher/{wildcards.sample_id}.log 2>&1
-        
-        FUSIONCATCHER_EXIT_CODE=$?
-        
-        # Stop resource monitoring
-        kill $MONITOR_PID 2>/dev/null || true
-        
-        # Log completion status
-        echo "=== FusionCatcher Completed ===" >> {log}
-        echo "Exit code: $FUSIONCATCHER_EXIT_CODE" >> {log}
-        echo "End timestamp: $(date)" >> {log}
-        
-        if [ $FUSIONCATCHER_EXIT_CODE -eq 0 ]; then
-            touch {output.sentinel}
-            echo "✅ FusionCatcher completed successfully" >> {log}
-        else
-            echo "❌ FusionCatcher failed with exit code $FUSIONCATCHER_EXIT_CODE" >> {log}
-            exit $FUSIONCATCHER_EXIT_CODE
-        fi
+        --threads={config[threads]} \
+        > logs/fusioncatcher/{wildcards.sample_id}.log \
+        && touch {output.sentinel}
         '''
 
 
@@ -494,14 +453,14 @@ rule calculate_total_mapped_reads:
 rule calculate_tpm_and_cpm:
     input:
         reads_per_gene="STAR_output/{sample_id}/ReadsPerGene.out.tab",
-        cds_length="data/annotation/cds_length.tsv"  
+        r_script="scripts/calculate_tpm_and_cpm.R"
+
     output:
         tpm="data/tpm/{sample_id}.tsv",
         cpm="data/cpm/{sample_id}.tsv"
-    conda:
-        "envs/ml.yaml"  # Has pandas and numpy
-    script:
-        "scripts/calculate_tpm_and_cpm.py"
+
+    shell:
+        "Rscript {input.r_script} {input.reads_per_gene} {output.tpm} {output.cpm}"
    
         
 
@@ -719,6 +678,7 @@ rule run_rnaseq_cnv_gatk:
         metadata_file="data/meta.txt",
         input_counts="data/single_counts/{sample_id}.txt",
         input_tsv="data/vcf_files/GATK/{sample_id}_Gatk.tsv"
+
     output:
         directory=directory("RNAseqCNV_output/gatk/{sample_id}_gatk/"),
         rna_seq_cnv_alteration_file="RNAseqCNV_output/gatk/{sample_id}_gatk/estimation_table.tsv",
@@ -726,34 +686,22 @@ rule run_rnaseq_cnv_gatk:
         rna_seq_cnv_manual_an_table_file="RNAseqCNV_output/gatk/{sample_id}_gatk/manual_an_table.tsv",
         rna_seq_cnv_plot="RNAseqCNV_output/gatk/{sample_id}_gatk/{sample_id}/{sample_id}_CNV_main_fig.png",
         ml_input="RNAseqCNV_output/gatk/{sample_id}_gatk/{sample_id}_ml_input.csv"
-    log:
-        "logs/rnaseqcnv/{sample_id}.log"
-    benchmark:
-        "benchmarks/{sample_id}.rnaseqcnv.benchmark.txt"
+
     conda:
         "envs/rnaseqenv.yaml"
     threads: config['rnaseqcnv_threads']
     resources:
         mem_mb=config['rnaseqcnv_mem']
     shell:
-        '''
-        # Log RNAseqCNV analysis start
-        echo "=== Starting RNAseqCNV analysis for {wildcards.sample_id} ===" > {log}
-        echo "Memory allocated: {resources.mem_mb}MB" >> {log}
-        echo "Threads: {threads}" >> {log}
-        echo "Input counts: {input.input_counts}" >> {log}
-        echo "Input VCF: {input.input_tsv}" >> {log}
-        
-        # Set R memory and threading options for performance
-        export R_MAX_VSIZE=100Gb
+        """
+        # Set R performance environment variables
         export OMP_NUM_THREADS={threads}
-        export OPENBLAS_NUM_THREADS={threads}
+        export R_MAX_VSIZE={config[rnaseqcnv_mem]}m
+        export MC_CORES={threads}
         
-        # Run RNAseqCNV with error handling
-        Rscript --max-ppsize=500000 {input.r_script} {input.config_file} {input.metadata_file} {wildcards.sample_id} {output.directory} >> {log} 2>&1
-        
-        echo "=== RNAseqCNV analysis completed successfully ===" >> {log}
-        '''
+        # Run RNAseqCNV with optimized settings
+        Rscript {input.r_script} {input.config_file} {input.metadata_file} {wildcards.sample_id} {output.directory}
+        """
 
 
 

@@ -281,10 +281,11 @@ rule run_arriba:
         default_blacklist=False,         # Optional
         default_known_fusions=True,      # Optional
         sv_file="",                      # File containing information from structural variant analysis
-        extra=""                         # Optional parameters
-    threads: config['threads']
+        extra="--min-anchor-length=13 --max-mate-gap=200000"  # Performance optimizations
+    threads: config['arriba_threads']
     resources:
-        mem_mb=20000
+        mem_mb=config['arriba_mem'],
+        runtime=60*60*2  # 2 hour runtime limit
     wrapper:
         "v7.2.0/bio/arriba"
 
@@ -302,19 +303,36 @@ rule run_draw_arriba_fusion:
 
     conda:
         "envs/arriba_draw_fusions.yaml"
+    
+    benchmark:
+        "benchmarks/{sample_id}.arriba_draw.benchmark.txt"
+    
+    log:
+        "logs/arriba/{sample_id}.draw.log"
 
     resources:
-        mem_mb=20000
+        mem_mb=config['arriba_draw_mem'],
+        runtime=60*30  # 30 minute runtime limit
 
     shell:
         '''
+        # Log Arriba draw_fusions start
+        echo "=== Starting Arriba draw_fusions for {wildcards.sample_id} ===" > {log}
+        echo "Input fusions: {input.fusions}" >> {log}
+        echo "BAM file: {input.bam}" >> {log}
+        echo "Memory allocated: {resources.mem_mb}MB" >> {log}
+        
+        # Run Arriba draw_fusions with error handling
         Rscript {input.r_script} \
         --fusions={input.fusions} \
         --alignments={input.bam} \
         --output={output.pdf} \
-        --annotation={input.annotation}\
+        --annotation={input.annotation} \
         --cytobands=arriba_v2.4.0/database/cytobands_hg38_GRCh38_v2.4.0.tsv \
-        --proteinDomains=arriba_v2.4.0/database/protein_domains_hg38_GRCh38_v2.4.0.gff3
+        --proteinDomains=arriba_v2.4.0/database/protein_domains_hg38_GRCh38_v2.4.0.gff3 \
+        >> {log} 2>&1
+        
+        echo "=== Arriba draw_fusions completed successfully ===" >> {log}
         '''
 
 

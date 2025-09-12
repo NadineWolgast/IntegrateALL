@@ -360,7 +360,7 @@ rule run_fusioncatcher:
         
     resources:
         threads=config['fusioncatcher_threads'],
-        mem_mb=config['fusioncatcher_mem'] for cluster scheduling
+        mem_mb=config['fusioncatcher_mem']
         
     shell:
         '''

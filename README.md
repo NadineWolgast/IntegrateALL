@@ -31,8 +31,8 @@ Snakemake will be installed with all its dependencies in an isolated software en
 ```bash
 cd /path/to/IntegrateALL
 conda activate base
-mamba env create --name IALL --file environment.yaml
-conda activate IALL
+mamba env create --name integrateall --file environment.yaml
+conda activate integrateall
 ```
 
 You can deactivate the environment when you don't need it anymore with 
@@ -42,7 +42,14 @@ conda deactivate
 ```
 but keep it activated if you want to execute the next steps.
 
-## Before you can run the pipeline:
+## Pipeline Setup (Two-Workflow Architecture)
+
+IntegrateALL uses a two-workflow architecture for improved stability and efficiency:
+
+1. **Setup Workflow** (`setup.smk`): One-time installation of reference data and tools
+2. **Analysis Workflow** (`Snakefile`): Sample analysis using the installed references
+
+### Step 1: Configuration
 Change the path in config.yaml file to point to the **absolute path** where you've installed the pipeline:
 
 ```yaml
@@ -52,14 +59,34 @@ threads: 4 # You can increase the amount of threads, but 4 is the minimum
 ```
 **Don't** put an extra slash after the directory or it will throw an error.
 
-Install all required pipeline tools and references with the command:
 
 ```bash
-snakemake --use-conda --cores all install_all
+# NOTE: This old installation method has been replaced by setup.smk
+# Please see Step 2 below for the new two-workflow architecture
 ``` 
 **This will need ~60 GB of space and takes ~6 hours**
 
-## Test and run the pipeline
+### Step 2: One-Time Setup (Required Before First Use)
+
+Install all required pipeline tools and reference data with the setup workflow:
+
+```bash
+snakemake --snakefile setup.smk --cores 4
+``` 
+
+**This setup will download and install (~21GB total):**
+- Reference genome and annotations (~16GB)
+- STAR genome index (~1GB) 
+- RNAseqCNV reference data (~50MB)
+- FusionCatcher database (~4.4GB)
+- R packages (ALLCatchR, RNAseqCNV)
+- Arriba draw_fusions tool (~10MB)
+
+**The setup takes approximately 1-3 hours depending on your internet connection.**
+
+All reference files are write-protected to prevent accidental deletion. The setup only needs to be run once - subsequent runs will skip already installed components.
+
+## Step 3: Test and Run the Analysis Pipeline
 Copy or move your FASTQ files into **ONE** directory and change the samples.csv file to point to your actual samples and adjust the sample_id names. 
 You can also test the pipeline with the provided samples (sub1_new.fq.gz and sub2_new.fq.gz) in the directory data/samples:
 
@@ -68,11 +95,13 @@ You can also test the pipeline with the provided samples (sub1_new.fq.gz and sub
 | Test |  /path/to/IntegrateALL/data/samples/sub1_new.fq.gz	 | /path/to/IntegrateALL/data/samples/sub2_new.fq.gz |
 
 
-To test and see the pipelines execution jobs before running the pipeline you can run the command:
+**After completing the setup in Step 2**, you can run the analysis workflow.
+
+To test and see the analysis pipeline's execution jobs before running you can use:
 ```bash
   snakemake -n
 ```
-This will list the resulting jobs and reasons for them. If you agree with them, you can run them with:
+This will list the resulting jobs and reasons for them. If you agree with them, run the analysis with:
 ```bash
   snakemake --use-conda --cores 20
 ```

@@ -21,3 +21,7 @@ picard_mem: 16000  # Memory for Picard preprocessing (16GB)
 # RNAseqCNV settings
 rnaseqcnv_mem: 24000  # High memory allocation for CNV analysis (24GB)
 rnaseqcnv_threads: 6  # Optimized threading for R-based analysis
+
+# VCF processing settings
+vcf_mem: 8000  # Memory allocation for VCF processing (8GB)
+vcf_threads: 4  # Threading for VCF and R processing

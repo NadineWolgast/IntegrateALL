@@ -674,11 +674,43 @@ rule prepare_vcf_files_from_GATK:
         r_script="scripts/prepare_vcf-files_gatk.R"
     output:
         tsv="data/vcf_files/GATK/{sample_id}_Gatk.tsv"
+    log:
+        "logs/vcf_processing/{sample_id}.log"
+    benchmark:
+        "benchmarks/{sample_id}.vcf_processing.benchmark.txt"
     conda:
         "envs/gatk.yaml"
+    threads: config['vcf_threads']
+    resources:
+        mem_mb=config['vcf_mem']
     shell:
-        "grep ':AD:' {input.vcf_dir} > {input.vcf_dir}_sel && "
-        "Rscript {input.r_script} {input.vcf_dir} {output.tsv};"
+        '''
+        # Log VCF processing start
+        echo "=== Starting VCF processing for {wildcards.sample_id} ===" > {log}
+        echo "Input VCF: {input.vcf_dir}" >> {log}
+        echo "Memory allocated: {resources.mem_mb}MB" >> {log}
+        echo "Threads: {threads}" >> {log}
+        
+        # Create temporary file with better naming
+        temp_vcf="Variants_RNA_Seq_Reads/{wildcards.sample_id}/filter/{wildcards.sample_id}.ad_selected.tmp"
+        
+        # Extract AD entries with optimized grep and cleanup
+        echo "Extracting AD entries from VCF..." >> {log}
+        grep ':AD:' {input.vcf_dir} > "$temp_vcf" || true
+        
+        # Set R environment variables for performance
+        export R_MAX_VSIZE=8g
+        export OMP_NUM_THREADS={threads}
+        
+        # Run R script with error handling
+        echo "Processing VCF data with R script..." >> {log}
+        Rscript {input.r_script} "$temp_vcf" {output.tsv} >> {log} 2>&1
+        
+        # Clean up temporary file
+        rm -f "$temp_vcf"
+        
+        echo "=== VCF processing completed successfully ===" >> {log}
+        '''
             
 
 

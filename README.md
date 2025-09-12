@@ -4,11 +4,12 @@ IntegrateALL is a machine learning based pipeline for multilevel-data extraction
 
 ## Features
 
-- **Machine Learning Classification**: Automated subtype prediction for B-cell precursor ALL
+- **Machine Learning Classification**: Automated subtype prediction for B-cell precursor ALL using ALLCatchR and automated karyotype prediction using KaryALL
 - **Comprehensive Analysis**: Fusion detection, CNV analysis, variant calling, and quality control
 - **Interactive Reporting**: HTML reports with visualizations and predictions
 - **Two-Workflow Architecture**: Separate setup and analysis workflows for improved stability
 - **Robust Installation**: Protected reference files and intelligent component reuse
+- **Automatic Classification**: Classification according to WHO-HAEM5 and ICC classification
 
 ## Overview
 
@@ -29,6 +30,7 @@ IntegrateALL uses a **two-workflow architecture**:
 
 ### Prerequisites
 
+- **Linux operating system** (tested on Ubuntu/CentOS)
 - **Snakemake** >= 7.3
 - **Conda/Mamba** for dependency management
 - **50GB free disk space** (21GB for references + analysis space)
@@ -39,11 +41,11 @@ IntegrateALL uses a **two-workflow architecture**:
 ```bash
 # Download and install Miniconda
 cd ~/software
-wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-sh Miniconda3-latest-Linux-x86_64.sh
+wget https://repo.anaconda.com/miniconda/Miniconda3-py311_23.11.0-2-Linux-x86_64.sh
+sh Miniconda3-py311_23.11.0-2-Linux-x86_64.sh
 
 # Install mamba for faster dependency resolution
-conda install mamba -n base -c conda-forge
+conda install mamba=1.5.8 -n base -c conda-forge
 ```
 
 ### Step 2: Download IntegrateALL

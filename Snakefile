@@ -484,26 +484,24 @@ rule calculate_total_mapped_reads:
         bam="STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam"
     output:
         total_mapped_reads="data/total_mapped_reads/{sample_id}.txt"
-    shell:
-        """
-        sample_id="{wildcards.sample_id}"
-        total_mapped_reads=$(samtools view -F 4 -c "STAR_output/${{sample_id}}/Aligned.sortedByCoord.out.bam")
-        echo "$total_mapped_reads" > "data/total_mapped_reads/${{sample_id}}.txt"
-        """
+    conda:
+        "envs/pysamstat.yaml"  # Has pysam
+    script:
+        "scripts/calculate_total_mapped_reads.py"
 
 
 
 rule calculate_tpm_and_cpm:
     input:
         reads_per_gene="STAR_output/{sample_id}/ReadsPerGene.out.tab",
-        r_script="scripts/calculate_tpm_and_cpm.R"
-        
+        cds_length="data/annotation/cds_length.tsv"  
     output:
         tpm="data/tpm/{sample_id}.tsv",
         cpm="data/cpm/{sample_id}.tsv"
-
-    shell:
-        "Rscript {input.r_script} {input.reads_per_gene} {output.tpm} {output.cpm}"
+    conda:
+        "envs/ml.yaml"  # Has pandas and numpy
+    script:
+        "scripts/calculate_tpm_and_cpm.py"
    
         
 

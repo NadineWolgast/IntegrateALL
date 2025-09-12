@@ -512,18 +512,17 @@ rule calculate_tpm_and_cpm:
 rule replace_rg:
     input:
         "STAR_output/{sample}/Aligned.sortedByCoord.out.bam"
-
     output:
         temporary("Variants_RNA_Seq_Reads/{sample}/fixed-rg/{sample}.bam")
-
     log:
-        "logs/picard/replace_rg/{sample}.log",
+        "logs/picard/replace_rg/{sample}.log"
     params:
         extra="--RGLB lib1 --RGPL illumina --RGPU {sample} --RGSM {sample}",
-        java_opts=""
-
+        java_opts=config['gatk_java_opts']
+    benchmark:
+        "benchmarks/{sample}.replace_rg.benchmark.txt"
     resources:
-        mem_mb=2048,
+        mem_mb=config['picard_mem'],
     wrapper:
         "v3.10.2/bio/picard/addorreplacereadgroups"
 
@@ -531,15 +530,15 @@ rule replace_rg:
 rule markduplicates_bam:
     input:
         bams="Variants_RNA_Seq_Reads/{sample}/fixed-rg/{sample}.bam"
-
     output:
         bam=temporary("Variants_RNA_Seq_Reads/{sample}/deduped_bam/{sample}.bam"),
         metrics=temporary("Variants_RNA_Seq_Reads/{sample}/deduped_bam/{sample}.metrics.txt")
     log:
         "logs/picard/dedup_bam/{sample}.log"
-
+    benchmark:
+        "benchmarks/{sample}.markduplicates.benchmark.txt"
     resources:
-        mem_mb=5000
+        mem_mb=config['picard_mem']
     wrapper:
         "v3.10.2/bio/picard/markduplicates"
 
@@ -564,16 +563,18 @@ rule splitncigarreads:
     input:
         bam="Variants_RNA_Seq_Reads/{sample}/deduped_bam/{sample}.bam",
         bai="Variants_RNA_Seq_Reads/{sample}/deduped_bam/{sample}.bam.bai",
-        ref= "refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
+        ref="refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
     output:
-        temporary("Variants_RNA_Seq_Reads/{sample}/split/{sample}.bam"),
+        temporary("Variants_RNA_Seq_Reads/{sample}/split/{sample}.bam")
     log:
-        "logs/gatk/splitNCIGARreads/{sample}.log",
+        "logs/gatk/splitNCIGARreads/{sample}.log"
     params:
-        extra="",  # optional
-        java_opts="",  # optional
+        extra="--max-reads-in-memory 150000",  # Optimize memory usage for RNA-seq
+        java_opts=config['gatk_java_opts']
+    benchmark:
+        "benchmarks/{sample}.splitncigar.benchmark.txt"
     resources:
-        mem_mb=10000,
+        mem_mb=config['gatk_mem'],
     threads: config['threads']
     wrapper:
         "v4.3.0/bio/gatk/splitncigarreads"
@@ -584,18 +585,20 @@ rule splitncigarreads:
 rule gatk_baserecalibrator:
     input:
         bam="Variants_RNA_Seq_Reads/{sample}/split/{sample}.bam",
-        ref= "refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa",
-        dict= "refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.dict",
-        known= "refs/GATK/GRCH38/dbSNP.vcf",
+        ref="refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa",
+        dict="refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.dict",
+        known="refs/GATK/GRCH38/dbSNP.vcf"
     output:
-        recal_table=temporary("Variants_RNA_Seq_Reads/{sample}/recal/{sample}_recal.table"),
+        recal_table=temporary("Variants_RNA_Seq_Reads/{sample}/recal/{sample}_recal.table")
     log:
-        "logs/gatk/baserecalibrator/{sample}.log",
+        "logs/gatk/baserecalibrator/{sample}.log"
     params:
-        extra="",  # optional
-        java_opts="",  # optional
+        extra="--use-original-qualities",  # RNA-seq specific optimization
+        java_opts=config['gatk_java_opts']
+    benchmark:
+        "benchmarks/{sample}.baserecalibrator.benchmark.txt"
     resources:
-        mem_mb=10000,
+        mem_mb=config['gatk_mem'],
     threads: config['threads']
     wrapper:
         "v4.3.0/bio/gatk/baserecalibrator"
@@ -608,39 +611,37 @@ rule gatk_applybqsr:
         dict="refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.dict",
         recal_table="Variants_RNA_Seq_Reads/{sample}/recal/{sample}_recal.table"
     output:
-        bam=temporary("Variants_RNA_Seq_Reads/{sample}/recal/{sample}.bam"),
+        bam=temporary("Variants_RNA_Seq_Reads/{sample}/recal/{sample}.bam")
     log:
-        "logs/gatk/gatk_applybqsr/{sample}.log",
+        "logs/gatk/gatk_applybqsr/{sample}.log"
     params:
-        extra="",  # optional
-        java_opts="",  # optional
-        embed_ref=True,  # embed the reference in cram output
+        extra="--use-original-qualities",  # RNA-seq specific optimization
+        java_opts=config['gatk_java_opts'],
+        embed_ref=True
+    benchmark:
+        "benchmarks/{sample}.applybqsr.benchmark.txt"
     resources:
-        mem_mb=10000,
+        mem_mb=config['gatk_mem'],
     threads: config['threads']
     wrapper:
         "v4.3.0/bio/gatk/applybqsr"
 
 rule haplotype_caller:
     input:
-        bam= "Variants_RNA_Seq_Reads/{sample}/recal/{sample}.bam",
-        ref= "refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa",
-        #known= "refs/STAR/dbSNP.vcf" #optional
-
+        bam="Variants_RNA_Seq_Reads/{sample}/recal/{sample}.bam",
+        ref="refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
     output:
         vcf=temporary("Variants_RNA_Seq_Reads/{sample}/calls/{sample}.vcf")
-
     log:
         "logs/gatk/haplotypecaller/{sample}.log"
-
     params:
-        extra="",  # optional
-        java_opts="",  # optional
-
+        extra="--dont-use-soft-clipped-bases --standard-min-confidence-threshold-for-calling 20",  # RNA-seq optimizations
+        java_opts=config['gatk_java_opts']
+    benchmark:
+        "benchmarks/{sample}.haplotypecaller.benchmark.txt"
     threads: config['threads']
-
     resources:
-        mem_mb=10000
+        mem_mb=config['gatk_mem']
 
     wrapper:
         "v4.3.0/bio/gatk/haplotypecaller"
@@ -648,23 +649,20 @@ rule haplotype_caller:
 rule gatk_filter:
     input:
         vcf="Variants_RNA_Seq_Reads/{sample}/calls/{sample}.vcf",
-        ref= "refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
-
+        ref="refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
     output:
         vcf="Variants_RNA_Seq_Reads/{sample}/filter/{sample}.snvs.filtered.vcf"
-
     log:
         "logs/gatk/filter/{sample}.snvs.log"
-
     params:
-        filters={"myfilter": "FS > 30.0 || QD < 2.0"},
-        extra="",  # optional arguments, see GATK docs
-        java_opts="",  # optional
-
-    resources:
-        mem_mb=10000
-
+        filters={"RNAseqFilter": "FS > 30.0 || QD < 2.0 || MQ < 40.0 || ReadPosRankSum < -8.0"},  # RNA-seq specific filters
+        extra="",
+        java_opts=config['gatk_java_opts']
+    benchmark:
+        "benchmarks/{sample}.variantfiltration.benchmark.txt"
     threads: config['threads']
+    resources:
+        mem_mb=config['gatk_mem']
 
     wrapper:
         "v4.3.0/bio/gatk/variantfiltration"

@@ -426,15 +426,15 @@ rule run_allcatchr:
 # Rule to process ReadsPerGene.out.tab files for RNASeq-CNV
 rule process_reads_per_gene:
     input:
-        reads_per_gene="STAR_output/{sample_id}/ReadsPerGene.out.tab"  # Input pattern for each sample
+        reads_per_gene="STAR_output/{sample_id}/ReadsPerGene.out.tab"
     output:
-        counts="data/single_counts/{sample_id}.txt"  # Output file for each sample
-    params:
-        skip_rows=4  # Number of rows to skip in the input file
-    shell:
-        """
-        awk 'NR > {params.skip_rows} {{print $1 "\t" $2}}' {input.reads_per_gene} > {output.counts}
-        """
+        counts="data/single_counts/{sample_id}.txt"
+    conda:
+        "envs/pysamstat.yaml"  # Python environment with pandas and pysam
+    resources:
+        mem_mb=1000  # Lightweight processing
+    script:
+        "scripts/process_reads_per_gene.py"
 
 
 
@@ -452,15 +452,17 @@ rule calculate_total_mapped_reads:
 
 rule calculate_tpm_and_cpm:
     input:
-        reads_per_gene="STAR_output/{sample_id}/ReadsPerGene.out.tab",
-        r_script="scripts/calculate_tpm_and_cpm.R"
-
+        reads_per_gene="STAR_output/{sample_id}/ReadsPerGene.out.tab"
     output:
         tpm="data/tpm/{sample_id}.tsv",
         cpm="data/cpm/{sample_id}.tsv"
-
-    shell:
-        "Rscript {input.r_script} {input.reads_per_gene} {output.tpm} {output.cpm}"
+    conda:
+        "envs/pysamstat.yaml"  # Python environment with pandas and pysam
+    threads: 2
+    resources:
+        mem_mb=2000  # Lightweight for count processing
+    script:
+        "scripts/calculate_tpm_and_cpm_snakemake.py"
    
         
 

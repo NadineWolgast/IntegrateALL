@@ -73,7 +73,14 @@ rule all:
         #expand("aggregated_output/{sample}.csv", sample=list(samples.keys())),
         expand("RNAseqCNV_output/gatk/{sample_id}_gatk", sample_id=samples.keys()),
         expand("Final_classification/{sample_id}_output_report.csv",sample_id=list(samples.keys())),
-        expand("interactive_output/{sample}/output_report_{sample}.html",  sample=list(samples.keys()))
+        expand("interactive_output/{sample}/output_report_{sample}.html",  sample=list(samples.keys())),
+        
+        # Aggregated outputs
+        "Final_classification/Aggregated_output_txt.csv",
+        "Final_classification/Aggregated_output_curation.csv", 
+        "Final_classification/Aggregated_output_report.csv",
+        "data/combined_counts/ensemble_counts.tsv",
+        "data/combined_counts/gene_counts.tsv"
 
 
 
@@ -698,7 +705,7 @@ rule run_rnaseq_cnv_gatk:
         """
         # Set R performance environment variables
         export OMP_NUM_THREADS={threads}
-        export R_MAX_VSIZE={config[rnaseqcnv_mem]}m
+        export R_MAX_VSIZE={config[rnaseqcnv_mem]}000000
         export MC_CORES={threads}
         
         # Run RNAseqCNV with optimized settings
@@ -815,3 +822,45 @@ rule interactive_report:
 
         python scripts/generate_report.py  {input.prediction_file} {input.fusioncatcher_file} {input.arriba_file} {input.rna_seq_cnv_log2foldchange_file} {input.rna_seq_cnv_manual_an_table_file} {input.star_log_final_out_file}  {input.comparison_file} {input.hotspots} {wildcards.sample} {input.karyotype} {input.text} {input.driver} {output.html}
         """
+
+
+rule aggregate_final_classification:
+    input:
+        txt_files=expand("Final_classification/{sample_id}_output_txt.csv", sample_id=list(samples.keys())),
+        curation_files=expand("Final_classification/{sample_id}_curation.csv", sample_id=list(samples.keys())),
+        report_files=expand("Final_classification/{sample_id}_output_report.csv", sample_id=list(samples.keys()))
+    output:
+        txt_agg="Final_classification/Aggregated_output_txt.csv",
+        curation_agg="Final_classification/Aggregated_output_curation.csv", 
+        report_agg="Final_classification/Aggregated_output_report.csv"
+    log:
+        "logs/aggregate_final_classification/aggregate.log"
+    benchmark:
+        "benchmarks/aggregate_final_classification.benchmark.txt"
+    conda:
+        "envs/pysamstat.yaml"  # Python environment with pandas
+    threads: 2
+    resources:
+        mem_mb=4000  # Moderate memory for aggregation
+    script:
+        "scripts/aggregate_final_classification.py"
+
+
+rule combine_counts:
+    input:
+        count_files=expand("data/single_counts/{sample_id}.txt", sample_id=list(samples.keys())),
+        gtf_file=absolute_path + "/refs/GATK/GRCH38/Homo_sapiens.GRCh38.83.gtf"
+    output:
+        ensemble_counts="data/combined_counts/ensemble_counts.tsv",
+        gene_counts="data/combined_counts/gene_counts.tsv"
+    log:
+        "logs/combine_counts/combine.log"
+    benchmark:
+        "benchmarks/combine_counts.benchmark.txt"
+    conda:
+        "envs/pysamstat.yaml"  # Python environment with pandas
+    threads: 4
+    resources:
+        mem_mb=8000  # Higher memory for processing all samples
+    script:
+        "scripts/combine_counts.py"

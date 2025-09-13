@@ -62,8 +62,6 @@ rule setup_all:
 # DOWNLOADS
 # ------------------------
 rule download_ref:
-    input:
-        star_directory = absolute_path + "/refs/GATK"
     output:
         vcf = protected("refs/GATK/GRCH38/dbSNP.vcf"),
         ref = protected("refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa"),
@@ -75,8 +73,8 @@ rule download_ref:
     retries: 3
     shell:
         """
-        mkdir -p {input.star_directory} &&
-        cd {input.star_directory} &&
+        mkdir -p refs/GATK &&
+        cd refs/GATK &&
         wget --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 3 \
              --progress=bar --show-progress \
              'http://141.2.194.197/rnaeditor_annotations/GRCH38.tar.gz' &&

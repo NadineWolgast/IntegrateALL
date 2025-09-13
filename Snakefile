@@ -814,9 +814,18 @@ rule final_classification:
         driver="Final_classification/{sample}_driver.csv",
         curation="Final_classification/{sample}_curation.csv"
 
+    message: "🔬 Generating final WHO-HAEM5/ICC classification for {wildcards.sample}"
+    conda:
+        "envs/pysamstat.yaml"
+    threads: 2
+    resources:
+        mem_mb=2000,
+        tmpdir="/tmp"
+    benchmark:
+        "benchmarks/final_classification_{sample}.benchmark.txt"
     shell:
         """
-        python scripts/make_final_classification.py  {wildcards.sample} {input.allcatchr_file} {input.karyotype} {input.fusioncatcher_file} {input.arriba_file} {input.hotspots} {input.classification_file} {output.csv} {output.text} {output.curation} {output.driver}
+        python scripts/make_final_classification_optimized.py {wildcards.sample} {input.allcatchr_file} {input.karyotype} {input.fusioncatcher_file} {input.arriba_file} {input.hotspots} {input.classification_file} {output.csv} {output.text} {output.curation} {output.driver}
         """
 
 rule interactive_report:

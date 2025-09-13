@@ -26,6 +26,7 @@ dependencies:
   
   # Bioconductor packages
   - bioconductor-deseq2
+  - bioconductor-biostrings
   
   # System tools
   - git

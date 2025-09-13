@@ -221,28 +221,39 @@ rule pysamstat:
         bam="STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",
         bai="STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam.bai",
         fa= absolute_path + "/refs/GATK/GRCH38/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
-
-    conda:
-        "envs/pysamstat.yaml"
-        
-    params:
-        out_dir="pysamstats_output_dir/{sample_id}/"
-
     output:
         pysamstats_output_dir = directory("pysamstats_output_dir/{sample_id}/"),
         ikzf1="pysamstats_output_dir/{sample_id}/{sample_id}_IKZF1.csv"
-
+    log:
+        "logs/pysamstat/{sample_id}.log"
+    benchmark:
+        "benchmarks/{sample_id}.pysamstat.benchmark.txt"
+    conda:
+        "envs/pysamstat.yaml"
     threads: config['threads']
-
     resources:
-        threads=config['threads'],
-        mem_mb=20000
-
+        mem_mb=8000  # Reduced memory - more efficient processing
+    params:
+        out_dir="pysamstats_output_dir/{sample_id}/"
     shell:
         """
-        mkdir -p {output.pysamstats_output_dir} &&
-        pysamstats --type variation --chromosome 7 -u --start 50382593 --end 50382596 -f {input.fa} {input.bam} > {output.ikzf1} &&
-        python scripts/run_pysamstats.py  {input.bam} {input.fa} {wildcards.sample_id} {params.out_dir} 
+        # Set environment variable for threads
+        export THREADS={threads}
+        
+        # Log processing start
+        echo "=== Starting pysamstats processing for {wildcards.sample_id} ===" > {log}
+        echo "Processing {input.bam} with {threads} threads" >> {log}
+        echo "Memory allocated: {resources.mem_mb}MB" >> {log}
+        
+        # Run optimized pysamstats script
+        python scripts/run_pysamstats_optimized.py \
+            {input.bam} \
+            {input.fa} \
+            {wildcards.sample_id} \
+            {params.out_dir} \
+            >> {log} 2>&1
+        
+        echo "=== Pysamstats processing completed ===" >> {log}
         """
 
 
@@ -250,19 +261,39 @@ rule pysamstat:
 rule get_Hotspots:
     input:
         pysamstats_output_dir="pysamstats_output_dir/{sample_id}/",
-        r_script="scripts/Get_Amino_for_Hotspot.R",
+        r_script="scripts/Get_Amino_for_Hotspot_optimized.R",
         gatk_file = "Variants_RNA_Seq_Reads/{sample_id}/filter/{sample_id}.snvs.filtered.vcf"
-
     output:
         hotspot_output_dir=directory("Hotspots/{sample_id}") 
-
+    log:
+        "logs/hotspots/{sample_id}.log"
+    benchmark:
+        "benchmarks/{sample_id}.hotspots.benchmark.txt"
+    conda:
+        "envs/rnaseqenv.yaml"  # R environment with Biostrings
+    threads: 2
     resources:
-        mem_mb=10000    
-       
+        mem_mb=6000  # Reduced memory with optimized processing
     shell:
         """
-        mkdir -p {output.hotspot_output_dir} &&
-        Rscript {input.r_script} {input.pysamstats_output_dir} {input.gatk_file} {output.hotspot_output_dir}
+        # Log hotspot analysis start
+        echo "=== Starting hotspot amino acid analysis for {wildcards.sample_id} ===" > {log}
+        echo "Pysamstats input: {input.pysamstats_output_dir}" >> {log}
+        echo "GATK VCF: {input.gatk_file}" >> {log}
+        echo "Memory allocated: {resources.mem_mb}MB" >> {log}
+        echo "Threads: {threads}" >> {log}
+        
+        # Create output directory
+        mkdir -p {output.hotspot_output_dir}
+        
+        # Run optimized R script with strand-specific amino acid translation
+        Rscript {input.r_script} \
+            {input.pysamstats_output_dir} \
+            {input.gatk_file} \
+            {output.hotspot_output_dir} \
+            >> {log} 2>&1
+        
+        echo "=== Hotspot analysis completed ===" >> {log}
         """
 
 

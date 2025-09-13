@@ -266,5 +266,7 @@ rule install_fusioncatcher:
         echo "📦 Starting FusionCatcher human database download (~4.4GB)..."
         ./download-human-db.sh &&
         echo "✅ FusionCatcher database installation completed successfully!" &&
+        cd {absolute_path} &&
+        mkdir -p logs &&
         touch {output.done_marker}
         """

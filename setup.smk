@@ -240,14 +240,20 @@ rule install_fusioncatcher:
     retries: 2
     shell:
         """
-        cd {input.data_directory} ||
-        exit 1
-
-        # If already present, skip
-        if [ -d "fusioncatcher-master/data/human_v102" ] && [ -f "fusioncatcher-master/data/human_v102/version.txt" ]; then
-            echo "✅ FusionCatcher database already exists locally - skipping installation"
+        # Create logs directory first
+        cd {absolute_path}
+        mkdir -p logs
+        
+        # Check if FusionCatcher database already exists
+        if [ -d "{output.directory_output}" ] && [ -f "{output.directory_output}/version.txt" ]; then
+            echo "✅ FusionCatcher database already exists at {output.directory_output}"
+            echo "✅ Skipping download - creating done marker"
+            touch {output.done_marker}
             exit 0
         fi
+
+        # If not present, proceed with installation
+        cd {input.data_directory} || exit 1
 
         echo "📦 FusionCatcher database not found locally"
         echo "📦 Downloading FusionCatcher source code..."
@@ -267,6 +273,5 @@ rule install_fusioncatcher:
         ./download-human-db.sh &&
         echo "✅ FusionCatcher database installation completed successfully!" &&
         cd {absolute_path} &&
-        mkdir -p logs &&
         touch {output.done_marker}
         """

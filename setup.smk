@@ -43,9 +43,8 @@ rule setup_all:
         "logs/install_arriba_draw_fusions.done",
         "logs/install_allcatchr.done",
         "logs/install_rnaseq_cnv.done",
-        # FusionCatcher database (match rule 'install_fusioncatcher' output -> directory)
-        absolute_path + "/refs/fusioncatcher/fusioncatcher-master/data/human_v102",
-        #"logs/install_fusioncatcher.done"
+        # FusionCatcher database installation marker
+        "logs/install_fusioncatcher.done"
     message: "🎉 All reference files and tools installed successfully! Total size: ~21GB"
     shell:
         """
@@ -226,12 +225,9 @@ rule install_rnaseq_cnv:
         """
 
 rule install_fusioncatcher:
-    input:
-        data_directory = absolute_path + "/refs/fusioncatcher"
     output:
-        directory_output = protected(directory(absolute_path + "/refs/fusioncatcher/fusioncatcher-master/data/human_v102")),
-        done_marker = "logs/install_fusioncatcher.done"
-    message: "Installing FusionCatcher database - PROTECTED from deletion"
+        "logs/install_fusioncatcher.done"
+    message: "📦 Installing FusionCatcher database (~4.4GB)"
     benchmark:
         "benchmarks/install_fusioncatcher.benchmark.txt"
     resources:
@@ -240,38 +236,22 @@ rule install_fusioncatcher:
     retries: 2
     shell:
         """
-        # Create logs directory first
-        cd {absolute_path}
-        mkdir -p logs
+        mkdir -p refs/fusioncatcher logs
+        cd refs/fusioncatcher
         
-        # Check if FusionCatcher database already exists
-        if [ -d "{output.directory_output}" ] && [ -f "{output.directory_output}/version.txt" ]; then
-            echo "✅ FusionCatcher database already exists at {output.directory_output}"
-            echo "✅ Skipping download - creating done marker"
-            touch {output.done_marker}
-            exit 0
-        fi
-
-        # If not present, proceed with installation
-        cd {input.data_directory} || exit 1
-
-        echo "📦 FusionCatcher database not found locally"
         echo "📦 Downloading FusionCatcher source code..."
         wget --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 3 \
              --progress=bar --show-progress \
-             'https://github.com/ndaniel/fusioncatcher/archive/refs/heads/master.zip' &&
-        if [ -f "master.zip" ]; then
-            echo "✅ FusionCatcher source download successful, extracting..."
-            unzip -q master.zip &&
-            echo "✅ FusionCatcher source extracted successfully"
-        else
-            echo "❌ FusionCatcher source download failed" && exit 1
-        fi
-
-        cd fusioncatcher-master/data &&
+             'https://github.com/ndaniel/fusioncatcher/archive/refs/heads/master.zip'
+        
+        echo "✅ Extracting FusionCatcher source..."
+        unzip -q master.zip
+        
+        cd fusioncatcher-master/data
         echo "📦 Starting FusionCatcher human database download (~4.4GB)..."
-        ./download-human-db.sh &&
-        echo "✅ FusionCatcher database installation completed successfully!" &&
-        cd {absolute_path} &&
-        touch {output.done_marker}
+        ./download-human-db.sh
+        
+        echo "✅ FusionCatcher database installation completed!"
+        cd {absolute_path}
+        touch {output}
         """

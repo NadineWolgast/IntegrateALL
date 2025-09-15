@@ -285,7 +285,8 @@ def get_custom_css():
 
 def generate_report(sample_id, prediction_file, fusioncatcher_file, arriba_file, arriba_pdf, 
                    rnaseqcnv_log2fc_file, rnaseqcnv_plot, rnaseqcnv_manual_table,
-                   star_log_file, multiqc_report, final_classification_text, output_file):
+                   star_log_file, multiqc_report, final_classification_text, output_file,
+                   hotspots_dir=None, driver_file=None):
     """Generate interactive HTML report."""
     
     logger.info(f"📊 Generating interactive report for sample: {sample_id}")
@@ -345,6 +346,19 @@ def generate_report(sample_id, prediction_file, fusioncatcher_file, arriba_file,
     arriba_table = create_fusion_table(arriba_file, "arriba")
     fusioncatcher_table = create_fusion_table(fusioncatcher_file, "fusioncatcher")
     
+    # Process hotspots data
+    if hotspots_dir and os.path.exists(hotspots_dir):
+        hotspot_table = generate_hotspot_tables(hotspots_dir)
+    else:
+        hotspot_table = "<p>No hotspot found</p>"
+    
+    # Process driver file if provided
+    if driver_file and os.path.exists(driver_file) and os.path.getsize(driver_file) > 0:
+        driver_data = safe_read_csv(driver_file, delimiter=',')
+        driver_html = driver_data.to_html(classes='my-table-class', index=False) if not driver_data.empty else "<p>No driver fusions identified</p>"
+    else:
+        driver_html = "<p>No driver fusions identified</p>"
+    
     # Create data tables
     prediction_html = prediction_subset.to_html(classes='my-table-class no-sort', index=False) if not prediction_subset.empty else "<p>No prediction data available</p>"
     cell_origin_html = cell_origin_subset.to_html(classes='my-table-class no-sort', index=False) if not cell_origin_subset.empty else "<p>No cell of origin data available</p>"
@@ -370,11 +384,13 @@ def generate_report(sample_id, prediction_file, fusioncatcher_file, arriba_file,
                 <a href="#section2">Prediction</a>
                 <a href="#section3">MultiQC</a>
                 <a href="#section4">STAR Results</a>
-                <a href="#section5">RNASeqCNV Plot</a>
-                <a href="#section6">RNASeqCNV Table</a>
-                <a href="#section7">ARRIBA Fusions</a>
-                <a href="#section8">ARRIBA Plots</a>
-                <a href="#section9">Fusioncatcher Fusions</a> 
+                <a href="#section5">Pysamstats</a>
+                <a href="#section6">RNASeqCNV Plot</a>
+                <a href="#section7">RNASeqCNV Table</a>
+                <a href="#section8">ARRIBA Fusions</a>
+                <a href="#section9">ARRIBA Plots</a>
+                <a href="#section10">Driver Fusions</a>
+                <a href="#section11">Fusioncatcher Fusions</a> 
             </div>
             <a class="logo" href="https://www.catchall-kfo5010.com/">
                 <img src="logo.png" alt="Logo">
@@ -396,22 +412,30 @@ def generate_report(sample_id, prediction_file, fusioncatcher_file, arriba_file,
         {star_first_part}
         {star_segments}
         
-        <h1 id="section5">RNASeq-CNV Plot</h1>
+        <h1 id="section5">Pysamstats Hotspots</h1>
+        <h2>Analyzed 34 positions with the following results:</h2>
+        {hotspot_table}
+        
+        <h1 id="section6">RNASeq-CNV Plot</h1>
         <img src={paths['rnaseqcnv_plot']} alt="RNASeqCNV plot" width="900" height="600" class="center">
         
-        <h2 id="section6">RNASeq-CNV Manual An Table</h2>
+        <h2 id="section7">RNASeq-CNV Manual An Table</h2>
         {rnaseq_manual_html}
         
-        <h2 id="section6">RNASeq-CNV Log2FC Table</h2>        
+        <h2 id="section7">RNASeq-CNV Log2FC Table</h2>        
         {rnaseq_log2fc_html}
 
-        <h1 id="section7">ARRIBA Fusions Table</h1>
+        <h1 id="section8">ARRIBA Fusions Table</h1>
         {arriba_table}
         
-        <h1 id="section8">ARRIBA Fusions Plots</h1>
+        <h1 id="section9">ARRIBA Fusions Plots</h1>
         <iframe src={paths['arriba_pdf']} name="arriba_fusion_pdf_path" width="100%" height="600" frameborder="0"></iframe>
         
-        <h1 id="section9">Fusioncatcher Fusions</h1>
+        <h1 id="section10">Driver Fusions</h1>
+        <h3>IntegrateALL identified the following driver fusions:</h3>
+        {driver_html}
+        
+        <h1 id="section11">Fusioncatcher Fusions</h1>
         {fusioncatcher_table}
 
         <script>
@@ -434,12 +458,19 @@ def generate_report(sample_id, prediction_file, fusioncatcher_file, arriba_file,
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 13:
+    if len(sys.argv) not in [13, 14, 15]:
         print("Usage: python generate_interactive_report.py <sample_id> <prediction_file> "
               "<fusioncatcher_file> <arriba_file> <arriba_pdf> <rnaseqcnv_log2fc_file> "
               "<rnaseqcnv_plot> <rnaseqcnv_manual_table> <star_log_file> <multiqc_report> "
-              "<final_classification_text> <output_html>")
+              "<final_classification_text> <output_html> [hotspots_dir] [driver_file]")
         sys.exit(1)
     
     args = sys.argv[1:]
-    generate_report(*args)
+    
+    # Handle optional parameters
+    if len(args) == 12:
+        generate_report(*args)
+    elif len(args) == 13:
+        generate_report(*args[:12], hotspots_dir=args[12])
+    elif len(args) == 14:
+        generate_report(*args[:12], hotspots_dir=args[12], driver_file=args[13])

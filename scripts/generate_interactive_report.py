@@ -381,7 +381,9 @@ def generate_report(sample_id, prediction_file, fusioncatcher_file, arriba_file,
     """
 
     # Write to HTML file
-    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+    output_dir = os.path.dirname(output_file)
+    if output_dir:  # Only create directory if there is a directory path
+        os.makedirs(output_dir, exist_ok=True)
     with open(output_file, 'w') as file:
         file.write(html_output)
     

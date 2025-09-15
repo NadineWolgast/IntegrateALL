@@ -787,8 +787,7 @@ rule aggregate_output:
         rna_seq_cnv_log2foldchange_file = "RNAseqCNV_output/gatk/{sample}_gatk/log2_fold_change_per_arm.tsv",
         rna_seq_cnv_manual_an_table_file = "RNAseqCNV_output/gatk/{sample}_gatk/manual_an_table.tsv",
         star_log_final_out_file = "STAR_output/{sample}/Log.final.out",
-        multiqc_fqc_right = "multiqc/{sample}_right/multiqc_data/multiqc_fastqc.txt",
-        multiqc_fqc_left = "multiqc/{sample}_left/multiqc_data/multiqc_fastqc.txt",
+        multiqc_data = "qc/multiqc/{sample}/multiqc_data/multiqc_fastqc.txt",
         comparison_file = "comparison/{sample}.csv"
 
     output:
@@ -805,7 +804,7 @@ rule aggregate_output:
         "benchmarks/aggregate_output_{sample}.benchmark.txt"
     shell:
         """
-        python scripts/aggregate_sample_data_optimized.py {wildcards.sample} {input.star_log_final_out_file} {input.multiqc_fqc_left} {input.multiqc_fqc_right} {input.prediction_file} {input.fusioncatcher_file} {input.arriba_file} {input.rna_seq_cnv_manual_an_table_file} {input.rna_seq_cnv_log2foldchange_file} {input.comparison_file} {output.csv}
+        python scripts/aggregate_sample_data_optimized.py {wildcards.sample} {input.star_log_final_out_file} {input.multiqc_data} {input.prediction_file} {input.fusioncatcher_file} {input.arriba_file} {input.rna_seq_cnv_manual_an_table_file} {input.rna_seq_cnv_log2foldchange_file} {input.comparison_file} {output.csv}
         """
 
 rule final_classification:

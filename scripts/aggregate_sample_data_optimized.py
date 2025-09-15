@@ -226,7 +226,7 @@ def generate_aggregated_report(sample_id, comparison_content, uniquely_mapped_re
     return "\\n".join(report_lines)
 
 
-def main(sample_id, star_log_file, fastqc_left_file, fastqc_right_file, 
+def main(sample_id, star_log_file, multiqc_fastqc_file, 
          prediction_file, fusioncatcher_file, arriba_file, manual_table_file,
          log2fc_file, comparison_file, output_file):
     """
@@ -243,8 +243,7 @@ def main(sample_id, star_log_file, fastqc_left_file, fastqc_right_file,
     
     comparison_content = read_comparison_file(comparison_file)
     uniquely_mapped_reads = extract_star_uniquely_mapped_reads(star_log_file)
-    fastqc_left = read_fastqc_data(fastqc_left_file)
-    fastqc_right = read_fastqc_data(fastqc_right_file)
+    multiqc_fastqc_data = read_fastqc_data(multiqc_fastqc_file)
     allcatchr_data = read_allcatchr_predictions(prediction_file)
     fusioncatcher_data = read_fusioncatcher_data(fusioncatcher_file)
     arriba_data = read_arriba_data(arriba_file)
@@ -254,7 +253,7 @@ def main(sample_id, star_log_file, fastqc_left_file, fastqc_right_file,
     # Generate aggregated report
     report_content = generate_aggregated_report(
         sample_id, comparison_content, uniquely_mapped_reads,
-        fastqc_left, fastqc_right, allcatchr_data,
+        multiqc_fastqc_data, multiqc_fastqc_data, allcatchr_data,
         fusioncatcher_data, arriba_data, karyotype_data, arm_calls_data
     )
     
@@ -269,9 +268,9 @@ def main(sample_id, star_log_file, fastqc_left_file, fastqc_right_file,
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 12:
+    if len(sys.argv) != 11:
         print("Usage: python aggregate_sample_data_optimized.py <sample_id> <star_log_file> "
-              "<fastqc_left_file> <fastqc_right_file> <prediction_file> <fusioncatcher_file> "
+              "<multiqc_fastqc_file> <prediction_file> <fusioncatcher_file> "
               "<arriba_file> <manual_table_file> <log2fc_file> <comparison_file> <output_file>")
         sys.exit(1)
     

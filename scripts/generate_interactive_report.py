@@ -1,327 +1,416 @@
 #!/usr/bin/env python3
 """
-Optimized interactive report generator for IntegrateALL pipeline.
-Creates HTML reports by processing multiple input files and copying required assets.
+Interactive report generator for IntegrateALL pipeline.
+Creates HTML reports with DataTables, navigation, and interactive elements.
 """
 
-import os
-import sys
-import shutil
 import pandas as pd
-from pathlib import Path
-import logging
-from datetime import datetime
-
-# Set up logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+import sys
+import os
+from collections import defaultdict
 
 
-def copy_file_safely(src, dst):
-    """Copy file with error handling."""
-    try:
-        os.makedirs(os.path.dirname(dst), exist_ok=True)
-        shutil.copy2(src, dst)
-        return True
-    except Exception as e:
-        logger.warning(f"Could not copy {src} to {dst}: {e}")
-        return False
+def read_file_content(filename):
+    """Read content from file."""
+    with open(filename, 'r') as file:
+        return file.read()
 
 
-def read_star_log(star_log_file):
+def write_to_file(filename, content):
+    """Write content to file."""
+    with open(filename, 'w') as file:
+        file.write(content)
+
+
+def extract_uniquely_mapped_reads(filename):
     """Extract uniquely mapped reads from STAR log file."""
+    with open(filename, 'r') as file:
+        for line in file:
+            if 'Uniquely mapped reads number' in line:
+                return line.split('\t')[1].strip()
+    return ''
+
+
+def generate_pdf_path(sample_id):
+    """Generate path to Arriba fusion PDF."""
+    arriba_fusion_pdf_path = f'"fusions/{sample_id}.pdf"'
+    return arriba_fusion_pdf_path
+
+
+def generate_multiqc_path(sample_id):
+    """Generate path to MultiQC report."""
+    multiqc_path = f'"qc/multiqc/{sample_id}/multiqc_report.html"'
+    return multiqc_path
+
+
+def generate_RNASeq_cnv_png_path(sample_id):
+    """Generate path to RNASeqCNV plot."""
+    RNASeq_cnv_png_path = f'"RNAseqCNV_output/gatk/{sample_id}_gatk/{sample_id}/{sample_id}_CNV_main_fig.png"'
+    return RNASeq_cnv_png_path
+
+
+def arriba_file_to_html_table(arriba_file):
+    """Convert Arriba file to HTML table."""
+    table_content = "<table id='arriba_table'>"
+    table_content += "<table border='1' class='my-table-class'>\\n"
+    table_content += ("<thead><tr><th>5' gene name</th><th>5' chr.position</th><th>3' gene name</th><th>3'chr. "
+                      "position</th><th>discordant_mates</th><th>confidence</th><th>reading frame</th><th>fusion "
+                      "transcript</th></tr></thead>\\n")
+
+    table_content += "<tbody>\\n"
+
     try:
-        with open(star_log_file, 'r') as f:
-            for line in f:
-                if 'Uniquely mapped reads number' in line:
-                    parts = line.strip().split('\t')
-                    if len(parts) >= 2:
-                        return parts[1].strip()
-        return "N/A"
+        with open(arriba_file, 'r') as file:
+            next(file)  # Skip header
+            for line in file:
+                columns = line.strip().split('\\t')
+                if len(columns) >= 28:  # Full Arriba format
+                    table_content += "<tr>"
+                    table_content += f"<td>{columns[0]}</td><td>{columns[4]}</td><td>{columns[1]}</td><td>{columns[5]}</td><td>{columns[11]}</td><td>{columns[14]}</td><td>{columns[15]}</td><td>{columns[27]}</td>"
+                    table_content += "</tr>\\n"
+                elif len(columns) >= 6:  # Test data format
+                    table_content += "<tr>"
+                    table_content += f"<td>{columns[0]}</td><td>{columns[4] if len(columns) > 4 else 'N/A'}</td><td>{columns[1]}</td><td>{columns[5] if len(columns) > 5 else 'N/A'}</td><td>{columns[2] if len(columns) > 2 else 'N/A'}</td><td>N/A</td><td>N/A</td><td>N/A</td>"
+                    table_content += "</tr>\\n"
     except Exception as e:
-        logger.warning(f"Error reading STAR log: {e}")
-        return "N/A"
+        print(f"Error reading Arriba file: {e}")
+
+    table_content += "</tbody>\\n"
+    table_content += "</table>\\n"
+    return table_content
 
 
-def read_allcatchr_predictions(prediction_file):
-    """Read ALLCatchR predictions efficiently."""
+def fusionctacher_file_to_html_table(fusioncatcher_file):
+    """Convert FusionCatcher file to HTML table."""
+    table_content = "<table id='fusioncatcher_table' class='my-table-class'>\\n"
+    table_content += ("<thead><tr><th>5' gene name</th><th>5' chr.position</th><th>3' gene name</th><th>3'chr. "
+                      "position</th><th>fusion unique spanning reads</th><th>fusion description</th>"
+                      "<th>fusion sequence</th><th>predicted effect</th></tr></thead>\\n")
+    table_content += "<tbody>\\n"
+
     try:
-        df = pd.read_csv(prediction_file, sep='\t')
-        if df.empty:
-            return "N/A", "N/A", "N/A"
-        row = df.iloc[0]
-        return row.get('Prediction', 'N/A'), row.get('Score', 'N/A'), row.get('Confidence', 'N/A')
+        with open(fusioncatcher_file, 'r') as file:
+            next(file)  # Skip header
+            for line in file:
+                columns = line.strip().split('\\t')
+                if len(columns) > 15:
+                    table_content += "<tr>"
+                    table_content += f"<td>{columns[0]}</td><td>{columns[8]}</td><td>{columns[1]}</td><td>{columns[9]}</td><td>{columns[5]}</td><td>{columns[2]}</td><td>{columns[14]}</td><td>{columns[15]}</td>"
+                    table_content += "</tr>\\n"
     except Exception as e:
-        logger.warning(f"Error reading ALLCatchR predictions: {e}")
-        return "N/A", "N/A", "N/A"
+        print(f"Error reading FusionCatcher file: {e}")
+
+    table_content += "</tbody>\\n"
+    table_content += "</table>\\n"
+    return table_content
 
 
-def read_fusioncatcher_data(fusioncatcher_file):
-    """Read FusionCatcher data efficiently."""
-    fusion_data = []
+def generate_html_table(directory):
+    """Generate HTML tables from hotspots directory."""
+    table_dict = defaultdict(list)
+    html_content = ""
+    
+    if os.path.exists(directory) and os.listdir(directory):
+        sorted_content = ""
+        files = os.listdir(directory)
+        if len(files) > 1:
+            for filename in os.listdir(directory):
+                if filename.endswith('_output_file.csv'):
+                    file_path = os.path.join(directory, filename)
+                    table_data = pd.read_csv(file_path, delimiter=',')
+                    html_table = table_data.to_html(classes='my-table-class no-sort', index=False)
+                    display_name = filename.split('_output_file.csv')[0].replace('_', ': ')
+                    html_content += f"<h3>{display_name}</h3>"
+                    html_content += html_table
+                    table_dict[display_name].append(f"<h3>{display_name}</h3>" + html_table)
+
+                elif filename.endswith('_with_bases.tsv'):
+                    file_path = os.path.join(directory, filename)
+                    columns = ["chrom", "pos", "ref", "reads_pp", "mismatches_pp", "deletions_pp", "insertions_pp", "A_pp",
+                               "C_pp", "T_pp", "G_pp", "N_pp", "new_base"]
+                    table_data = pd.read_csv(file_path, delimiter=' ', skiprows=1, names=columns)
+                    html_table = table_data.to_html(classes='my-table-class no-sort', index=False)
+                    display_name = filename.split('_with_bases.tsv')[0].replace('_', ': ')
+                    html_content += f"<h3>{display_name} variants</h3>"
+                    html_content += html_table
+                    table_dict[display_name + " variants"].append(f"<h3>{display_name} variants</h3>" + html_table)
+
+                elif filename.endswith('_gatk_result.tsv'):
+                    file_path = os.path.join(directory, filename)
+                    table_data = pd.read_csv(file_path, delimiter='\\t')
+                    html_table = table_data.to_html(classes='my-table-class no-sort', index=False)
+                    display_name = filename.split('_gatk_result.tsv')[0].replace('_', ': ')
+                    html_content += f"<h3>{display_name} GATK Result</h3>"
+                    html_content += html_table
+                    table_dict[display_name + " GATK Result"].append(f"<h3>{display_name} GATK Result</h3>" + html_table)
+        else:
+            sorted_content = "<p>No hotspot found</p>"
+    
+    for key in sorted(table_dict.keys()):
+        sorted_content += "<br>".join(table_dict[key])
+    return sorted_content
+
+
+def generate_report(sample_id, prediction_file, fusioncatcher_file, arriba_file, arriba_pdf, 
+                   rnaseqcnv_log2fc_file, rnaseqcnv_plot, rnaseqcnv_manual_table,
+                   star_log_file, multiqc_report, final_classification_text, output_file):
+    """Generate interactive HTML report."""
+    
+    # Read all input files
     try:
-        df = pd.read_csv(fusioncatcher_file, sep='\t', skiprows=1, header=None)
-        for _, row in df.iterrows():
-            if len(row) >= 10:
-                fusion_data.append({
-                    'gene_5p': row[0],
-                    'pos_5p': row[8] if len(row) > 8 else 'N/A',
-                    'gene_3p': row[1],
-                    'pos_3p': row[9] if len(row) > 9 else 'N/A',
-                    'spanning_reads': row[5] if len(row) > 5 else 'N/A'
-                })
+        prediction_data = pd.read_csv(prediction_file, delimiter='\\t')
+        prediction_data_subset = prediction_data.iloc[:, :14]
+        cell_of_origin_data_subset = prediction_data.iloc[:, 15:21] if prediction_data.shape[1] > 15 else pd.DataFrame()
     except Exception as e:
-        logger.warning(f"Error reading FusionCatcher data: {e}")
-    
-    return fusion_data
+        print(f"Error reading prediction file: {e}")
+        prediction_data_subset = pd.DataFrame()
+        cell_of_origin_data_subset = pd.DataFrame()
 
-
-def read_arriba_data(arriba_file):
-    """Read Arriba data efficiently."""
-    fusion_data = []
     try:
-        df = pd.read_csv(arriba_file, sep='\t', skiprows=1, header=None)
-        for _, row in df.iterrows():
-            if len(row) >= 12:
-                fusion_data.append({
-                    'gene_5p': row[0],
-                    'pos_5p': row[4] if len(row) > 4 else 'N/A',
-                    'gene_3p': row[1],
-                    'pos_3p': row[5] if len(row) > 5 else 'N/A',
-                    'discordant_mates': row[11] if len(row) > 11 else 'N/A'
-                })
+        final_text = pd.read_csv(final_classification_text, delimiter='\\t')
+        html_table_text = final_text.to_html(classes='my-table-class no-sort', index=False)
     except Exception as e:
-        logger.warning(f"Error reading Arriba data: {e}")
-    
-    return fusion_data
+        print(f"Error reading final classification: {e}")
+        html_table_text = f"<p>Final classification for sample {sample_id}</p>"
 
-
-def read_rnaseqcnv_data(manual_table_file, log2fc_file):
-    """Read RNAseqCNV data efficiently."""
-    karyotype_data = []
-    arm_calls_data = []
-    
-    # Read karyotype data
     try:
-        df = pd.read_csv(manual_table_file, sep='\t')
-        for _, row in df.iterrows():
-            karyotype_data.append({
-                'gender': row.get('gender', 'N/A'),
-                'chrom_n': row.get('chrom_n', 'N/A'),
-                'alterations': row.get('alterations', 'N/A'),
-                'status': row.get('status', 'N/A'),
-                'comments': row.get('comments', 'N/A')
-            })
+        star_log_data = pd.read_csv(star_log_file, delimiter='\\t')
+        star_log_data.columns = ['Parameter', 'Value']
+        
+        # Split STAR log into sections
+        first_section_end = star_log_data[star_log_data.iloc[:, 0].str.endswith(':')].index[0] if not star_log_data[star_log_data.iloc[:, 0].str.endswith(':')].empty else len(star_log_data)
+        first_part = star_log_data.iloc[:first_section_end, :]
+        first_part.loc[:, first_part.columns[0]] = first_part[first_part.columns[0]].str.replace('|', '')
+        second_part = star_log_data.iloc[first_section_end:, :]
+        
+        first_part_without_start = first_part[first_part[first_part.columns[0]] != 'Started job on |']
+        first_part_html = first_part_without_start.to_html(classes='my-table-class no-sort', index=False)
+        
+        # Group second part by sections
+        grouped_sections = {}
+        current_section = None
+        
+        for index, row in second_part.iterrows():
+            text = row[second_part.columns[0]]
+            if text.endswith(':'):
+                current_section = text
+                grouped_sections[current_section] = []
+            elif current_section is not None:
+                grouped_sections[current_section].append(row)
+        
+        table_segments = ''
+        for section, rows in grouped_sections.items():
+            section_data = pd.DataFrame(rows, columns=second_part.columns)
+            table_html = section_data.to_html(classes='my-table-class no-sort', index=False)
+            table_segments += f'<h2>{section}</h2>'
+            table_segments += table_html
+            
     except Exception as e:
-        logger.warning(f"Error reading RNAseqCNV karyotype data: {e}")
-    
-    # Read arm calls data
+        print(f"Error reading STAR log: {e}")
+        first_part_html = "<p>STAR log data unavailable</p>"
+        table_segments = ""
+
     try:
-        df = pd.read_csv(log2fc_file, sep='\t')
-        for _, row in df.iterrows():
-            arm_calls_data.append({
-                'chr': row.iloc[0] if len(row) > 0 else 'N/A',
-                'arm': row.iloc[1] if len(row) > 1 else 'N/A',
-                'log2fc': row.iloc[2] if len(row) > 2 else 'N/A'
-            })
+        rna_seq_cnv_manual_an_table_file = pd.read_csv(rnaseqcnv_manual_table, delimiter='\\t')
+        rna_seq_cnv_manual_an_table_file_html_table = rna_seq_cnv_manual_an_table_file.to_html(classes='my-table-class no-sort', index=False)
     except Exception as e:
-        logger.warning(f"Error reading RNAseqCNV arm calls data: {e}")
-    
-    return karyotype_data, arm_calls_data
+        print(f"Error reading RNAseqCNV manual table: {e}")
+        rna_seq_cnv_manual_an_table_file_html_table = "<p>RNAseqCNV manual table unavailable</p>"
 
-
-def generate_report_content(sample_id, star_uniquely_mapped, allcatchr_data, 
-                          fusioncatcher_data, arriba_data, karyotype_data, arm_calls_data,
-                          final_classification_text):
-    """Generate the main report content."""
-    
-    subtype, score, confidence = allcatchr_data
-    
-    content = []
-    
-    # Add final classification content
     try:
-        with open(final_classification_text, 'r') as f:
-            content.append(f.read().strip())
+        rna_seq_cnv_log2foldchange_file = pd.read_csv(rnaseqcnv_log2fc_file, delimiter='\\t')
+        rna_seq_cnv_log2foldchange_file_html_table = rna_seq_cnv_log2foldchange_file.to_html(classes='my-table-class', index=False)
     except Exception as e:
-        logger.warning(f"Could not read final classification file: {e}")
-        content.append(f"Final classification analysis for sample {sample_id}")
-    
-    # Add sequencing summary
-    content.append(f"\nThe transcriptome sequencing of {sample_id} produced {star_uniquely_mapped} uniquely aligned sequencing reads, enabling quantification of protein coding genes.")
-    
-    # Quality metrics placeholder
-    content.append("\nQuality metrics (fastQC / MultiQC) indicated:")
-    # Note: FastQC content would need to be extracted from MultiQC report
-    
-    # ALLCatchR results
-    content.append(f"\nALLCatchR allocated for sample {sample_id} the following molecular subtype:")
-    content.append("subtype prediction\tscore\tconfidence")
-    content.append(f"{subtype}\t{score}\t{confidence}")
-    
-    # Fusion results
-    content.append("\nfusioncatcher / ARRIBA identified the following driver fusion candidates:")
-    
-    # FusionCatcher results
-    content.append("\nFusioncatcher:")
-    content.append("5' gene name\t5' chr.position\t3' gene name\t3'chr. position\tfusion unique spanning reads")
-    for fusion in fusioncatcher_data:
-        content.append(f"{fusion['gene_5p']}\t{fusion['pos_5p']}\t{fusion['gene_3p']}\t{fusion['pos_3p']}\t{fusion['spanning_reads']}")
-    
-    # Arriba results
-    content.append("\nARRIBA:")
-    content.append("5' gene name\t5' chr.position\t3' gene name\t3'chr. position\tdiscordant_mates")
-    for fusion in arriba_data:
-        content.append(f"{fusion['gene_5p']}\t{fusion['pos_5p']}\t{fusion['gene_3p']}\t{fusion['pos_3p']}\t{fusion['discordant_mates']}")
-    
-    # RNASeqCNV results
-    content.append("\nRNASeqCNV identified the following karyotype:")
-    content.append("gender\tchrom_n\talterations\tstatus\tcomments")
-    for karyo in karyotype_data:
-        content.append(f"{karyo['gender']}\t{karyo['chrom_n']}\t{karyo['alterations']}\t{karyo['status']}\t{karyo['comments']}")
-    
-    content.append("Chromosome arm calls")
-    content.append("chr\tarm\tlog2FC per arm")
-    for arm_call in arm_calls_data:
-        content.append(f"{arm_call['chr']}\t{arm_call['arm']}\t{arm_call['log2fc']}")
-    
-    return "\n".join(content)
+        print(f"Error reading RNAseqCNV log2fc file: {e}")
+        rna_seq_cnv_log2foldchange_file_html_table = "<p>RNAseqCNV log2FC data unavailable</p>"
 
-
-def generate_html_report(content, sample_id, output_file):
-    """Generate HTML report with embedded content."""
+    # Generate path references
+    arriba_fusion_pdf_path = generate_pdf_path(sample_id)
+    rnaseqcnv_png_path = generate_RNASeq_cnv_png_path(sample_id)
+    multiqc_path = generate_multiqc_path(sample_id)
     
-    html_template = f"""
+    # Generate tables
+    arriba_html_table = arriba_file_to_html_table(arriba_file)
+    fusioncatcher_html_table = fusionctacher_file_to_html_table(fusioncatcher_file)
+    
+    # Create HTML tables for data
+    html_table = prediction_data_subset.to_html(classes='my-table-class no-sort', index=False) if not prediction_data_subset.empty else "<p>No prediction data available</p>"
+    cell_of_origin_table = cell_of_origin_data_subset.to_html(classes='my-table-class no-sort', index=False) if not cell_of_origin_data_subset.empty else "<p>No cell of origin data available</p>"
+
+    # Custom CSS for styling
+    custom_css = """
+    <style>
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #333;
+            padding: 10px 0;
+            z-index: 999;
+        }
+        
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #333;
+            padding: 10px 20px;
+            box-sizing: border-box;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+        
+        .nav-links {
+            display: flex;
+            align-items: center;
+            flex-grow: 1;
+        }
+        
+        .nav-links a {
+            color: white;
+            padding: 14px 20px;
+            text-decoration: none;
+            text-align: center;
+        }
+        
+        .nav-links a:hover {
+            background-color: #ddd;
+            color: black;
+        }
+        
+        .logo {
+            flex-shrink: 0;
+        }
+        
+        .logo img {
+            height: 50px;
+            max-width: 100%;
+        }
+                
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Calibri, sans-serif; 
+        }
+        
+        h1::before {
+            content: "";
+            display: block;
+            height: 70px;
+            margin-top: -70px;
+            visibility: hidden;
+        }
+                
+        .my-table-class {
+            font-family: Calibri, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+        .my-table-class th, .my-table-class td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .my-table-class th {
+            background-color: #f2f2f2;
+            color: #333;
+        }
+        .my-table-class tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .my-table-class tr:hover {
+            background-color: #f1f1f1;
+        }
+        
+        .center {
+          display: block;
+          margin-left: auto;
+          margin-right: auto;
+          width: 50%;
+        } 
+    </style>
+    """
+
+    html_table_with_style = custom_css + html_table
+    cell_of_origin_table_with_style = custom_css + cell_of_origin_table
+    arriba_html_table_with_style = custom_css + arriba_html_table
+
+    # Construct HTML output
+    html_output = f"""
     <!DOCTYPE html>
-    <html lang="en">
+    <html>
     <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>IntegrateALL Report - {sample_id}</title>
-        <style>
-            body {{ 
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                margin: 40px;
-                background-color: #f8f9fa;
-                color: #333;
-            }}
-            .header {{ 
-                text-align: center;
-                padding: 30px 0;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                border-radius: 10px;
-                margin-bottom: 30px;
-                box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            }}
-            .header h1 {{ 
-                margin: 0;
-                font-size: 2.5em;
-                font-weight: 300;
-            }}
-            .header h2 {{ 
-                margin: 10px 0 0 0;
-                font-size: 1.2em;
-                opacity: 0.9;
-            }}
-            .content {{ 
-                background: white;
-                padding: 30px;
-                border-radius: 10px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-                white-space: pre-wrap;
-                font-family: 'Courier New', monospace;
-                line-height: 1.6;
-            }}
-            .timestamp {{
-                text-align: center;
-                margin-top: 20px;
-                color: #666;
-                font-size: 0.9em;
-            }}
-        </style>
+        <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+        <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
     </head>
     <body>
-        <div class="header">
-            <h1>🧬 IntegrateALL Report</h1>
-            <h2>Sample: {sample_id}</h2>
-        </div>
+        <nav class="navbar">
+            <div class="nav-links">
+                <a href="#section1">Overview</a>
+                <a href="#section2">Prediction</a>
+                <a href="#section3">MultiQC</a>
+                <a href="#section4">STAR Results</a>
+                <a href="#section5">RNASeqCNV Plot</a>
+                <a href="#section6">RNASeqCNV Table</a>
+                <a href="#section7">ARRIBA Fusions</a>
+                <a href="#section8">ARRIBA Plots</a>
+                <a href="#section9">Fusioncatcher Fusions</a> 
+            </div>
+            <a class="logo" href="https://www.catchall-kfo5010.com/">
+                <img src="logo.png" alt="Logo">
+            </a>
+        </nav>
+        <h1>IntegrateALL</h1>
+        <h1 id="section1">IntegrateALL classification</h1>
+        {html_table_text}
         
-        <div class="content">
-{content}
-        </div>
+        <h1 id="section2">ALLCatchR Prediction Data</h1>
+        {html_table_with_style}
+        <h1 id="section2">ALLCatchR Cell of origin</h1>
+        {cell_of_origin_table_with_style}
         
-        <div class="timestamp">
-            Report generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-        </div>
+        <h1 id="section3">MultiQC Results</h1>
+        <iframe src={multiqc_path} name="multiqc_path" width="100%" height="600" frameborder="0"></iframe>
+        
+        <h1 id="section4">STAR Results</h1>
+        {first_part_html}
+        {table_segments}
+        
+        <h1 id="section5">RNASeq-CNV Plot</h1>
+        <img src={rnaseqcnv_png_path} alt="RNASeqCNV plot" width="900" height="600" class="center">
+        
+        <h2 id="section6">RNASeq-CNV Manual An Table</h2>
+        {rna_seq_cnv_manual_an_table_file_html_table}
+        
+        <h2 id="section6">RNASeq-CNV Log2FC Table</h2>        
+        {rna_seq_cnv_log2foldchange_file_html_table}
+
+        <h1 id="section7">ARRIBA Fusions Table</h1>
+        {arriba_html_table_with_style}
+        
+        <h1 id="section8">ARRIBA Fusions Plots</h1>
+        <iframe src={arriba_fusion_pdf_path} name="arriba_fusion_pdf_path" width="100%" height="600" frameborder="0"></iframe>
+        
+        <h1 id="section9">Fusioncatcher Fusions</h1>
+        {fusioncatcher_html_table}
+
+        <script>
+            $(document).ready(function() {{
+                $('.my-table-class').not('.no-sort').DataTable();
+            }});
+        </script>
     </body>
     </html>
     """
-    
-    with open(output_file, 'w') as f:
-        f.write(html_template)
 
-
-def main(sample_id, prediction_file, fusioncatcher_file, arriba_file, arriba_pdf,
-         rnaseqcnv_log2fc_file, rnaseqcnv_plot, rnaseqcnv_manual_table, 
-         star_log_file, multiqc_report, final_classification_text, output_html):
-    """
-    Main function to generate interactive report.
-    """
-    
-    logger.info(f"📊 Generating interactive report for sample: {sample_id}")
-    
-    # Create output directory
-    output_dir = os.path.dirname(output_html)
-    os.makedirs(output_dir, exist_ok=True)
-    
-    # Copy required assets
-    assets_copied = 0
-    
-    # Copy fusion PDF
-    fusion_dir = os.path.join(output_dir, "fusions")
-    if copy_file_safely(arriba_pdf, os.path.join(fusion_dir, os.path.basename(arriba_pdf))):
-        assets_copied += 1
-    
-    # Copy MultiQC report
-    qc_dir = os.path.join(output_dir, "qc")
-    if copy_file_safely(multiqc_report, os.path.join(qc_dir, os.path.basename(multiqc_report))):
-        assets_copied += 1
-    
-    # Copy RNAseqCNV plot
-    rnaseqcnv_dir = os.path.join(output_dir, "RNAseqCNV")
-    if copy_file_safely(rnaseqcnv_plot, os.path.join(rnaseqcnv_dir, os.path.basename(rnaseqcnv_plot))):
-        assets_copied += 1
-    
-    # Copy logo if it exists
-    logo_src = "scripts/logo.png"
-    if os.path.exists(logo_src):
-        if copy_file_safely(logo_src, os.path.join(output_dir, "logo.png")):
-            assets_copied += 1
-    
-    logger.info(f"📁 Copied {assets_copied} asset files")
-    
-    # Read all input data
-    logger.info("📖 Reading input data files...")
-    
-    star_uniquely_mapped = read_star_log(star_log_file)
-    allcatchr_data = read_allcatchr_predictions(prediction_file)
-    fusioncatcher_data = read_fusioncatcher_data(fusioncatcher_file)
-    arriba_data = read_arriba_data(arriba_file)
-    karyotype_data, arm_calls_data = read_rnaseqcnv_data(rnaseqcnv_manual_table, rnaseqcnv_log2fc_file)
-    
-    # Generate report content
-    content = generate_report_content(
-        sample_id, star_uniquely_mapped, allcatchr_data,
-        fusioncatcher_data, arriba_data, karyotype_data, arm_calls_data,
-        final_classification_text
-    )
-    
-    # Generate HTML report
-    generate_html_report(content, sample_id, output_html)
-    
-    logger.info(f"✅ Interactive report generated: {output_html}")
-    logger.info(f"🔗 Report includes {len(fusioncatcher_data)} FusionCatcher and {len(arriba_data)} Arriba fusions")
+    # Write to HTML file
+    with open(output_file, 'w') as file:
+        file.write(html_output)
 
 
 if __name__ == "__main__":
@@ -333,4 +422,4 @@ if __name__ == "__main__":
         sys.exit(1)
     
     args = sys.argv[1:]
-    main(*args)
+    generate_report(*args)

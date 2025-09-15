@@ -325,7 +325,7 @@ def main(sample_id, prediction_file, fusioncatcher_file, arriba_file, arriba_pdf
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 12:
+    if len(sys.argv) != 13:
         print("Usage: python generate_interactive_report.py <sample_id> <prediction_file> "
               "<fusioncatcher_file> <arriba_file> <arriba_pdf> <rnaseqcnv_log2fc_file> "
               "<rnaseqcnv_plot> <rnaseqcnv_manual_table> <star_log_file> <multiqc_report> "

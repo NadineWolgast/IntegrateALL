@@ -7,6 +7,7 @@ Creates HTML reports with DataTables, navigation, and interactive elements.
 import pandas as pd
 import sys
 import os
+import shutil
 from collections import defaultdict
 import logging
 
@@ -32,6 +33,17 @@ def safe_read_file(filepath):
     except Exception as e:
         logger.warning(f"Could not read {filepath}: {e}")
         return ""
+
+
+def copy_file_safely(src, dst):
+    """Copy file with error handling."""
+    try:
+        os.makedirs(os.path.dirname(dst), exist_ok=True)
+        shutil.copy2(src, dst)
+        return True
+    except Exception as e:
+        logger.warning(f"Could not copy {src} to {dst}: {e}")
+        return False
 
 
 def generate_file_paths(sample_id):
@@ -277,6 +289,37 @@ def generate_report(sample_id, prediction_file, fusioncatcher_file, arriba_file,
     """Generate interactive HTML report."""
     
     logger.info(f"📊 Generating interactive report for sample: {sample_id}")
+    
+    # Create output directory and copy required assets
+    output_dir = os.path.dirname(output_file)
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # Copy required assets
+        assets_copied = 0
+        
+        # Copy MultiQC report
+        multiqc_dir = os.path.join(output_dir, "qc")
+        if copy_file_safely(multiqc_report, os.path.join(multiqc_dir, "multiqc_report.html")):
+            assets_copied += 1
+        
+        # Copy RNAseqCNV plot
+        rnaseqcnv_dir = os.path.join(output_dir, "RNAseqCNV")
+        if copy_file_safely(rnaseqcnv_plot, os.path.join(rnaseqcnv_dir, os.path.basename(rnaseqcnv_plot))):
+            assets_copied += 1
+        
+        # Copy Arriba PDF
+        fusion_dir = os.path.join(output_dir, "fusions")
+        if copy_file_safely(arriba_pdf, os.path.join(fusion_dir, os.path.basename(arriba_pdf))):
+            assets_copied += 1
+        
+        # Copy logo if it exists
+        logo_src = "scripts/logo.png"
+        if os.path.exists(logo_src):
+            if copy_file_safely(logo_src, os.path.join(output_dir, "logo.png")):
+                assets_copied += 1
+        
+        logger.info(f"📁 Copied {assets_copied} asset files")
     
     # Generate file paths
     paths = generate_file_paths(sample_id)

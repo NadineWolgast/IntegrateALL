@@ -47,11 +47,11 @@ def copy_file_safely(src, dst):
 
 
 def generate_file_paths(sample_id):
-    """Generate all file paths for the report."""
+    """Generate all file paths for the report (relative to HTML file)."""
     return {
-        'arriba_pdf': f'"fusions/{sample_id}.pdf"',
-        'multiqc': f'"qc/multiqc/{sample_id}/multiqc_report.html"',
-        'rnaseqcnv_plot': f'"RNAseqCNV_output/gatk/{sample_id}_gatk/{sample_id}/{sample_id}_CNV_main_fig.png"'
+        'arriba_pdf': f'"fusions/{os.path.basename(f"fusions/{sample_id}.pdf")}"',
+        'multiqc': f'"qc/multiqc_report.html"',
+        'rnaseqcnv_plot': f'"RNAseqCNV/{sample_id}_CNV_main_fig.png"'
     }
 
 

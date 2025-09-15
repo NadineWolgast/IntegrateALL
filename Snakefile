@@ -781,22 +781,31 @@ rule predict_karyotype:
 
 rule aggregate_output:
     input:
-            prediction_file = "allcatch_output/{sample}/predictions.tsv",
-            fusioncatcher_file = "fusioncatcher_output/{sample}/final-list_candidate-fusion-genes.txt",
-            arriba_file = "fusions/{sample}.tsv",
-            rna_seq_cnv_log2foldchange_file = "RNAseqCNV_output/gatk/{sample}_gatk/log2_fold_change_per_arm.tsv",
-            rna_seq_cnv_manual_an_table_file = "RNAseqCNV_output/gatk/{sample}_gatk/manual_an_table.tsv",
-            star_log_final_out_file = "STAR_output/{sample}/Log.final.out",
-            multiqc_fqc_right = "multiqc/{sample}_right/multiqc_data/multiqc_fastqc.txt",
-            multiqc_fqc_left = "multiqc/{sample}_left/multiqc_data/multiqc_fastqc.txt",
-            comparison_file = "comparison/{sample}.csv"
+        prediction_file = "allcatch_output/{sample}/predictions.tsv",
+        fusioncatcher_file = "fusioncatcher_output/{sample}/final-list_candidate-fusion-genes.txt",
+        arriba_file = "fusions/{sample}.tsv",
+        rna_seq_cnv_log2foldchange_file = "RNAseqCNV_output/gatk/{sample}_gatk/log2_fold_change_per_arm.tsv",
+        rna_seq_cnv_manual_an_table_file = "RNAseqCNV_output/gatk/{sample}_gatk/manual_an_table.tsv",
+        star_log_final_out_file = "STAR_output/{sample}/Log.final.out",
+        multiqc_fqc_right = "multiqc/{sample}_right/multiqc_data/multiqc_fastqc.txt",
+        multiqc_fqc_left = "multiqc/{sample}_left/multiqc_data/multiqc_fastqc.txt",
+        comparison_file = "comparison/{sample}.csv"
 
     output:
         csv="aggregated_output/{sample}.csv"
 
+    message: "📊 Aggregating sample data for {wildcards.sample}"
+    conda:
+        "envs/pysamstat.yaml"
+    threads: 2
+    resources:
+        mem_mb=2000,
+        tmpdir="/tmp"
+    benchmark:
+        "benchmarks/aggregate_output_{sample}.benchmark.txt"
     shell:
         """
-        bash scripts/process_data.sh {output.csv} {input.star_log_final_out_file} {wildcards.sample} {input.multiqc_fqc_left} {input.multiqc_fqc_right} {input.prediction_file} {input.fusioncatcher_file} {input.arriba_file} {input.rna_seq_cnv_manual_an_table_file} {input.rna_seq_cnv_log2foldchange_file} {input.comparison_file}
+        python scripts/aggregate_sample_data_optimized.py {wildcards.sample} {input.star_log_final_out_file} {input.multiqc_fqc_left} {input.multiqc_fqc_right} {input.prediction_file} {input.fusioncatcher_file} {input.arriba_file} {input.rna_seq_cnv_manual_an_table_file} {input.rna_seq_cnv_log2foldchange_file} {input.comparison_file} {output.csv}
         """
 
 rule final_classification:

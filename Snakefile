@@ -769,7 +769,7 @@ rule final_classification:
         fusioncatcher_file="fusioncatcher_output/{sample}/final-list_candidate-fusion-genes.txt",
         arriba_file="fusions/{sample}.tsv",
         hotspots="Hotspots/{sample}",
-        classification_file="data/annotation/Class_test.csv"
+        classification_file="Class_test_optimized.csv"
 
     output:
         csv="Final_classification/{sample}_output_report.csv",
@@ -777,7 +777,7 @@ rule final_classification:
         driver="Final_classification/{sample}_driver.csv",
         curation="Final_classification/{sample}_curation.csv"
 
-    message: "🔬 Generating final WHO-HAEM5/ICC classification for {wildcards.sample}"
+    message: "Generating final WHO-HAEM5/ICC classification for {wildcards.sample}"
     conda:
         "envs/pysamstat.yaml"
     threads: 2
@@ -788,7 +788,7 @@ rule final_classification:
         "benchmarks/final_classification_{sample}.benchmark.txt"
     shell:
         """
-        python scripts/make_final_classification_optimized.py {wildcards.sample} {input.allcatchr_file} {input.karyotype} {input.fusioncatcher_file} {input.arriba_file} {input.hotspots} {input.classification_file} {output.csv} {output.text} {output.curation} {output.driver}
+        python scripts/make_final_classification_restructured.py {wildcards.sample} {input.allcatchr_file} {input.karyotype} {input.fusioncatcher_file} {input.arriba_file} {input.hotspots} {input.classification_file} {output.csv} {output.text} {output.curation} {output.driver}
         """
 
 rule interactive_report:
@@ -810,7 +810,7 @@ rule interactive_report:
     output:
         html="interactive_output/{sample}/output_report_{sample}.html"
 
-    message: "📊 Generating comprehensive interactive report for {wildcards.sample}"
+    message: "Generating comprehensive interactive report for {wildcards.sample}"
     conda:
         "envs/pysamstat.yaml"
     threads: 2

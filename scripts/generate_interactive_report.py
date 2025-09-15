@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Interactive report generator for IntegrateALL pipeline.
+Optimized interactive report generator for IntegrateALL pipeline.
 Creates HTML reports with DataTables, navigation, and interactive elements.
 """
 
@@ -8,190 +8,150 @@ import pandas as pd
 import sys
 import os
 from collections import defaultdict
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 
-def read_file_content(filename):
-    """Read content from file."""
-    with open(filename, 'r') as file:
-        return file.read()
+def safe_read_csv(filepath, delimiter='\t', **kwargs):
+    """Safely read CSV file with error handling."""
+    try:
+        return pd.read_csv(filepath, delimiter=delimiter, **kwargs)
+    except Exception as e:
+        logger.warning(f"Could not read {filepath}: {e}")
+        return pd.DataFrame()
 
 
-def write_to_file(filename, content):
-    """Write content to file."""
-    with open(filename, 'w') as file:
-        file.write(content)
+def safe_read_file(filepath):
+    """Safely read text file with error handling."""
+    try:
+        with open(filepath, 'r') as f:
+            return f.read()
+    except Exception as e:
+        logger.warning(f"Could not read {filepath}: {e}")
+        return ""
 
 
-def extract_uniquely_mapped_reads(filename):
-    """Extract uniquely mapped reads from STAR log file."""
-    with open(filename, 'r') as file:
-        for line in file:
-            if 'Uniquely mapped reads number' in line:
-                return line.split('\t')[1].strip()
-    return ''
+def generate_file_paths(sample_id):
+    """Generate all file paths for the report."""
+    return {
+        'arriba_pdf': f'"fusions/{sample_id}.pdf"',
+        'multiqc': f'"qc/multiqc/{sample_id}/multiqc_report.html"',
+        'rnaseqcnv_plot': f'"RNAseqCNV_output/gatk/{sample_id}_gatk/{sample_id}/{sample_id}_CNV_main_fig.png"'
+    }
 
 
-def generate_pdf_path(sample_id):
-    """Generate path to Arriba fusion PDF."""
-    arriba_fusion_pdf_path = f'"fusions/{sample_id}.pdf"'
-    return arriba_fusion_pdf_path
+def create_fusion_table(file_path, table_type="arriba"):
+    """Create HTML table for fusion data (Arriba or FusionCatcher)."""
+    if table_type == "arriba":
+        headers = ["5' gene name", "5' chr.position", "3' gene name", "3'chr. position", 
+                  "discordant_mates", "confidence", "reading frame", "fusion transcript"]
+        table_id = "arriba_table"
+    else:  # fusioncatcher
+        headers = ["5' gene name", "5' chr.position", "3' gene name", "3'chr. position", 
+                  "fusion unique spanning reads", "fusion description", "fusion sequence", "predicted effect"]
+        table_id = "fusioncatcher_table"
 
-
-def generate_multiqc_path(sample_id):
-    """Generate path to MultiQC report."""
-    multiqc_path = f'"qc/multiqc/{sample_id}/multiqc_report.html"'
-    return multiqc_path
-
-
-def generate_RNASeq_cnv_png_path(sample_id):
-    """Generate path to RNASeqCNV plot."""
-    RNASeq_cnv_png_path = f'"RNAseqCNV_output/gatk/{sample_id}_gatk/{sample_id}/{sample_id}_CNV_main_fig.png"'
-    return RNASeq_cnv_png_path
-
-
-def arriba_file_to_html_table(arriba_file):
-    """Convert Arriba file to HTML table."""
-    table_content = "<table id='arriba_table'>"
-    table_content += "<table border='1' class='my-table-class'>\\n"
-    table_content += ("<thead><tr><th>5' gene name</th><th>5' chr.position</th><th>3' gene name</th><th>3'chr. "
-                      "position</th><th>discordant_mates</th><th>confidence</th><th>reading frame</th><th>fusion "
-                      "transcript</th></tr></thead>\\n")
-
-    table_content += "<tbody>\\n"
+    table_content = f"<table id='{table_id}' class='my-table-class'>\n"
+    table_content += "<thead><tr>" + "".join(f"<th>{h}</th>" for h in headers) + "</tr></thead>\n"
+    table_content += "<tbody>\n"
 
     try:
-        with open(arriba_file, 'r') as file:
+        with open(file_path, 'r') as file:
             next(file)  # Skip header
             for line in file:
-                columns = line.strip().split('\\t')
-                if len(columns) >= 28:  # Full Arriba format
-                    table_content += "<tr>"
-                    table_content += f"<td>{columns[0]}</td><td>{columns[4]}</td><td>{columns[1]}</td><td>{columns[5]}</td><td>{columns[11]}</td><td>{columns[14]}</td><td>{columns[15]}</td><td>{columns[27]}</td>"
-                    table_content += "</tr>\\n"
-                elif len(columns) >= 6:  # Test data format
-                    table_content += "<tr>"
-                    table_content += f"<td>{columns[0]}</td><td>{columns[4] if len(columns) > 4 else 'N/A'}</td><td>{columns[1]}</td><td>{columns[5] if len(columns) > 5 else 'N/A'}</td><td>{columns[2] if len(columns) > 2 else 'N/A'}</td><td>N/A</td><td>N/A</td><td>N/A</td>"
-                    table_content += "</tr>\\n"
+                columns = line.strip().split('\t')
+                
+                if table_type == "arriba":
+                    if len(columns) >= 28:  # Full Arriba format
+                        row_data = [columns[0], columns[4], columns[1], columns[5], 
+                                   columns[11], columns[14], columns[15], columns[27]]
+                    elif len(columns) >= 6:  # Test data format
+                        row_data = [columns[0], columns[4] if len(columns) > 4 else 'N/A',
+                                   columns[1], columns[5] if len(columns) > 5 else 'N/A',
+                                   columns[2] if len(columns) > 2 else 'N/A', 'N/A', 'N/A', 'N/A']
+                    else:
+                        continue
+                else:  # fusioncatcher
+                    if len(columns) > 15:
+                        row_data = [columns[0], columns[8], columns[1], columns[9], 
+                                   columns[5], columns[2], columns[14], columns[15]]
+                    else:
+                        continue
+                        
+                table_content += "<tr>" + "".join(f"<td>{data}</td>" for data in row_data) + "</tr>\n"
+                
     except Exception as e:
-        print(f"Error reading Arriba file: {e}")
+        logger.warning(f"Error reading {table_type} file {file_path}: {e}")
 
-    table_content += "</tbody>\\n"
-    table_content += "</table>\\n"
+    table_content += "</tbody>\n</table>\n"
     return table_content
 
 
-def fusionctacher_file_to_html_table(fusioncatcher_file):
-    """Convert FusionCatcher file to HTML table."""
-    table_content = "<table id='fusioncatcher_table' class='my-table-class'>\\n"
-    table_content += ("<thead><tr><th>5' gene name</th><th>5' chr.position</th><th>3' gene name</th><th>3'chr. "
-                      "position</th><th>fusion unique spanning reads</th><th>fusion description</th>"
-                      "<th>fusion sequence</th><th>predicted effect</th></tr></thead>\\n")
-    table_content += "<tbody>\\n"
-
-    try:
-        with open(fusioncatcher_file, 'r') as file:
-            next(file)  # Skip header
-            for line in file:
-                columns = line.strip().split('\\t')
-                if len(columns) > 15:
-                    table_content += "<tr>"
-                    table_content += f"<td>{columns[0]}</td><td>{columns[8]}</td><td>{columns[1]}</td><td>{columns[9]}</td><td>{columns[5]}</td><td>{columns[2]}</td><td>{columns[14]}</td><td>{columns[15]}</td>"
-                    table_content += "</tr>\\n"
-    except Exception as e:
-        print(f"Error reading FusionCatcher file: {e}")
-
-    table_content += "</tbody>\\n"
-    table_content += "</table>\\n"
-    return table_content
-
-
-def generate_html_table(directory):
+def generate_hotspot_tables(hotspot_dir):
     """Generate HTML tables from hotspots directory."""
+    if not os.path.exists(hotspot_dir) or not os.listdir(hotspot_dir):
+        return "<p>No hotspot found</p>"
+    
     table_dict = defaultdict(list)
-    html_content = ""
     
-    if os.path.exists(directory) and os.listdir(directory):
-        sorted_content = ""
-        files = os.listdir(directory)
-        if len(files) > 1:
-            for filename in os.listdir(directory):
-                if filename.endswith('_output_file.csv'):
-                    file_path = os.path.join(directory, filename)
-                    table_data = pd.read_csv(file_path, delimiter=',')
-                    html_table = table_data.to_html(classes='my-table-class no-sort', index=False)
-                    display_name = filename.split('_output_file.csv')[0].replace('_', ': ')
-                    html_content += f"<h3>{display_name}</h3>"
-                    html_content += html_table
-                    table_dict[display_name].append(f"<h3>{display_name}</h3>" + html_table)
+    for filename in os.listdir(hotspot_dir):
+        file_path = os.path.join(hotspot_dir, filename)
+        
+        if filename.endswith('_output_file.csv'):
+            table_data = safe_read_csv(file_path, delimiter=',')
+            if not table_data.empty:
+                html_table = table_data.to_html(classes='my-table-class no-sort', index=False)
+                display_name = filename.split('_output_file.csv')[0].replace('_', ': ')
+                table_dict[display_name].append(f"<h3>{display_name}</h3>{html_table}")
 
-                elif filename.endswith('_with_bases.tsv'):
-                    file_path = os.path.join(directory, filename)
-                    columns = ["chrom", "pos", "ref", "reads_pp", "mismatches_pp", "deletions_pp", "insertions_pp", "A_pp",
-                               "C_pp", "T_pp", "G_pp", "N_pp", "new_base"]
-                    table_data = pd.read_csv(file_path, delimiter=' ', skiprows=1, names=columns)
-                    html_table = table_data.to_html(classes='my-table-class no-sort', index=False)
-                    display_name = filename.split('_with_bases.tsv')[0].replace('_', ': ')
-                    html_content += f"<h3>{display_name} variants</h3>"
-                    html_content += html_table
-                    table_dict[display_name + " variants"].append(f"<h3>{display_name} variants</h3>" + html_table)
+        elif filename.endswith('_with_bases.tsv'):
+            columns = ["chrom", "pos", "ref", "reads_pp", "mismatches_pp", "deletions_pp", 
+                      "insertions_pp", "A_pp", "C_pp", "T_pp", "G_pp", "N_pp", "new_base"]
+            table_data = safe_read_csv(file_path, delimiter=' ', skiprows=1, names=columns)
+            if not table_data.empty:
+                html_table = table_data.to_html(classes='my-table-class no-sort', index=False)
+                display_name = filename.split('_with_bases.tsv')[0].replace('_', ': ')
+                table_dict[display_name + " variants"].append(f"<h3>{display_name} variants</h3>{html_table}")
 
-                elif filename.endswith('_gatk_result.tsv'):
-                    file_path = os.path.join(directory, filename)
-                    table_data = pd.read_csv(file_path, delimiter='\\t')
-                    html_table = table_data.to_html(classes='my-table-class no-sort', index=False)
-                    display_name = filename.split('_gatk_result.tsv')[0].replace('_', ': ')
-                    html_content += f"<h3>{display_name} GATK Result</h3>"
-                    html_content += html_table
-                    table_dict[display_name + " GATK Result"].append(f"<h3>{display_name} GATK Result</h3>" + html_table)
-        else:
-            sorted_content = "<p>No hotspot found</p>"
+        elif filename.endswith('_gatk_result.tsv'):
+            table_data = safe_read_csv(file_path, delimiter='\t')
+            if not table_data.empty:
+                html_table = table_data.to_html(classes='my-table-class no-sort', index=False)
+                display_name = filename.split('_gatk_result.tsv')[0].replace('_', ': ')
+                table_dict[display_name + " GATK Result"].append(f"<h3>{display_name} GATK Result</h3>{html_table}")
     
-    for key in sorted(table_dict.keys()):
-        sorted_content += "<br>".join(table_dict[key])
-    return sorted_content
+    return "<br>".join([content for key in sorted(table_dict.keys()) for content in table_dict[key]])
 
 
-def generate_report(sample_id, prediction_file, fusioncatcher_file, arriba_file, arriba_pdf, 
-                   rnaseqcnv_log2fc_file, rnaseqcnv_plot, rnaseqcnv_manual_table,
-                   star_log_file, multiqc_report, final_classification_text, output_file):
-    """Generate interactive HTML report."""
-    
-    # Read all input files
+def process_star_log(star_log_file):
+    """Process STAR log file into structured HTML tables."""
     try:
-        prediction_data = pd.read_csv(prediction_file, delimiter='\\t')
-        prediction_data_subset = prediction_data.iloc[:, :14]
-        cell_of_origin_data_subset = prediction_data.iloc[:, 15:21] if prediction_data.shape[1] > 15 else pd.DataFrame()
-    except Exception as e:
-        print(f"Error reading prediction file: {e}")
-        prediction_data_subset = pd.DataFrame()
-        cell_of_origin_data_subset = pd.DataFrame()
-
-    try:
-        final_text = pd.read_csv(final_classification_text, delimiter='\\t')
-        html_table_text = final_text.to_html(classes='my-table-class no-sort', index=False)
-    except Exception as e:
-        print(f"Error reading final classification: {e}")
-        html_table_text = f"<p>Final classification for sample {sample_id}</p>"
-
-    try:
-        star_log_data = pd.read_csv(star_log_file, delimiter='\\t')
+        star_log_data = safe_read_csv(star_log_file, delimiter='\t')
+        if star_log_data.empty:
+            return "<p>STAR log data unavailable</p>", ""
+            
         star_log_data.columns = ['Parameter', 'Value']
         
-        # Split STAR log into sections
-        first_section_end = star_log_data[star_log_data.iloc[:, 0].str.endswith(':')].index[0] if not star_log_data[star_log_data.iloc[:, 0].str.endswith(':')].empty else len(star_log_data)
-        first_part = star_log_data.iloc[:first_section_end, :]
-        first_part.loc[:, first_part.columns[0]] = first_part[first_part.columns[0]].str.replace('|', '')
+        # Find section breaks
+        section_breaks = star_log_data[star_log_data.iloc[:, 0].str.endswith(':')].index
+        first_section_end = section_breaks[0] if len(section_breaks) > 0 else len(star_log_data)
+        
+        # Process first part
+        first_part = star_log_data.iloc[:first_section_end, :].copy()
+        first_part.iloc[:, 0] = first_part.iloc[:, 0].str.replace('|', '')
+        first_part_filtered = first_part[first_part.iloc[:, 0] != 'Started job on ']
+        first_part_html = first_part_filtered.to_html(classes='my-table-class no-sort', index=False)
+        
+        # Process second part into sections
         second_part = star_log_data.iloc[first_section_end:, :]
-        
-        first_part_without_start = first_part[first_part[first_part.columns[0]] != 'Started job on |']
-        first_part_html = first_part_without_start.to_html(classes='my-table-class no-sort', index=False)
-        
-        # Group second part by sections
         grouped_sections = {}
         current_section = None
         
-        for index, row in second_part.iterrows():
-            text = row[second_part.columns[0]]
+        for _, row in second_part.iterrows():
+            text = row.iloc[0]
             if text.endswith(':'):
                 current_section = text
                 grouped_sections[current_section] = []
@@ -200,45 +160,21 @@ def generate_report(sample_id, prediction_file, fusioncatcher_file, arriba_file,
         
         table_segments = ''
         for section, rows in grouped_sections.items():
-            section_data = pd.DataFrame(rows, columns=second_part.columns)
-            table_html = section_data.to_html(classes='my-table-class no-sort', index=False)
-            table_segments += f'<h2>{section}</h2>'
-            table_segments += table_html
-            
+            if rows:  # Only create table if there are rows
+                section_data = pd.DataFrame(rows, columns=second_part.columns)
+                table_html = section_data.to_html(classes='my-table-class no-sort', index=False)
+                table_segments += f'<h2>{section}</h2>{table_html}'
+        
+        return first_part_html, table_segments
+        
     except Exception as e:
-        print(f"Error reading STAR log: {e}")
-        first_part_html = "<p>STAR log data unavailable</p>"
-        table_segments = ""
+        logger.warning(f"Error processing STAR log: {e}")
+        return "<p>STAR log data unavailable</p>", ""
 
-    try:
-        rna_seq_cnv_manual_an_table_file = pd.read_csv(rnaseqcnv_manual_table, delimiter='\\t')
-        rna_seq_cnv_manual_an_table_file_html_table = rna_seq_cnv_manual_an_table_file.to_html(classes='my-table-class no-sort', index=False)
-    except Exception as e:
-        print(f"Error reading RNAseqCNV manual table: {e}")
-        rna_seq_cnv_manual_an_table_file_html_table = "<p>RNAseqCNV manual table unavailable</p>"
 
-    try:
-        rna_seq_cnv_log2foldchange_file = pd.read_csv(rnaseqcnv_log2fc_file, delimiter='\\t')
-        rna_seq_cnv_log2foldchange_file_html_table = rna_seq_cnv_log2foldchange_file.to_html(classes='my-table-class', index=False)
-    except Exception as e:
-        print(f"Error reading RNAseqCNV log2fc file: {e}")
-        rna_seq_cnv_log2foldchange_file_html_table = "<p>RNAseqCNV log2FC data unavailable</p>"
-
-    # Generate path references
-    arriba_fusion_pdf_path = generate_pdf_path(sample_id)
-    rnaseqcnv_png_path = generate_RNASeq_cnv_png_path(sample_id)
-    multiqc_path = generate_multiqc_path(sample_id)
-    
-    # Generate tables
-    arriba_html_table = arriba_file_to_html_table(arriba_file)
-    fusioncatcher_html_table = fusionctacher_file_to_html_table(fusioncatcher_file)
-    
-    # Create HTML tables for data
-    html_table = prediction_data_subset.to_html(classes='my-table-class no-sort', index=False) if not prediction_data_subset.empty else "<p>No prediction data available</p>"
-    cell_of_origin_table = cell_of_origin_data_subset.to_html(classes='my-table-class no-sort', index=False) if not cell_of_origin_data_subset.empty else "<p>No cell of origin data available</p>"
-
-    # Custom CSS for styling
-    custom_css = """
+def get_custom_css():
+    """Return the custom CSS styling."""
+    return """
     <style>
         nav {
             position: fixed;
@@ -334,9 +270,44 @@ def generate_report(sample_id, prediction_file, fusioncatcher_file, arriba_file,
     </style>
     """
 
-    html_table_with_style = custom_css + html_table
-    cell_of_origin_table_with_style = custom_css + cell_of_origin_table
-    arriba_html_table_with_style = custom_css + arriba_html_table
+
+def generate_report(sample_id, prediction_file, fusioncatcher_file, arriba_file, arriba_pdf, 
+                   rnaseqcnv_log2fc_file, rnaseqcnv_plot, rnaseqcnv_manual_table,
+                   star_log_file, multiqc_report, final_classification_text, output_file):
+    """Generate interactive HTML report."""
+    
+    logger.info(f"📊 Generating interactive report for sample: {sample_id}")
+    
+    # Generate file paths
+    paths = generate_file_paths(sample_id)
+    
+    # Read and process all data files
+    prediction_data = safe_read_csv(prediction_file, delimiter='\t')
+    prediction_subset = prediction_data.iloc[:, :14] if not prediction_data.empty else pd.DataFrame()
+    cell_origin_subset = prediction_data.iloc[:, 15:21] if prediction_data.shape[1] > 15 else pd.DataFrame()
+    
+    final_text = safe_read_csv(final_classification_text, delimiter='\t')
+    final_classification_html = final_text.to_html(classes='my-table-class no-sort', index=False) if not final_text.empty else f"<p>Final classification for sample {sample_id}</p>"
+    
+    rnaseq_manual_table = safe_read_csv(rnaseqcnv_manual_table, delimiter='\t')
+    rnaseq_manual_html = rnaseq_manual_table.to_html(classes='my-table-class no-sort', index=False) if not rnaseq_manual_table.empty else "<p>RNAseqCNV manual table unavailable</p>"
+    
+    rnaseq_log2fc = safe_read_csv(rnaseqcnv_log2fc_file, delimiter='\t')
+    rnaseq_log2fc_html = rnaseq_log2fc.to_html(classes='my-table-class', index=False) if not rnaseq_log2fc.empty else "<p>RNAseqCNV log2FC data unavailable</p>"
+    
+    # Process STAR log
+    star_first_part, star_segments = process_star_log(star_log_file)
+    
+    # Create fusion tables
+    arriba_table = create_fusion_table(arriba_file, "arriba")
+    fusioncatcher_table = create_fusion_table(fusioncatcher_file, "fusioncatcher")
+    
+    # Create data tables
+    prediction_html = prediction_subset.to_html(classes='my-table-class no-sort', index=False) if not prediction_subset.empty else "<p>No prediction data available</p>"
+    cell_origin_html = cell_origin_subset.to_html(classes='my-table-class no-sort', index=False) if not cell_origin_subset.empty else "<p>No cell of origin data available</p>"
+    
+    # Get CSS
+    custom_css = get_custom_css()
 
     # Construct HTML output
     html_output = f"""
@@ -347,6 +318,7 @@ def generate_report(sample_id, prediction_file, fusioncatcher_file, arriba_file,
         <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
         <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+        {custom_css}
     </head>
     <body>
         <nav class="navbar">
@@ -367,37 +339,37 @@ def generate_report(sample_id, prediction_file, fusioncatcher_file, arriba_file,
         </nav>
         <h1>IntegrateALL</h1>
         <h1 id="section1">IntegrateALL classification</h1>
-        {html_table_text}
+        {final_classification_html}
         
         <h1 id="section2">ALLCatchR Prediction Data</h1>
-        {html_table_with_style}
+        {prediction_html}
         <h1 id="section2">ALLCatchR Cell of origin</h1>
-        {cell_of_origin_table_with_style}
+        {cell_origin_html}
         
         <h1 id="section3">MultiQC Results</h1>
-        <iframe src={multiqc_path} name="multiqc_path" width="100%" height="600" frameborder="0"></iframe>
+        <iframe src={paths['multiqc']} name="multiqc_path" width="100%" height="600" frameborder="0"></iframe>
         
         <h1 id="section4">STAR Results</h1>
-        {first_part_html}
-        {table_segments}
+        {star_first_part}
+        {star_segments}
         
         <h1 id="section5">RNASeq-CNV Plot</h1>
-        <img src={rnaseqcnv_png_path} alt="RNASeqCNV plot" width="900" height="600" class="center">
+        <img src={paths['rnaseqcnv_plot']} alt="RNASeqCNV plot" width="900" height="600" class="center">
         
         <h2 id="section6">RNASeq-CNV Manual An Table</h2>
-        {rna_seq_cnv_manual_an_table_file_html_table}
+        {rnaseq_manual_html}
         
         <h2 id="section6">RNASeq-CNV Log2FC Table</h2>        
-        {rna_seq_cnv_log2foldchange_file_html_table}
+        {rnaseq_log2fc_html}
 
         <h1 id="section7">ARRIBA Fusions Table</h1>
-        {arriba_html_table_with_style}
+        {arriba_table}
         
         <h1 id="section8">ARRIBA Fusions Plots</h1>
-        <iframe src={arriba_fusion_pdf_path} name="arriba_fusion_pdf_path" width="100%" height="600" frameborder="0"></iframe>
+        <iframe src={paths['arriba_pdf']} name="arriba_fusion_pdf_path" width="100%" height="600" frameborder="0"></iframe>
         
         <h1 id="section9">Fusioncatcher Fusions</h1>
-        {fusioncatcher_html_table}
+        {fusioncatcher_table}
 
         <script>
             $(document).ready(function() {{
@@ -409,8 +381,11 @@ def generate_report(sample_id, prediction_file, fusioncatcher_file, arriba_file,
     """
 
     # Write to HTML file
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
     with open(output_file, 'w') as file:
         file.write(html_output)
+    
+    logger.info(f"✅ Interactive report generated: {output_file}")
 
 
 if __name__ == "__main__":

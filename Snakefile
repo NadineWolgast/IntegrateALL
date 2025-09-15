@@ -745,24 +745,6 @@ rule run_rnaseq_cnv_gatk:
 
 
 
-rule check_subtype_and_karyotype:
-    input:
-        prediction_file = "allcatch_output/{sample}/predictions.tsv",
-        rna_seq_cnv_estimation_file="RNAseqCNV_output/gatk/{sample}_gatk/estimation_table.tsv",
-        fusioncatcher_file = "fusioncatcher_output/{sample}/final-list_candidate-fusion-genes.txt",
-        arriba_file= "fusions/{sample}.tsv",
-        chromosome_counts_karyotype_file= "data/annotation/chromosome_counts_vs_subtype.txt",
-        anno_gene_fusions_file= "data/annotation/anno_Gene_fusions_vs_Subtypes.txt",
-        r_script= "scripts/define_subtype_and_caryotype.R"
-
-    output:
-        csv= "comparison/{sample}.csv"
-        
-    conda:
-        "envs/subtype.yaml"
-
-    shell:
-        "Rscript {input.r_script} {input.prediction_file} {input.rna_seq_cnv_estimation_file} {input.fusioncatcher_file} {input.arriba_file} {input.chromosome_counts_karyotype_file} {input.anno_gene_fusions_file} {output.csv} "
 
 
 rule predict_karyotype:
@@ -779,33 +761,6 @@ rule predict_karyotype:
         "python scripts/predict_karyotype.py {input.ml_input} {output.csv} {wildcards.sample} "
         
 
-rule aggregate_output:
-    input:
-        prediction_file = "allcatch_output/{sample}/predictions.tsv",
-        fusioncatcher_file = "fusioncatcher_output/{sample}/final-list_candidate-fusion-genes.txt",
-        arriba_file = "fusions/{sample}.tsv",
-        rna_seq_cnv_log2foldchange_file = "RNAseqCNV_output/gatk/{sample}_gatk/log2_fold_change_per_arm.tsv",
-        rna_seq_cnv_manual_an_table_file = "RNAseqCNV_output/gatk/{sample}_gatk/manual_an_table.tsv",
-        star_log_final_out_file = "STAR_output/{sample}/Log.final.out",
-        multiqc_data = "qc/multiqc/{sample}/multiqc_data/multiqc_fastqc.txt",
-        comparison_file = "comparison/{sample}.csv"
-
-    output:
-        csv="aggregated_output/{sample}.csv"
-
-    message: "📊 Aggregating sample data for {wildcards.sample}"
-    conda:
-        "envs/pysamstat.yaml"
-    threads: 2
-    resources:
-        mem_mb=2000,
-        tmpdir="/tmp"
-    benchmark:
-        "benchmarks/aggregate_output_{sample}.benchmark.txt"
-    shell:
-        """
-        python scripts/aggregate_sample_data_optimized.py {wildcards.sample} {input.star_log_final_out_file} {input.multiqc_data} {input.prediction_file} {input.fusioncatcher_file} {input.arriba_file} {input.rna_seq_cnv_manual_an_table_file} {input.rna_seq_cnv_log2foldchange_file} {input.comparison_file} {output.csv}
-        """
 
 rule final_classification:
     input:
@@ -846,8 +801,7 @@ rule interactive_report:
         rna_seq_cnv_plot="RNAseqCNV_output/gatk/{sample}_gatk/{sample}/{sample}_CNV_main_fig.png",
         rna_seq_cnv_manual_an_table_file="RNAseqCNV_output/gatk/{sample}_gatk/manual_an_table.tsv",
         star_log_final_out_file="STAR_output/{sample}/Log.final.out",
-        multiqc_report="qc/multiqc/{sample}/multiqc_report.html",  # Per-sample MultiQC report
-        comparison_file="comparison/{sample}.csv",
+        multiqc_report="qc/multiqc/{sample}/multiqc_report.html",
         hotspots="Hotspots/{sample}",
         karyotype="karyotype_prediction/{sample}.csv",
         text="Final_classification/{sample}_output_txt.csv",
@@ -856,19 +810,18 @@ rule interactive_report:
     output:
         html="interactive_output/{sample}/output_report_{sample}.html"
 
+    message: "📊 Generating comprehensive interactive report for {wildcards.sample}"
+    conda:
+        "envs/pysamstat.yaml"
+    threads: 2
+    resources:
+        mem_mb=3000,
+        tmpdir="/tmp"
+    benchmark:
+        "benchmarks/interactive_report_{sample}.benchmark.txt"
     shell:
         """
-        mkdir -p interactive_output/{wildcards.sample}/fusions &&
-        cp {input.arriba_file_fusion} interactive_output/{wildcards.sample}/fusions &&
-
-        mkdir -p interactive_output/{wildcards.sample}/qc &&
-        cp {input.multiqc_report} interactive_output/{wildcards.sample}/qc/ &&
-
-        mkdir -p interactive_output/{wildcards.sample}/RNAseqCNV &&
-        cp {input.rna_seq_cnv_plot} interactive_output/{wildcards.sample}/RNAseqCNV &&
-        cp scripts/logo.png interactive_output/{wildcards.sample}/ &&
-
-        python scripts/generate_report.py  {input.prediction_file} {input.fusioncatcher_file} {input.arriba_file} {input.rna_seq_cnv_log2foldchange_file} {input.rna_seq_cnv_manual_an_table_file} {input.star_log_final_out_file}  {input.comparison_file} {input.hotspots} {wildcards.sample} {input.karyotype} {input.text} {input.driver} {output.html}
+        python scripts/generate_interactive_report.py {wildcards.sample} {input.prediction_file} {input.fusioncatcher_file} {input.arriba_file} {input.arriba_file_fusion} {input.rna_seq_cnv_log2foldchange_file} {input.rna_seq_cnv_plot} {input.rna_seq_cnv_manual_an_table_file} {input.star_log_final_out_file} {input.multiqc_report} {input.text} {output.html}
         """
 
 

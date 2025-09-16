@@ -148,10 +148,31 @@ rule multiqc:
         data_dir=directory("qc/multiqc/{sample}/multiqc_data")
     log:
         "logs/multiqc/{sample}.log"
-    params:
-        extra="--title 'Sample {sample} QC Report'"  # Sample-specific title
-    wrapper:
-        "v3.3.6/bio/multiqc"
+    conda:
+        "envs/multiqc.yaml"
+    shell:
+        """
+        mkdir -p qc/multiqc/{wildcards.sample}
+        
+        # Create temporary directory for this sample's data only
+        temp_dir=$(mktemp -d)
+        
+        # Copy only this sample's FastQC files to temp directory
+        for file in {input}; do
+            cp "$file" "$temp_dir/"
+        done
+        
+        # Run MultiQC only on this sample's files
+        multiqc "$temp_dir" \
+            --outdir qc/multiqc/{wildcards.sample} \
+            --title "Sample {wildcards.sample} QC Report" \
+            --filename multiqc_report.html \
+            --force \
+            2>&1 | tee {log}
+        
+        # Clean up
+        rm -rf "$temp_dir"
+        """
 
 
 rule run_star_aligner:

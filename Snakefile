@@ -51,12 +51,12 @@ rule all:
         "check_samples.txt",
         expand("STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam",sample_id=list(samples.keys())),
         expand("STAR_output/{sample_id}/Aligned.sortedByCoord.out.bam.bai", sample_id=list(samples.keys())),
-        expand("Variants_RNA_Seq_Reads/{sample_id}/fixed-rg/{sample_id}.bam", sample_id=list(samples.keys())),
-        expand("Variants_RNA_Seq_Reads/{sample_id}/deduped_bam/{sample_id}.bam.bai", sample_id=list(samples.keys())),
-        expand("Variants_RNA_Seq_Reads/{sample_id}/split/{sample_id}.bam", sample_id=list(samples.keys())),
-        expand("Variants_RNA_Seq_Reads/{sample_id}/recal/{sample_id}_recal.table", sample_id=list(samples.keys())),
-        expand("Variants_RNA_Seq_Reads/{sample_id}/recal/{sample_id}.bam", sample_id=list(samples.keys())),
-        expand("Variants_RNA_Seq_Reads/{sample_id}/filter/{sample_id}.snvs.filtered.vcf", sample_id=list(samples.keys())),
+        #expand("Variants_RNA_Seq_Reads/{sample_id}/fixed-rg/{sample_id}.bam", sample_id=list(samples.keys())),  # GATK intermediate file
+        #expand("Variants_RNA_Seq_Reads/{sample_id}/deduped_bam/{sample_id}.bam.bai", sample_id=list(samples.keys())),  # GATK intermediate file
+        #expand("Variants_RNA_Seq_Reads/{sample_id}/split/{sample_id}.bam", sample_id=list(samples.keys())),  # GATK intermediate file
+        #expand("Variants_RNA_Seq_Reads/{sample_id}/recal/{sample_id}_recal.table", sample_id=list(samples.keys())),  # GATK intermediate file
+        #expand("Variants_RNA_Seq_Reads/{sample_id}/recal/{sample_id}.bam", sample_id=list(samples.keys())),  # GATK intermediate file
+        #expand("Variants_RNA_Seq_Reads/{sample_id}/filter/{sample_id}.snvs.filtered.vcf", sample_id=list(samples.keys())),  # GATK intermediate file
         expand("fusions/{sample_id}.pdf",sample_id=samples.keys()),
         expand("fusions/{sample_id}.tsv",sample_id=samples.keys()),
 
@@ -421,8 +421,8 @@ rule run_fusioncatcher:
     resources:
         threads=config['threads'],
         mem_mb=config['star_mem'],
-        #runtime=10000, # Next try with runtime
-        #slurm_extra="'--qos=long'"
+        runtime=10000, # Next try with runtime
+        slurm_extra="'--qos=long'"
 
     shell:
         '''

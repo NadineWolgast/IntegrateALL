@@ -727,8 +727,8 @@ rule prepare_vcf_files_from_GATK:
         echo "Processing VCF data with R script..." >> {log}
         Rscript {input.r_script} "$temp_vcf" {output.tsv} >> {log} 2>&1
         
-        # Clean up temporary file
-        rm -f "$temp_vcf"
+        # Clean up temporary file - commented out to prevent re-execution issues
+        # rm -f "$temp_vcf"
         
         echo "=== VCF processing completed successfully ===" >> {log}
         '''

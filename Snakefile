@@ -375,9 +375,9 @@ rule run_draw_arriba_fusion:
 
 rule run_fusioncatcher:
     input:
-        data_directory= absolute_path + "/refs/fusioncatcher/fusioncatcher-master/data/human_v102",
-        left= lambda wildcards: samples[wildcards.sample_id][0],
-        right= lambda wildcards: samples[wildcards.sample_id][1]
+        data_directory=absolute_path + "/refs/fusioncatcher/fusioncatcher-master/data/human_v102",
+        left=lambda wildcards: samples[wildcards.sample_id][0],
+        right=lambda wildcards: samples[wildcards.sample_id][1]
 
     output:
         dir=directory("fusioncatcher_output/{sample_id}"),
@@ -395,10 +395,13 @@ rule run_fusioncatcher:
 
     benchmark:
         "benchmarks/{sample_id}.fusioncatcher.benchmark.txt"
-        
+    threads:
+        config['threads']
     resources:
-        threads=config['fusioncatcher_threads'],
-        mem_mb=config['fusioncatcher_mem']
+        threads=config['threads'],
+        mem_mb=config['star_mem'],
+        #runtime=10000, # Next try with runtime
+        #slurm_extra="'--qos=long'"
 
     shell:
         '''
@@ -821,7 +824,7 @@ rule interactive_report:
         "benchmarks/interactive_report_{sample}.benchmark.txt"
     shell:
         """
-        python scripts/generate_interactive_report.py {wildcards.sample} {input.prediction_file} {input.fusioncatcher_file} {input.arriba_file} {input.arriba_file_fusion} {input.rna_seq_cnv_log2foldchange_file} {input.rna_seq_cnv_plot} {input.rna_seq_cnv_manual_an_table_file} {input.star_log_final_out_file} {input.multiqc_report} {input.text} {output.html}
+        python scripts/generate_interactive_report.py {wildcards.sample} {input.prediction_file} {input.fusioncatcher_file} {input.arriba_file} {input.arriba_file_fusion} {input.rna_seq_cnv_log2foldchange_file} {input.rna_seq_cnv_plot} {input.rna_seq_cnv_manual_an_table_file} {input.star_log_final_out_file} {input.multiqc_report} {input.text} {output.html} {input.hotspots} {input.driver} {input.karyotype}
         """
 
 

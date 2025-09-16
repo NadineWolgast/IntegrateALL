@@ -574,7 +574,8 @@ class ClassificationProcessor:
                 details.append(breakpoints)
             
             if fusion.get('sequence_data'):
-                details.append(f"Seq: {fusion.get('sequence_data')[:50]}...")  # Truncate long sequences
+                seq_data = str(fusion.get('sequence_data'))  # Convert to string first
+                details.append(f"Seq: {seq_data[:50]}...")  # Truncate long sequences
             
             detailed_list.append(" | ".join(details))
         

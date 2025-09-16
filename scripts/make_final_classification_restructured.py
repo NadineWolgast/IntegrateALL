@@ -512,38 +512,58 @@ class ClassificationProcessor:
             return f"{entry['Fusioncaller']}: {entry['Gene_1_symbol(5end_fusion_partner)']}::{entry['Gene_2_symbol(3end_fusion_partner)']}"
     
     def _write_curation_csv(self, entry, output_curation, classification_type):
-        """Write enhanced curation CSV output with multiple fusions and extended hotspots."""
+        """Write curation CSV output matching expected format."""
         with open(output_curation, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
             
-            # Enhanced header with additional columns
+            # Header matching expected format
             writer.writerow([
-                "Classification", "Subtype", "Confidence", "All_Fusions", "Fusion_Details",
+                "Sample_ID", "Classification", "Subtype", "Confidence", "Fusion_details",
                 "Karyotype_classifier", "PAX5_P80R", "IKZF1_N159Y", "ZEB2_H1038R",
-                "Extended_Hotspots", "WHO-HAEM5", "ICC"
+                "WHO-HAEM5", "ICC"
             ])
             
-            # Format all fusions (not just the first one)
-            all_fusions = self._format_all_fusions()
-            fusion_details = self._format_detailed_fusions() if classification_type == "Manual Curation" else ""
-            
-            # Format extended hotspots
-            extended_hotspots = "; ".join(self.data.get('extended_hotspots', []))
+            # Format fusion details based on classification type
+            if classification_type == "Automatic Classification":
+                fusion_details = self._format_fusion_summary()
+            else:
+                fusion_details = self._format_all_fusions()
             
             writer.writerow([
+                self.sample_id,
                 classification_type,
                 entry['ALLCatchR'],
                 entry['Confidence'],
-                all_fusions,
                 fusion_details,
                 entry['karyotype_classifier'],
                 "PAX5 P80R present" if entry['PAX5_P80R'] else "PAX5 P80R absent",
                 "IKZF1 N159Y present" if entry['IKZF1_N159Y'] else "IKZF1 N159Y absent",
                 "ZEB2 H1038R present" if entry['ZEB2_H1038R'] else "ZEB2 H1038R absent",
-                extended_hotspots if extended_hotspots else "None detected",
                 entry.get('WHO-HAEM5', ''),
                 entry.get('ICC', '')
             ])
+    
+    def _format_fusion_summary(self):
+        """Format fusion summary for automatic classification (simplified format)."""
+        if not self.data['fusions']:
+            return "None: None::None"
+        
+        # For automatic classification, use simplified format
+        fusion = self.data['fusions'][0]  # Take first fusion
+        callers = set()
+        fusion_name = f"{fusion['gene_1']}::{fusion['gene_2']}"
+        
+        # Check which callers found this fusion
+        for f in self.data['fusions']:
+            if f['gene_1'] == fusion['gene_1'] and f['gene_2'] == fusion['gene_2']:
+                callers.add(f['caller'])
+        
+        if len(callers) > 1:
+            caller_str = " & ".join(sorted(callers))
+        else:
+            caller_str = fusion['caller']
+        
+        return f"{caller_str}: {fusion_name}"
     
     def _format_all_fusions(self):
         """Format all detected fusions for display."""

@@ -311,6 +311,42 @@ class ClassificationProcessor:
         
         logger.info(f"✅ Summary created: {len(self.data['summary'])} row(s)")
     
+    def _flexible_fusion_merge(self, summary_df, classification_df, match_cols):
+        """Merge with fusion orientation flexibility - try both orientations."""
+        # First try standard merge (exact orientation)
+        matches = pd.merge(
+            summary_df, classification_df,
+            on=match_cols, how='inner',
+            suffixes=('', '_class')
+        )
+        
+        if not matches.empty:
+            return matches
+        
+        # If no matches and we have fusion columns, try swapped orientation
+        if ('Gene_1_symbol(5end_fusion_partner)' in match_cols and 
+            'Gene_2_symbol(3end_fusion_partner)' in match_cols):
+            
+            logger.info("🔄 Trying swapped fusion orientation...")
+            
+            # Create swapped version of summary for matching
+            summary_swapped = summary_df.copy()
+            summary_swapped['Gene_1_symbol(5end_fusion_partner)'] = summary_df['Gene_2_symbol(3end_fusion_partner)']
+            summary_swapped['Gene_2_symbol(3end_fusion_partner)'] = summary_df['Gene_1_symbol(5end_fusion_partner)']
+            
+            # Try merge with swapped orientation
+            matches_swapped = pd.merge(
+                summary_swapped, classification_df,
+                on=match_cols, how='inner',
+                suffixes=('', '_class')
+            )
+            
+            if not matches_swapped.empty:
+                logger.info("✅ Match found with swapped fusion orientation")
+                return matches_swapped
+        
+        return matches  # Return empty if no matches found
+    
     # ========== PHASE 2: SIMPLE MATCHING ==========
     
     def find_exact_matches(self, classification_df):
@@ -360,12 +396,8 @@ class ClassificationProcessor:
         if subtype != 'CEBP' and not summary_for_match['ZEB2_H1038R'].iloc[0]:
             logger.info("🔧 ZEB2=False in data, allowing match with ZEB2=True in classification DB")
         
-        # Perform exact merge on selected columns
-        matches = pd.merge(
-            summary_for_match, classification_for_match,
-            on=match_cols, how='inner',
-            suffixes=('', '_class')
-        )
+        # Perform exact merge on selected columns, but handle fusion orientation flexibility
+        matches = self._flexible_fusion_merge(summary_for_match, classification_for_match, match_cols)
         
         if not matches.empty:
             logger.info(f"✅ Exact matches found: {len(matches)}")

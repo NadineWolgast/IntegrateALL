@@ -247,12 +247,15 @@ class ClassificationProcessor:
     
     def _is_driver_fusion_in_classtest(self, gene1, gene2, classification_df):
         """Check if fusion is driver gene pair and exists in Class_test.csv."""
-        # Normalize IGH genes
-        gene1_norm = 'IGH@' if gene1.startswith('IGH') else gene1
-        gene2_norm = 'IGH@' if gene2.startswith('IGH') else gene2
+        # Normalize IGH genes for matching - remove @ for Class_test.csv matching
+        gene1_norm = 'IGH' if gene1.startswith('IGH') else gene1
+        gene2_norm = 'IGH' if gene2.startswith('IGH') else gene2
         
-        # Check if both genes are driver genes
-        if not (gene1_norm in DRIVER_FUSION_GENES and gene2_norm in DRIVER_FUSION_GENES):
+        # Check if both genes are driver genes (use original names with @ for driver gene check)
+        gene1_driver_check = 'IGH@' if gene1.startswith('IGH') else gene1
+        gene2_driver_check = 'IGH@' if gene2.startswith('IGH') else gene2
+        
+        if not (gene1_driver_check in DRIVER_FUSION_GENES and gene2_driver_check in DRIVER_FUSION_GENES):
             return False
         
         # Check if combination exists in Class_test.csv (both orientations)
@@ -286,12 +289,16 @@ class ClassificationProcessor:
             # Create one row per fusion
             rows = []
             for fusion in self.data['fusions']:
+                # Normalize IGH@ to IGH for Class_test.csv matching
+                gene1_for_matching = 'IGH' if fusion['gene_1'].startswith('IGH') else fusion['gene_1']
+                gene2_for_matching = 'IGH' if fusion['gene_2'].startswith('IGH') else fusion['gene_2']
+                
                 rows.append({
                     'ALLCatchR': self.data['allcatchr']['subtype'],
                     'Ph-pos': self.data['allcatchr']['ph_pos'],
                     'Confidence': self.data['allcatchr']['confidence'],
-                    'Gene_1_symbol(5end_fusion_partner)': fusion['gene_1'],
-                    'Gene_2_symbol(3end_fusion_partner)': fusion['gene_2'],
+                    'Gene_1_symbol(5end_fusion_partner)': gene1_for_matching,
+                    'Gene_2_symbol(3end_fusion_partner)': gene2_for_matching,
                     'Fusioncaller': fusion['caller'],
                     'Unique_spanning_reads': fusion['spanning_reads'],
                     'karyotype_classifier': self.data['karyotype']['prediction'],

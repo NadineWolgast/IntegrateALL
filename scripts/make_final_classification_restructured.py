@@ -380,11 +380,11 @@ class ClassificationProcessor:
         
         # Apply DUX4 specific rules when needed
         if match_type == 'exact_multiple' and matches is not None:
-            return self._resolve_multiple_matches(matches)
+            return self._resolve_multiple_matches(matches), 'exact_single'
         elif match_type == 'no_exact':
             return self._resolve_no_matches(classification_df)
         else:
-            return matches
+            return matches, match_type
     
     def _resolve_multiple_matches(self, matches):
         """Resolve multiple exact matches."""
@@ -425,8 +425,45 @@ class ClassificationProcessor:
             self.create_summary_dataframe()
             
             # Try exact matching again with filtered data
-            return self.find_exact_matches(classification_df)
+            exact_results = self.find_exact_matches(classification_df)
+            if exact_results[0] is not None:
+                return exact_results
         
+        # If still no exact matches, try flexible matching
+        logger.info("🔧 Trying flexible matching without fusion requirements...")
+        return self._try_flexible_matching(classification_df)
+    
+    def _try_flexible_matching(self, classification_df):
+        """Try flexible matching focusing on ALLCatchR subtype and karyotype."""
+        summary_df = self.data['summary']
+        subtype = self.data['allcatchr']['subtype']
+        
+        # Try matching only on ALLCatchR and karyotype (ignoring fusions)
+        flexible_match_cols = ['ALLCatchR', 'karyotype_classifier']
+        
+        # Add hotspot SNVs if present
+        if summary_df['PAX5_P80R'].iloc[0] or summary_df['IKZF1_N159Y'].iloc[0]:
+            flexible_match_cols.extend(['PAX5_P80R', 'IKZF1_N159Y'])
+        
+        # For CEBP subtype, include ZEB2
+        if subtype == 'CEBP':
+            flexible_match_cols.append('ZEB2_H1038R')
+        
+        logger.info(f"🔧 Flexible matching on: {flexible_match_cols}")
+        
+        # Try flexible matching
+        flexible_matches = pd.merge(
+            summary_df, classification_df,
+            on=flexible_match_cols, how='inner',
+            suffixes=('', '_class')
+        )
+        
+        if not flexible_matches.empty:
+            logger.info(f"✅ Flexible match found: {len(flexible_matches)} matches")
+            # Take the first match if multiple
+            return flexible_matches.head(1), 'flexible_match'
+        
+        logger.info("❌ No flexible matches found")
         return None, 'no_match_after_rules'
     
     # ========== OUTPUT GENERATION ==========
@@ -436,14 +473,15 @@ class ClassificationProcessor:
         output_csv, output_text, output_curation, output_driver = output_paths
         
         if results is not None and not results.empty:
-            self._write_successful_classification(results, output_paths)
+            # Successful classification (exact or flexible match)
+            self._write_successful_classification(results, output_paths, match_type)
         else:
             self._write_manual_curation_needed(output_paths)
         
         # Generate driver fusion file
         self._generate_driver_fusion_file(output_driver)
     
-    def _write_successful_classification(self, results_df, output_paths):
+    def _write_successful_classification(self, results_df, output_paths, match_type='exact'):
         """Write output for successful classification."""
         output_csv, output_text, output_curation, output_driver = output_paths
         

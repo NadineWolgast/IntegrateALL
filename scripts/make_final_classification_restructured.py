@@ -380,19 +380,32 @@ class ClassificationProcessor:
         
         # Apply DUX4 specific rules when needed
         if match_type == 'exact_multiple' and matches is not None:
-            return self._resolve_multiple_matches(matches), 'exact_single'
+            resolved_matches = self._resolve_multiple_matches(matches)
+            if resolved_matches is not None:
+                return resolved_matches, 'exact_single'
+            else:
+                return None, 'multiple_different_diagnoses'
         elif match_type == 'no_exact':
             return self._resolve_no_matches(classification_df)
         else:
             return matches, match_type
     
     def _resolve_multiple_matches(self, matches):
-        """Resolve multiple exact matches."""
+        """Resolve multiple exact matches - check if they have same diagnosis."""
         logger.info("🔧 Resolving multiple matches...")
         
-        # For now, take the first match
-        # TODO: Implement more sophisticated rules
-        return matches.head(1)
+        # Check if all matches have the same WHO-HAEM5 and ICC diagnosis
+        unique_who = matches['WHO-HAEM5'].nunique()
+        unique_icc = matches['ICC'].nunique()
+        
+        if unique_who == 1 and unique_icc == 1:
+            # All matches have same diagnosis - accept (multiple fusions for same diagnosis allowed)
+            logger.info(f"✅ Multiple matches with same diagnosis: {matches.iloc[0]['WHO-HAEM5']}")
+            return matches.head(1)  # Take first match, they're all the same diagnosis
+        else:
+            # Different diagnoses - manual curation required
+            logger.info(f"❌ Multiple matches with different diagnoses: WHO-HAEM5={unique_who}, ICC={unique_icc}")
+            return None
     
     def _resolve_no_matches(self, classification_df):
         """Resolve case with no exact matches using flexible rules."""
@@ -410,11 +423,11 @@ class ClassificationProcessor:
                     # DUX4 fusion in non-DUX4 subtype - check spanning reads
                     try:
                         spanning_reads = int(fusion['spanning_reads'])
-                        if spanning_reads >= 3:
+                        if spanning_reads > 2:
                             valid_fusions.append(fusion)
                             logger.info(f"✅ DUX4 fusion accepted: {fusion['gene_1']}::{fusion['gene_2']} (reads: {spanning_reads})")
                         else:
-                            logger.info(f"❌ DUX4 fusion rejected: {fusion['gene_1']}::{fusion['gene_2']} (reads: {spanning_reads} < 3)")
+                            logger.info(f"❌ DUX4 fusion rejected: {fusion['gene_1']}::{fusion['gene_2']} (reads: {spanning_reads} <= 2)")
                     except:
                         logger.info(f"❌ DUX4 fusion rejected: {fusion['gene_1']}::{fusion['gene_2']} (invalid read count)")
                 else:
@@ -429,41 +442,8 @@ class ClassificationProcessor:
             if exact_results[0] is not None:
                 return exact_results
         
-        # If still no exact matches, try flexible matching
-        logger.info("🔧 Trying flexible matching without fusion requirements...")
-        return self._try_flexible_matching(classification_df)
-    
-    def _try_flexible_matching(self, classification_df):
-        """Try flexible matching focusing on ALLCatchR subtype and karyotype."""
-        summary_df = self.data['summary']
-        subtype = self.data['allcatchr']['subtype']
-        
-        # Try matching only on ALLCatchR and karyotype (ignoring fusions)
-        flexible_match_cols = ['ALLCatchR', 'karyotype_classifier']
-        
-        # Add hotspot SNVs if present
-        if summary_df['PAX5_P80R'].iloc[0] or summary_df['IKZF1_N159Y'].iloc[0]:
-            flexible_match_cols.extend(['PAX5_P80R', 'IKZF1_N159Y'])
-        
-        # For CEBP subtype, include ZEB2
-        if subtype == 'CEBP':
-            flexible_match_cols.append('ZEB2_H1038R')
-        
-        logger.info(f"🔧 Flexible matching on: {flexible_match_cols}")
-        
-        # Try flexible matching
-        flexible_matches = pd.merge(
-            summary_df, classification_df,
-            on=flexible_match_cols, how='inner',
-            suffixes=('', '_class')
-        )
-        
-        if not flexible_matches.empty:
-            logger.info(f"✅ Flexible match found: {len(flexible_matches)} matches")
-            # Take the first match if multiple
-            return flexible_matches.head(1), 'flexible_match'
-        
-        logger.info("❌ No flexible matches found")
+        # No flexible matching - if no exact matches after DUX4 filtering, it's manual curation
+        logger.info("❌ No exact matches found after applying rules")
         return None, 'no_match_after_rules'
     
     # ========== OUTPUT GENERATION ==========

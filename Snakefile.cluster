@@ -105,7 +105,7 @@ rule multiqc:
         expand("qc/fastqc/{{sample}}_{read}_fastqc.zip", read=["R1", "R2"])
     output:
         report="qc/multiqc/{sample}/multiqc_report.html",
-        data_dir=directory("qc/multiqc/{sample}/multiqc_data")
+        data_dir=directory("qc/multiqc/{sample}/multiqc_report_data")
     log:
         "logs/multiqc/{sample}.log"
     conda:

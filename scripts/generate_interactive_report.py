@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Interactive report generator for IntegrateALL pipeline.
-Based on Blast-o-Matic-Fusioninator_cluster solution with adaptations for single MultiQC file.
+Optimized interactive report generator for IntegrateALL pipeline.
+Creates HTML reports with DataTables, navigation, and interactive elements.
 """
 
 import pandas as pd
@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 def safe_read_csv(filepath, delimiter='\t', **kwargs):
     """Safely read CSV file with error handling."""
     try:
-        return pd.read_csv(filepath, delimiter=delimiter, quotechar='"', **kwargs)
+        return pd.read_csv(filepath, delimiter=delimiter, **kwargs)
     except Exception as e:
         logger.warning(f"Could not read {filepath}: {e}")
         return pd.DataFrame()
@@ -49,7 +49,7 @@ def copy_file_safely(src, dst):
 def generate_file_paths(sample_id):
     """Generate all file paths for the report (relative to HTML file)."""
     return {
-        'arriba_pdf': f'"fusions/{sample_id}.pdf"',
+        'arriba_pdf': f'"fusions/{os.path.basename(f"fusions/{sample_id}.pdf")}"',
         'multiqc': f'"qc/multiqc_report.html"',
         'rnaseqcnv_plot': f'"RNAseqCNV/{sample_id}_CNV_main_fig.png"'
     }
@@ -299,7 +299,7 @@ def generate_report(sample_id, prediction_file, fusioncatcher_file, arriba_file,
         # Copy required assets
         assets_copied = 0
         
-        # Copy MultiQC report (single file)
+        # Copy MultiQC report
         multiqc_dir = os.path.join(output_dir, "qc")
         if copy_file_safely(multiqc_report, os.path.join(multiqc_dir, "multiqc_report.html")):
             assets_copied += 1

@@ -381,8 +381,8 @@ rule run_fusioncatcher:
     resources:
         threads=config['threads'],
         mem_mb=config['star_mem'],
-        #runtime=10000, # Next try with runtime - enabled in Snakefile.cluster
-        #slurm_extra="'--qos=long'"  # enabled in Snakefile.cluster
+        runtime=10000, # Next try with runtime
+        slurm_extra="'--qos=long'"
 
     shell:
         '''

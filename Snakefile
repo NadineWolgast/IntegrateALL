@@ -125,6 +125,7 @@ rule multiqc:
         # Run MultiQC only on this sample's files
         multiqc "$temp_dir" \
             --outdir qc/multiqc/{wildcards.sample} \
+            --data-dir multiqc_data \
             --title "Sample {wildcards.sample} QC Report" \
             --filename multiqc_report.html \
             --force \

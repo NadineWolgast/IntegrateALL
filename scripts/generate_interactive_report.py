@@ -334,10 +334,20 @@ def generate_report(sample_id, prediction_file, fusioncatcher_file, arriba_file,
     final_classification_html = final_text.to_html(classes='my-table-class no-sort', index=False) if not final_text.empty else f"<p>Final classification for sample {sample_id}</p>"
     
     rnaseq_manual_table = safe_read_csv(rnaseqcnv_manual_table, delimiter='\t')
-    rnaseq_manual_html = rnaseq_manual_table.to_html(classes='my-table-class no-sort', index=False) if not rnaseq_manual_table.empty else "<p>RNAseqCNV manual table unavailable</p>"
+    # Transpose the manual table for better display
+    if not rnaseq_manual_table.empty:
+        rnaseq_manual_transposed = rnaseq_manual_table.T
+        rnaseq_manual_html = rnaseq_manual_transposed.to_html(classes='my-table-class no-sort', index=True)
+    else:
+        rnaseq_manual_html = "<p>RNAseqCNV manual table unavailable</p>"
     
     rnaseq_log2fc = safe_read_csv(rnaseqcnv_log2fc_file, delimiter='\t')
-    rnaseq_log2fc_html = rnaseq_log2fc.to_html(classes='my-table-class', index=False) if not rnaseq_log2fc.empty else "<p>RNAseqCNV log2FC data unavailable</p>"
+    # Transpose the RNASeqCNV table for better display
+    if not rnaseq_log2fc.empty:
+        rnaseq_log2fc_transposed = rnaseq_log2fc.T
+        rnaseq_log2fc_html = rnaseq_log2fc_transposed.to_html(classes='my-table-class', index=True)
+    else:
+        rnaseq_log2fc_html = "<p>RNAseqCNV log2FC data unavailable</p>"
     
     # Process STAR log
     star_first_part, star_segments = process_star_log(star_log_file)

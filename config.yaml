@@ -1,6 +1,6 @@
 sample_file: samples.csv
 
-absolute_path: /media/nadine/InternalMaybe/IntegrateALL
+absolute_path: /work_beegfs/suk2m376/IntegrateALL
 
 # Memory settings (in MB)
 star_mem: 50000

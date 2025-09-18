@@ -571,7 +571,13 @@ class ClassificationProcessor:
             match_cols.append('Confidence')
         
         # Add other standard columns
-        match_cols.extend(['Ph-pos', 'karyotype_classifier'])
+        match_cols.extend(['Ph-pos', 'karyotype_classifier', 'IKZF1_N159Y'])
+        
+        # For PAX5 P80R, ZEB2_H1038R is optional - don't include in matching
+        if subtype != 'PAX5 P80R':
+            match_cols.append('ZEB2_H1038R')
+        else:
+            logger.info("🔧 PAX5 P80R: Excluding ZEB2_H1038R from matching (optional for this subtype)")
         
         # Filter classification data for entries without fusions (SNV-only)
         classification_for_match = classification_df[

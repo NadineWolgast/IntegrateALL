@@ -67,7 +67,7 @@ SUBTYPE_RULES = {
         },
         'fusion_rules': {
             'required_columns': ['ALLCatchR', 'fusion'],
-            'expected_fusions': ['CEBPA', 'CEBPE', 'CEBPB', 'CEBPD', 'IGH@'],
+            'expected_fusions': ['CEBPA', 'CEBPE', 'CEBPB', 'CEBPD', 'IGH@'],  # CEBP::IGH@ fusions
             'confidence_policy': 'any',
             'min_fusion_reads': 1
         },
@@ -80,7 +80,7 @@ SUBTYPE_RULES = {
         'confidence_policy': 'restricted',  # high-confidence required
         'allowed_confidence': ['high-confidence'],
         'fusion_policy': 'required',
-        'expected_fusions': ['CRLF2', 'IGH@', 'EPOR', 'P2RY8', 'JAK2', 'ABL1', 'BCR', 'PDGFRB', 'ABL2', 'CSF1R', 'ETV6', 'NTRK3', 'ROS1'],  # Ph-like genes
+        'expected_fusions': ['CRLF2', 'IGH@', 'EPOR', 'P2RY8', 'JAK2', 'ABL1', 'BCR', 'PDGFRB', 'ABL2', 'CSF1R', 'ETV6', 'NTRK3', 'ROS1', 'PDGFRA', 'LYN', 'PTK2B', 'IGK', 'IL2RB', 'MYH9', 'IL7-R', 'TYK2', 'MYB', 'ZNF340', 'GOPC', 'TMEM2', 'CBL', 'KANK1', 'DGKH', 'ZFAND3', 'IKZF1', 'ZEB2', 'RCSD1', 'ZC3HAV1', 'EBF1', 'NUP214', 'SSBP2', 'ZMIZ1', 'TNIP1', 'RANBP2', 'ATF7IP', 'SNX2', 'PAG1', 'MEF2D', 'CENPC', 'LSM14A', 'TBL1XR1', 'FIP1L1', 'GATAD2A', 'ZMYND8', 'SNX29', 'EXOSC2', 'FOXP1', 'MYO18B', 'NUP153', 'SFPQ', 'SNX1', 'GATA2DA', 'NCOR1', 'LAIR1', 'PCM1', 'PPFIBP1', 'TERF2', 'TPR', 'OFD1', 'STRN3', 'USP25', 'ZNF274', 'THADA', 'RFX3', 'SMU1', 'WDR37'],  # Complete Ph-like genes from official table
         'min_fusion_reads': 1,
         'secondary_driver_policy': 'manual_curation'  # secondary drivers → manual curation
     },
@@ -90,7 +90,7 @@ SUBTYPE_RULES = {
         'confidence_policy': 'restricted',  # high-confidence required
         'allowed_confidence': ['high-confidence'],
         'fusion_policy': 'required',
-        'expected_fusions': ['CRLF2', 'IGH@', 'EPOR', 'P2RY8', 'JAK2', 'ABL1', 'BCR', 'PDGFRB', 'ABL2', 'CSF1R', 'ETV6', 'NTRK3', 'ROS1'],  # Same as Ph-like
+        'expected_fusions': ['CRLF2', 'IGH@', 'EPOR', 'P2RY8', 'JAK2', 'ABL1', 'BCR', 'PDGFRB', 'ABL2', 'CSF1R', 'ETV6', 'NTRK3', 'ROS1', 'PDGFRA', 'LYN', 'PTK2B', 'IGK', 'IL2RB', 'MYH9', 'IL7-R', 'TYK2', 'MYB', 'ZNF340', 'GOPC', 'TMEM2', 'CBL', 'KANK1', 'DGKH', 'ZFAND3', 'IKZF1', 'ZEB2', 'RCSD1', 'ZC3HAV1', 'EBF1', 'NUP214', 'SSBP2', 'ZMIZ1', 'TNIP1', 'RANBP2', 'ATF7IP', 'SNX2', 'PAG1', 'MEF2D', 'CENPC', 'LSM14A', 'TBL1XR1', 'FIP1L1', 'GATAD2A', 'ZMYND8', 'SNX29', 'EXOSC2', 'FOXP1', 'MYO18B', 'NUP153', 'SFPQ', 'SNX1', 'GATA2DA', 'NCOR1', 'LAIR1', 'PCM1', 'PPFIBP1', 'TERF2', 'TPR', 'OFD1', 'STRN3', 'USP25', 'ZNF274', 'THADA', 'RFX3', 'SMU1', 'WDR37'],  # Same as Ph-like - complete list
         'min_fusion_reads': 1,
         'secondary_driver_policy': 'manual_curation'
     },
@@ -128,7 +128,7 @@ SUBTYPE_RULES = {
         'confidence_policy': 'restricted',  # high-confidence required
         'allowed_confidence': ['high-confidence'],
         'fusion_policy': 'required',
-        'expected_fusions': ['DUX4'],
+        'expected_fusions': ['DUX4', 'IGH@', 'ETV6', 'PCGF5'],
         'min_fusion_reads': 3,  # DUX4 fusions need >2 reads for non-DUX4 subtypes
         'secondary_driver_policy': 'ignore'
     },
@@ -138,7 +138,7 @@ SUBTYPE_RULES = {
         'confidence_policy': 'restricted',  # high-confidence required
         'allowed_confidence': ['high-confidence'],
         'fusion_policy': 'required',
-        'expected_fusions': ['PAX5'],  # PAX5 fusions
+        'expected_fusions': ['PAX5', 'ETV6', 'NOL4L', 'AUTS2', 'ZNF521', 'CBFA2T3', 'DACH1', 'ELN', 'FBRSL1', 'CBFA2T2', 'NCOA5', 'ADAMTSL5', 'TCF3', 'ANTXR1', 'BMP2K', 'LEF1', 'DACH2', 'DBX1', 'DMRTA2', 'ESRRA', 'FKBP15', 'FOXP2', 'ID4', 'IGH@', 'MBNL1', 'MEIS2', 'MPRIP', 'PML', 'RHOXF2B', 'TAF3', 'TMPRSS9', 'WDR5', 'ZNF276'],  # Complete PAX5alt fusions
         'min_fusion_reads': 1,
         'secondary_driver_policy': 'ignore'
     },
@@ -147,7 +147,7 @@ SUBTYPE_RULES = {
         'required_columns': ['ALLCatchR', 'fusion'],
         'confidence_policy': 'flexible',
         'fusion_policy': 'required',
-        'expected_fusions': ['ETV6'],  # ETV6 fusions (not ETV6::RUNX1)
+        'expected_fusions': ['ETV6', 'ELMO1', 'AMPH', 'C7ORF72', 'CASC15', 'CD163', 'EBF1', 'ERC1', 'EXTL1', 'FAM136A', 'FOXO3', 'IKZF1', 'QSOX1', 'SLC30A7', 'SRRM1', 'TMTC1', 'RNFT2', 'STIM2', 'ZPBP'],  # ETV6::RUNX1-like fusions
         'min_fusion_reads': 1,
         'secondary_driver_policy': 'ignore'
     },
@@ -157,7 +157,7 @@ SUBTYPE_RULES = {
         'confidence_policy': 'restricted',  # high-confidence required
         'allowed_confidence': ['high-confidence'],
         'fusion_policy': 'required',
-        'expected_fusions': ['ZNF384'],
+        'expected_fusions': ['ZNF384', 'EP300', 'TAF15', 'TCF3', 'EWSR1', 'ZNF362', 'SMARCA2', 'ARID1B', 'CLTC', 'CREBBP', 'DDX42', 'NIPBL'],
         'min_fusion_reads': 1,
         'secondary_driver_policy': 'ignore'
     },
@@ -167,7 +167,7 @@ SUBTYPE_RULES = {
         'confidence_policy': 'restricted',  # high-confidence required
         'allowed_confidence': ['high-confidence'],
         'fusion_policy': 'required',
-        'expected_fusions': ['KMT2A'],
+        'expected_fusions': ['KMT2A', 'AFF1', 'MLLT1', 'MLLT3', 'MLLT10', 'USP2', 'DCPS', 'EPS15', 'IKZF1', 'TNS3', 'UBASH3B'],
         'min_fusion_reads': 1,
         'secondary_driver_policy': 'ignore'
     },
@@ -176,7 +176,7 @@ SUBTYPE_RULES = {
         'required_columns': ['ALLCatchR', 'fusion'],
         'confidence_policy': 'flexible',
         'fusion_policy': 'required',
-        'expected_fusions': ['MEF2D'],
+        'expected_fusions': ['MEF2D', 'BCL9', 'HNRNPUL1', 'PYGO2', 'DAZAP1', 'FOXJ2', 'HNRNPM', 'SS18'],
         'min_fusion_reads': 1,
         'secondary_driver_policy': 'ignore'
     },
@@ -185,7 +185,7 @@ SUBTYPE_RULES = {
         'required_columns': ['ALLCatchR', 'fusion'],
         'confidence_policy': 'flexible',
         'fusion_policy': 'required',
-        'expected_fusions': ['NUTM1'],
+        'expected_fusions': ['NUTM1', 'SLC12A6', 'ACIN1', 'CUX1', 'BRD9', 'ZNF618', 'IKZF1'],
         'min_fusion_reads': 1,
         'secondary_driver_policy': 'ignore'
     },
@@ -194,7 +194,7 @@ SUBTYPE_RULES = {
         'required_columns': ['ALLCatchR', 'fusion'],
         'confidence_policy': 'flexible',
         'fusion_policy': 'required',
-        'expected_fusions': ['BCR', 'ABL1'],  # BCR::ABL1 fusion
+        'expected_fusions': ['BCR', 'ABL1'],  # BCR::ABL1 fusion only
         'min_fusion_reads': 1,
         'secondary_driver_policy': 'ignore'
     },
@@ -203,7 +203,7 @@ SUBTYPE_RULES = {
         'required_columns': ['ALLCatchR', 'fusion'],
         'confidence_policy': 'flexible',
         'fusion_policy': 'required',
-        'expected_fusions': ['HLF'],
+        'expected_fusions': ['HLF', 'TCF3', 'TCF4'],
         'min_fusion_reads': 1,
         'secondary_driver_policy': 'ignore'
     },
@@ -230,7 +230,7 @@ SUBTYPE_RULES = {
         'required_columns': ['ALLCatchR', 'fusion'],
         'confidence_policy': 'flexible',
         'fusion_policy': 'required',
-        'expected_fusions': ['KMT2A'],  # Same as KMT2A but different subtype
+        'expected_fusions': ['KMT2A', 'HOXA9', 'MED12'],  # KMT2A rearranged-like specific
         'min_fusion_reads': 1,
         'secondary_driver_policy': 'ignore'
     },
@@ -248,7 +248,7 @@ SUBTYPE_RULES = {
         'required_columns': ['ALLCatchR', 'fusion'],
         'confidence_policy': 'flexible',
         'fusion_policy': 'required',
-        'expected_fusions': ['TCF3', 'PBX1'],
+        'expected_fusions': ['TCF3', 'PBX1'],  # TCF3::PBX1 fusion
         'min_fusion_reads': 1,
         'secondary_driver_policy': 'ignore'
     },
@@ -258,7 +258,7 @@ SUBTYPE_RULES = {
         'confidence_policy': 'restricted',  # high-confidence required
         'allowed_confidence': ['high-confidence'],
         'fusion_policy': 'required',
-        'expected_fusions': ['ETV6', 'RUNX1'],
+        'expected_fusions': ['ETV6', 'RUNX1'],  # ETV6::RUNX1 direct fusion
         'min_fusion_reads': 1,
         'secondary_driver_policy': 'ignore'
     },
@@ -276,7 +276,7 @@ SUBTYPE_RULES = {
         'required_columns': ['ALLCatchR', 'fusion'],
         'confidence_policy': 'flexible',
         'fusion_policy': 'required',
-        'expected_fusions': ['ZNF384'],  # Same as ZNF384 but different subtype
+        'expected_fusions': ['ZNF384', 'EP300', 'TAF15', 'TCF3', 'EWSR1', 'ZNF362', 'SMARCA2', 'ARID1B', 'CLTC', 'CREBBP', 'DDX42', 'NIPBL'],  # Same as ZNF384
         'min_fusion_reads': 1,
         'secondary_driver_policy': 'ignore'
     }

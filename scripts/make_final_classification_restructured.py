@@ -83,7 +83,7 @@ SUBTYPE_RULES = {
         'min_fusion_reads': 1,
         'secondary_driver_policy': 'manual_curation'
     },
-    'hyperdiploid': {
+    'Hyperdiploid': {
         'evidence_type': 'karyotype',
         'required_columns': ['ALLCatchR', 'karyotype_classifier'], 
         'required_values': {'karyotype_classifier': 'Hyperdiploid'},
@@ -606,15 +606,62 @@ class ClassificationProcessor:
                 logger.info(f"❌ Required karyotype not met: {sample_value}, expected {required_value}")
                 return None, 'karyotype_mismatch'
         
-        # Check fusion read thresholds if applicable
-        if rules.get('fusion_policy') == 'conditional':
-            high_read_fusions = self._check_fusion_read_thresholds(rules)
-            if high_read_fusions:
-                logger.info(f"⚠️ High-read fusions detected: {high_read_fusions} → Manual curation")
-                return None, 'high_read_fusions'
+        logger.info(f"✅ Required karyotype confirmed: {sample_value}")
         
-        # Use regular matching for karyotype-based subtypes
-        return self.find_exact_matches(classification_df)
+        # Handle fusion filtering based on policy
+        if rules.get('fusion_policy') == 'conditional':
+            # Filter out low-read fusions first
+            self._filter_low_read_fusions(rules)
+            
+            # Check if any high-read fusions remain
+            if self.data['fusions']:
+                high_read_fusions = []
+                for fusion in self.data['fusions']:
+                    try:
+                        reads = int(fusion['spanning_reads'])
+                        high_read_fusions.append(f"{fusion['gene_1']}::{fusion['gene_2']} (reads: {reads})")
+                    except:
+                        continue
+                
+                if high_read_fusions:
+                    logger.info(f"⚠️ High-read fusions detected after filtering: {high_read_fusions} → Manual curation")
+                    return None, 'high_read_fusions'
+        
+        # For karyotype-based subtypes, match without fusion requirements
+        # Get summary data  
+        summary_df = self.data['summary']
+        if summary_df.empty:
+            return None, 'no_data'
+        
+        # Match on karyotype-specific columns (exclude fusion columns)
+        match_cols = ['ALLCatchR', 'Ph-pos', 'karyotype_classifier']
+        
+        # Add confidence if policy requires it
+        if rules.get('confidence_policy') != 'any':
+            match_cols.append('Confidence')
+        
+        # Filter classification data for entries without fusions (karyotype-only)
+        classification_for_match = classification_df[
+            classification_df['Gene_1_symbol(5end_fusion_partner)'].isnull()
+        ]
+        
+        logger.info(f"🔍 Matching karyotype subtype on columns: {match_cols}")
+        logger.info(f"🔍 Classification entries without fusions: {len(classification_for_match)}")
+        
+        # Use flexible confidence matching (but no fusion columns)
+        matches = self._flexible_confidence_and_fusion_merge(
+            summary_df.head(1), classification_for_match, match_cols
+        )
+        
+        if not matches.empty:
+            logger.info(f"✅ Karyotype subtype matches found: {len(matches)}")
+            if len(matches) == 1:
+                return matches, 'exact_single'
+            else:
+                return matches, 'exact_multiple'
+        else:
+            logger.info("❌ No karyotype subtype matches found")
+            return None, 'no_exact'
     
     def _detect_secondary_drivers(self, rules):
         """Detect secondary driver fusions that might cause conflicts."""
@@ -643,6 +690,30 @@ class ClassificationProcessor:
                 continue
         
         return high_read_fusions
+    
+    def _filter_low_read_fusions(self, rules):
+        """Remove low-read fusions based on thresholds."""
+        threshold = rules.get('fusion_read_threshold', 3)
+        original_count = len(self.data['fusions'])
+        
+        filtered_fusions = []
+        for fusion in self.data['fusions']:
+            try:
+                reads = int(fusion['spanning_reads'])
+                if reads < threshold:
+                    logger.info(f"🔧 Filtering low-read fusion: {fusion['gene_1']}::{fusion['gene_2']} (reads: {reads} < {threshold})")
+                else:
+                    filtered_fusions.append(fusion)
+            except:
+                # Keep fusion if read count can't be parsed
+                filtered_fusions.append(fusion)
+        
+        self.data['fusions'] = filtered_fusions
+        logger.info(f"🔧 Fusions filtered: {original_count} → {len(filtered_fusions)}")
+        
+        # Recreate summary after filtering
+        if filtered_fusions != self.data['fusions']:
+            self.create_summary_dataframe()
     
     # ========== FALLBACK: GENERAL MATCHING ==========
     

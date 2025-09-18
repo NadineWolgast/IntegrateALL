@@ -501,6 +501,14 @@ class ClassificationProcessor:
             'ZEB2 H1038R': 'ZEB2_H1038R'
         })
         
+        # Convert boolean string values to Python booleans for consistent matching
+        for col in ['PAX5_P80R', 'IKZF1_N159Y', 'ZEB2_H1038R']:
+            if col in classification_df.columns:
+                classification_df[col] = classification_df[col].map({
+                    'TRUE': True, 'True': True, 'true': True,
+                    'FALSE': False, 'False': False, 'false': False
+                }).fillna(classification_df[col])  # Keep original if not a boolean string
+        
         subtype = self.data['allcatchr']['subtype']
         logger.info(f"🎯 SUBTYPE-AWARE MATCHING: {subtype}")
         

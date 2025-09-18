@@ -752,7 +752,7 @@ rule final_classification:
         fusioncatcher_file="fusioncatcher_output/{sample}/final-list_candidate-fusion-genes.txt",
         arriba_file="fusions/{sample}.tsv",
         hotspots="Hotspots/{sample}",
-        classification_file="Class_test.csv"
+        classification_file="data/annotation/Class_test.csv"
 
     output:
         csv="Final_classification/{sample}_output_report.csv",

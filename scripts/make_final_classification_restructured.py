@@ -506,6 +506,7 @@ class ClassificationProcessor:
         # Check if we have specific rules for this subtype
         if subtype not in SUBTYPE_RULES:
             logger.info(f"⚠️ No specific rules for {subtype} - using fallback to general matching")
+            logger.info(f"🔍 Available rules for subtypes: {list(SUBTYPE_RULES.keys())}")
             return self.find_exact_matches(classification_df)
         
         rules = SUBTYPE_RULES[subtype]
@@ -532,8 +533,10 @@ class ClassificationProcessor:
             return None, 'no_data'
         
         # Check if required SNV is present
+        logger.info(f"🔍 SNV data available: {self.data.get('snvs', {})}")
         for snv_col, required_value in rules.get('required_values', {}).items():
             sample_value = self.data.get('snvs', {}).get(snv_col, False)
+            logger.info(f"🔍 Checking SNV: {snv_col}={sample_value} (expected: {required_value})")
             if sample_value != required_value:
                 logger.info(f"❌ Required SNV not met: {snv_col}={sample_value}, expected {required_value}")
                 return None, 'snv_mismatch'

@@ -175,9 +175,13 @@ class ClassificationProcessor:
         try:
             fc_df = pd.read_csv(fusioncatcher_file, sep='\t', skiprows=1, header=None)
             if not fc_df.empty and len(fc_df.columns) >= 6:
+                logger.info(f"🔍 FusionCatcher: Processing {len(fc_df)} fusion candidates...")
                 for _, row in fc_df.iterrows():
                     gene1, gene2, spanning_reads = row[0], row[1], row[5]
+                    logger.info(f"   Checking fusion: {gene1}::{gene2}")
+                    
                     if self._is_driver_fusion_in_classtest(gene1, gene2, classification_df):
+                        logger.info(f"   ✅ Driver fusion accepted: {gene1}::{gene2}")
                         fusion_data = {
                             'gene_1': gene1,
                             'gene_2': gene2,
@@ -198,6 +202,8 @@ class ClassificationProcessor:
                             })
                         
                         fusions.append(fusion_data)
+                    else:
+                        logger.info(f"   ❌ Fusion rejected: {gene1}::{gene2}")
         except Exception as e:
             logger.warning(f"Error loading FusionCatcher data: {e}")
         

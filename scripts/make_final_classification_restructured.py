@@ -573,11 +573,16 @@ class ClassificationProcessor:
         # Add other standard columns
         match_cols.extend(['Ph-pos', 'karyotype_classifier', 'IKZF1_N159Y'])
         
-        # For PAX5 P80R, ZEB2_H1038R is optional - don't include in matching
-        if subtype != 'PAX5 P80R':
+        # Smart ZEB2 handling for non-CEBP subtypes (same logic as general matching)
+        if subtype == 'with mutated ZEB2 (p.H1038R)/IGH::CEBPE (provisional entity)':
+            # CEBP subtype: ZEB2_H1038R must be True (exact match required)
             match_cols.append('ZEB2_H1038R')
+            logger.info("🎯 CEBP subtype: ZEB2_H1038R must be True (exact matching)")
         else:
-            logger.info("🔧 PAX5 P80R: Excluding ZEB2_H1038R from matching (optional for this subtype)")
+            # Non-CEBP subtype: ZEB2_H1038R ignored in matching
+            logger.info("🎯 Non-CEBP subtype: ZEB2_H1038R ignored in matching")
+            if not summary_df['ZEB2_H1038R'].iloc[0]:
+                logger.info("🔧 ZEB2=False in data, allowing match with ZEB2=True in classification DB")
         
         # Filter classification data for entries without fusions (SNV-only)
         classification_for_match = classification_df[

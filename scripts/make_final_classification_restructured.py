@@ -392,6 +392,11 @@ class ClassificationProcessor:
                 classification_df['Gene_1_symbol(5end_fusion_partner)'].isnull()
             ]
         
+        # Handle NaN/empty Confidence values in Class_test.csv - exclude from matching
+        if 'Confidence' in match_cols and classification_for_match['Confidence'].isnull().all():
+            logger.info("🔧 Class_test.csv has empty Confidence values - excluding from matching")
+            match_cols = [col for col in match_cols if col != 'Confidence']
+        
         # For non-CEBP subtypes with ZEB2=False in data, allow matching with ZEB2=True in class_test
         if subtype != 'CEBP' and not summary_for_match['ZEB2_H1038R'].iloc[0]:
             logger.info("🔧 ZEB2=False in data, allowing match with ZEB2=True in classification DB")

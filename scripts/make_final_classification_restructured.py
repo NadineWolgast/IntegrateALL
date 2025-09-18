@@ -277,8 +277,20 @@ class ClassificationProcessor:
         try:
             arriba_df = pd.read_csv(arriba_file, sep='\t', skiprows=1, header=None)
             if not arriba_df.empty and len(arriba_df.columns) >= 2:
+                logger.info(f"🔍 Arriba: Processing {len(arriba_df)} fusion candidates...")
                 for _, row in arriba_df.iterrows():
-                    gene1, gene2 = row[0], row[1]
+                    original_gene1, original_gene2 = row[0], row[1]
+                    gene1, gene2 = original_gene1, original_gene2
+                    
+                    # Normalize IGH genes for Arriba (add @ if missing)
+                    if gene1.startswith('IGH') and not gene1.endswith('@'):
+                        gene1 = 'IGH@'
+                        logger.info(f"   🔧 IGH normalization: {original_gene1} → {gene1}")
+                    if gene2.startswith('IGH') and not gene2.endswith('@'):
+                        gene2 = 'IGH@'
+                        logger.info(f"   🔧 IGH normalization: {original_gene2} → {gene2}")
+                    
+                    logger.info(f"   Checking fusion: {gene1}::{gene2}")
                     
                     # Spanning reads: try column 11 first (real Arriba), then column 5 (test data)
                     if len(row) > 11:
@@ -289,6 +301,7 @@ class ClassificationProcessor:
                         spanning_reads = 1  # Default fallback
                     
                     if self._is_driver_fusion_in_classtest(gene1, gene2, classification_df):
+                        logger.info(f"   ✅ Driver fusion accepted: {gene1}::{gene2}")
                         fusion_data = {
                             'gene_1': gene1,
                             'gene_2': gene2,
@@ -309,6 +322,8 @@ class ClassificationProcessor:
                             })
                         
                         fusions.append(fusion_data)
+                    else:
+                        logger.info(f"   ❌ Fusion rejected: {gene1}::{gene2}")
         except Exception as e:
             logger.warning(f"Error loading Arriba data: {e}")
         
@@ -596,14 +611,30 @@ class ClassificationProcessor:
         logger.info(f"🔍 Matching SNV subtype on columns: {match_cols}")
         logger.info(f"🔍 Classification entries without fusions: {len(classification_for_match)}")
         
-        # Debug: Show some classification entries to understand the data
+        # Debug: Show all ALLCatchR values to find PAX5 P80R entries
         if not classification_for_match.empty:
-            logger.info("🔍 DEBUG: Sample classification entries:")
-            for i, row in classification_for_match.head(5).iterrows():
-                logger.info(f"      Row {i}:")
-                for col in match_cols:
-                    if col in classification_for_match.columns:
-                        logger.info(f"        {col}: {row[col]} (type: {type(row[col])})")
+            unique_subtypes = classification_for_match['ALLCatchR'].unique()
+            logger.info(f"🔍 DEBUG: All ALLCatchR subtypes in filtered data: {unique_subtypes}")
+            
+            # Specifically look for PAX5 P80R entries
+            pax5_entries = classification_for_match[classification_for_match['ALLCatchR'] == 'PAX5 P80R']
+            logger.info(f"🔍 DEBUG: PAX5 P80R entries found: {len(pax5_entries)}")
+            
+            if len(pax5_entries) > 0:
+                logger.info("🔍 DEBUG: PAX5 P80R entries details:")
+                for i, row in pax5_entries.iterrows():
+                    logger.info(f"      Row {i}:")
+                    for col in match_cols:
+                        if col in classification_for_match.columns:
+                            logger.info(f"        {col}: {row[col]} (type: {type(row[col])})")
+            else:
+                # Show Gene_1 and Gene_2 values to understand why PAX5 P80R is filtered out
+                logger.info("🔍 DEBUG: Checking original fusion column values:")
+                full_df_pax5 = classification_df[classification_df['ALLCatchR'] == 'PAX5 P80R']
+                logger.info(f"🔍 DEBUG: Total PAX5 P80R entries in full database: {len(full_df_pax5)}")
+                if len(full_df_pax5) > 0:
+                    for i, row in full_df_pax5.head(3).iterrows():
+                        logger.info(f"      Row {i}: Gene_1='{row['Gene_1_symbol(5end_fusion_partner)']}', Gene_2='{row['Gene_2_symbol(3end_fusion_partner)']}'")
         
         # Use flexible confidence matching
         matches = self._flexible_confidence_and_fusion_merge(

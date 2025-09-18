@@ -270,12 +270,13 @@ class ClassificationProcessor:
             return False
         
         # Check if combination exists in Class_test.csv (both orientations)
-        exists1 = ((classification_df['Gene_1_symbol(5end_fusion_partner)'] == gene1_norm) &
-                  (classification_df['Gene_2_symbol(3end_fusion_partner)'] == gene2_norm)).any()
-        exists2 = ((classification_df['Gene_1_symbol(5end_fusion_partner)'] == gene2_norm) &
-                  (classification_df['Gene_2_symbol(3end_fusion_partner)'] == gene1_norm)).any()
+        # Use original gene names for Class_test.csv lookup (Class_test.csv has IGH@ not IGH)
+        exists1 = ((classification_df['Gene_1_symbol(5end_fusion_partner)'] == gene1) &
+                  (classification_df['Gene_2_symbol(3end_fusion_partner)'] == gene2)).any()
+        exists2 = ((classification_df['Gene_1_symbol(5end_fusion_partner)'] == gene2) &
+                  (classification_df['Gene_2_symbol(3end_fusion_partner)'] == gene1)).any()
         
-        logger.info(f"      🔍 Class_test.csv check: {gene1_norm}::{gene2_norm}={exists1}, {gene2_norm}::{gene1_norm}={exists2}")
+        logger.info(f"      🔍 Class_test.csv check: {gene1}::{gene2}={exists1}, {gene2}::{gene1}={exists2}")
         
         exists = exists1 or exists2
         logger.info(f"      {'✅' if exists else '❌'} Final result: {exists}")

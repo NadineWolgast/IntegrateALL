@@ -593,6 +593,15 @@ class ClassificationProcessor:
         logger.info(f"🔍 Matching SNV subtype on columns: {match_cols}")
         logger.info(f"🔍 Classification entries without fusions: {len(classification_for_match)}")
         
+        # Debug: Show some classification entries to understand the data
+        if not classification_for_match.empty:
+            logger.info("🔍 DEBUG: Sample classification entries:")
+            for i, row in classification_for_match.head(5).iterrows():
+                logger.info(f"      Row {i}:")
+                for col in match_cols:
+                    if col in classification_for_match.columns:
+                        logger.info(f"        {col}: {row[col]} (type: {type(row[col])})")
+        
         # Use flexible confidence matching
         matches = self._flexible_confidence_and_fusion_merge(
             summary_df.head(1), classification_for_match, match_cols

@@ -492,6 +492,14 @@ class ClassificationProcessor:
     
     def find_subtype_aware_matches(self, classification_df):
         """Apply subtype-specific matching rules."""
+        # Rename columns for consistency first
+        classification_df = classification_df.rename(columns={
+            'karyotype classifier': 'karyotype_classifier',
+            'PAX5 P80R': 'PAX5_P80R',
+            'IKZF1 N159Y': 'IKZF1_N159Y', 
+            'ZEB2 H1038R': 'ZEB2_H1038R'
+        })
+        
         subtype = self.data['allcatchr']['subtype']
         logger.info(f"🎯 SUBTYPE-AWARE MATCHING: {subtype}")
         

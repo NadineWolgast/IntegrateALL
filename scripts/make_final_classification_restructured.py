@@ -303,16 +303,13 @@ class ClassificationProcessor:
             # Create one row per fusion
             rows = []
             for fusion in self.data['fusions']:
-                # Normalize IGH@ to IGH for Class_test.csv matching
-                gene1_for_matching = 'IGH' if fusion['gene_1'].startswith('IGH') else fusion['gene_1']
-                gene2_for_matching = 'IGH' if fusion['gene_2'].startswith('IGH') else fusion['gene_2']
-                
+                # Use original gene names for matching (Class_test.csv has IGH@ not IGH)
                 rows.append({
                     'ALLCatchR': self.data['allcatchr']['subtype'],
                     'Ph-pos': self.data['allcatchr']['ph_pos'],
                     'Confidence': self.data['allcatchr']['confidence'],
-                    'Gene_1_symbol(5end_fusion_partner)': gene1_for_matching,
-                    'Gene_2_symbol(3end_fusion_partner)': gene2_for_matching,
+                    'Gene_1_symbol(5end_fusion_partner)': fusion['gene_1'],
+                    'Gene_2_symbol(3end_fusion_partner)': fusion['gene_2'],
                     'Fusioncaller': fusion['caller'],
                     'Unique_spanning_reads': fusion['spanning_reads'],
                     'karyotype_classifier': self.data['karyotype']['prediction'],

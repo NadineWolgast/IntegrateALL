@@ -434,9 +434,9 @@ class ClassificationProcessor:
                 classification_df['Gene_1_symbol(5end_fusion_partner)'].isnull()
             ]
         
-        # Handle NaN/empty Confidence values in Class_test.csv - exclude from matching
-        if 'Confidence' in match_cols and classification_for_match['Confidence'].isnull().all():
-            logger.info("🔧 Class_test.csv has empty Confidence values - excluding from matching")
+        # Handle Confidence matching - exclude for Ph-like as they have empty values in Class_test.csv
+        if 'Confidence' in match_cols and subtype == 'Ph-like':
+            logger.info("🔧 Ph-like subtype: excluding Confidence from matching (empty in Class_test.csv)")
             match_cols = [col for col in match_cols if col != 'Confidence']
         
         # For non-CEBP subtypes with ZEB2=False in data, allow matching with ZEB2=True in class_test

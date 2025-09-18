@@ -39,6 +39,71 @@ DRIVER_FUSION_GENES = {
     "ZNF276", "ZNF340", "ZNF362", "ZNF384", "ZNF521", "ZNF618", "ZPBP"
 }
 
+# Subtype-specific classification rules
+SUBTYPE_RULES = {
+    'PAX5 P80R': {
+        'evidence_type': 'snv',
+        'required_columns': ['ALLCatchR', 'PAX5_P80R'],
+        'required_values': {'PAX5_P80R': True},
+        'confidence_policy': 'any',  # any confidence value accepted
+        'fusion_policy': 'optional',  # fusions are optional
+        'secondary_driver_policy': 'ignore'  # ignore secondary drivers
+    },
+    'IKZF1 N159Y': {
+        'evidence_type': 'snv', 
+        'required_columns': ['ALLCatchR', 'IKZF1_N159Y'],
+        'required_values': {'IKZF1_N159Y': True},
+        'confidence_policy': 'any',
+        'fusion_policy': 'optional',
+        'secondary_driver_policy': 'ignore'
+    },
+    'with mutated ZEB2 (p.H1038R)/IGH::CEBPE (provisional entity)': {
+        'evidence_type': 'snv',
+        'required_columns': ['ALLCatchR', 'Confidence', 'ZEB2_H1038R'],
+        'required_values': {'ZEB2_H1038R': True},
+        'confidence_policy': 'restricted',
+        'allowed_confidence': ['high-confidence', 'candidate'],
+        'fusion_policy': 'optional',
+        'secondary_driver_policy': 'ignore'
+    },
+    'Ph-like': {
+        'evidence_type': 'fusion',
+        'required_columns': ['ALLCatchR', 'fusion'],
+        'confidence_policy': 'flexible',  # ignore if empty in Class_test.csv
+        'fusion_policy': 'required',
+        'min_fusion_reads': 1,
+        'secondary_driver_policy': 'manual_curation'  # secondary drivers → manual curation
+    },
+    'BCL2/MYC': {
+        'evidence_type': 'fusion',
+        'required_columns': ['ALLCatchR', 'fusion'],
+        'confidence_policy': 'flexible',
+        'fusion_policy': 'required', 
+        'expected_fusions': ['BCL2', 'MYC', 'BCL6', 'IGH@'],
+        'min_fusion_reads': 1,
+        'secondary_driver_policy': 'manual_curation'
+    },
+    'hyperdiploid': {
+        'evidence_type': 'karyotype',
+        'required_columns': ['ALLCatchR', 'karyotype_classifier'], 
+        'required_values': {'karyotype_classifier': 'Hyperdiploid'},
+        'confidence_policy': 'any',
+        'fusion_policy': 'conditional',  # low reads ignored, high reads → manual
+        'fusion_read_threshold': 3,  # >=3 reads → manual curation
+        'secondary_driver_policy': 'read_threshold'
+    },
+    'DUX4': {
+        'evidence_type': 'fusion',
+        'required_columns': ['ALLCatchR', 'fusion'],
+        'confidence_policy': 'flexible',
+        'fusion_policy': 'required',
+        'expected_fusions': ['DUX4'],
+        'min_fusion_reads': 3,  # DUX4 fusions need >2 reads for non-DUX4 subtypes
+        'secondary_driver_policy': 'ignore'
+    }
+    # Add more subtypes as needed...
+}
+
 
 class ClassificationProcessor:
     """Restructured processor with 3-phase approach."""
@@ -423,7 +488,163 @@ class ClassificationProcessor:
         logger.info(f"🔍 DEBUG: {orientation} orientation final matches: {len(result)}")
         return result
     
-    # ========== PHASE 2: SIMPLE MATCHING ==========
+    # ========== PHASE 2: SUBTYPE-AWARE MATCHING ==========
+    
+    def find_subtype_aware_matches(self, classification_df):
+        """Apply subtype-specific matching rules."""
+        subtype = self.data['allcatchr']['subtype']
+        logger.info(f"🎯 SUBTYPE-AWARE MATCHING: {subtype}")
+        
+        # Check if we have specific rules for this subtype
+        if subtype not in SUBTYPE_RULES:
+            logger.info(f"⚠️ No specific rules for {subtype} - using fallback to general matching")
+            return self.find_exact_matches(classification_df)
+        
+        rules = SUBTYPE_RULES[subtype]
+        logger.info(f"📋 Rules for {subtype}: {rules['evidence_type']} evidence type")
+        
+        # Apply subtype-specific logic
+        if rules['evidence_type'] == 'snv':
+            return self._match_snv_subtype(classification_df, rules)
+        elif rules['evidence_type'] == 'fusion':
+            return self._match_fusion_subtype(classification_df, rules)
+        elif rules['evidence_type'] == 'karyotype':
+            return self._match_karyotype_subtype(classification_df, rules)
+        else:
+            logger.info(f"⚠️ Unknown evidence type: {rules['evidence_type']}")
+            return self.find_exact_matches(classification_df)
+    
+    def _match_snv_subtype(self, classification_df, rules):
+        """Handle SNV-based subtypes like PAX5 P80R, IKZF1 N159Y."""
+        logger.info("🧬 Matching SNV-based subtype...")
+        
+        # Get summary data
+        summary_df = self.data['summary']
+        if summary_df.empty:
+            return None, 'no_data'
+        
+        # Check if required SNV is present
+        for snv_col, required_value in rules.get('required_values', {}).items():
+            sample_value = self.data.get('snvs', {}).get(snv_col, False)
+            if sample_value != required_value:
+                logger.info(f"❌ Required SNV not met: {snv_col}={sample_value}, expected {required_value}")
+                return None, 'snv_mismatch'
+        
+        # Build matching columns based on rules
+        match_cols = ['ALLCatchR']
+        
+        # Add required SNV columns
+        for snv_col in rules.get('required_values', {}):
+            if snv_col in ['PAX5_P80R', 'IKZF1_N159Y', 'ZEB2_H1038R']:
+                match_cols.append(snv_col)
+        
+        # Handle Confidence based on policy
+        if rules['confidence_policy'] == 'restricted':
+            # Only allow specific confidence values
+            sample_confidence = self.data['allcatchr']['confidence']
+            allowed = rules.get('allowed_confidence', [])
+            if sample_confidence not in allowed:
+                logger.info(f"❌ Confidence {sample_confidence} not in allowed values: {allowed}")
+                return None, 'confidence_mismatch'
+            match_cols.append('Confidence')
+        elif rules['confidence_policy'] != 'any':
+            match_cols.append('Confidence')
+        
+        # Add other standard columns
+        match_cols.extend(['Ph-pos', 'karyotype_classifier'])
+        
+        # Filter classification data for entries without fusions (SNV-only)
+        classification_for_match = classification_df[
+            classification_df['Gene_1_symbol(5end_fusion_partner)'].isnull()
+        ]
+        
+        logger.info(f"🔍 Matching SNV subtype on columns: {match_cols}")
+        logger.info(f"🔍 Classification entries without fusions: {len(classification_for_match)}")
+        
+        # Use flexible confidence matching
+        matches = self._flexible_confidence_and_fusion_merge(
+            summary_df.head(1), classification_for_match, match_cols
+        )
+        
+        if not matches.empty:
+            logger.info(f"✅ SNV subtype matches found: {len(matches)}")
+            if len(matches) == 1:
+                return matches, 'exact_single'
+            else:
+                return matches, 'exact_multiple'
+        else:
+            logger.info("❌ No SNV subtype matches found")
+            return None, 'no_exact'
+    
+    def _match_fusion_subtype(self, classification_df, rules):
+        """Handle fusion-based subtypes like Ph-like, BCL2/MYC."""
+        logger.info("🔗 Matching fusion-based subtype...")
+        
+        # Check if we have required fusions
+        if not self.data['fusions']:
+            logger.info("❌ No fusions found for fusion-based subtype")
+            return None, 'no_fusions'
+        
+        # Check for secondary drivers if policy requires it
+        if rules.get('secondary_driver_policy') == 'manual_curation':
+            secondary_drivers = self._detect_secondary_drivers(rules)
+            if secondary_drivers:
+                logger.info(f"⚠️ Secondary drivers detected: {secondary_drivers} → Manual curation")
+                return None, 'secondary_drivers'
+        
+        # Use the existing fusion matching logic but with subtype-specific rules
+        return self.find_exact_matches(classification_df)
+    
+    def _match_karyotype_subtype(self, classification_df, rules):
+        """Handle karyotype-based subtypes like Hyperdiploid."""
+        logger.info("🧬 Matching karyotype-based subtype...")
+        
+        # Check if required karyotype is present
+        for karyo_col, required_value in rules.get('required_values', {}).items():
+            sample_value = self.data['karyotype'].get('prediction', 'other')
+            if sample_value != required_value:
+                logger.info(f"❌ Required karyotype not met: {sample_value}, expected {required_value}")
+                return None, 'karyotype_mismatch'
+        
+        # Check fusion read thresholds if applicable
+        if rules.get('fusion_policy') == 'conditional':
+            high_read_fusions = self._check_fusion_read_thresholds(rules)
+            if high_read_fusions:
+                logger.info(f"⚠️ High-read fusions detected: {high_read_fusions} → Manual curation")
+                return None, 'high_read_fusions'
+        
+        # Use regular matching for karyotype-based subtypes
+        return self.find_exact_matches(classification_df)
+    
+    def _detect_secondary_drivers(self, rules):
+        """Detect secondary driver fusions that might cause conflicts."""
+        secondary_drivers = []
+        expected_genes = set(rules.get('expected_fusions', []))
+        
+        for fusion in self.data['fusions']:
+            fusion_genes = {fusion['gene_1'], fusion['gene_2']}
+            # If fusion contains genes not expected for this subtype
+            if not fusion_genes.intersection(expected_genes):
+                secondary_drivers.append(f"{fusion['gene_1']}::{fusion['gene_2']}")
+        
+        return secondary_drivers
+    
+    def _check_fusion_read_thresholds(self, rules):
+        """Check if any fusions exceed read count thresholds."""
+        threshold = rules.get('fusion_read_threshold', 3)
+        high_read_fusions = []
+        
+        for fusion in self.data['fusions']:
+            try:
+                reads = int(fusion['spanning_reads'])
+                if reads >= threshold:
+                    high_read_fusions.append(f"{fusion['gene_1']}::{fusion['gene_2']} (reads: {reads})")
+            except:
+                continue
+        
+        return high_read_fusions
+    
+    # ========== FALLBACK: GENERAL MATCHING ==========
     
     def find_exact_matches(self, classification_df):
         """Try simple 1:1 exact matching against Class_test.csv with smart ZEB2 handling."""
@@ -789,9 +1010,9 @@ def main(sample, allcatchr_file, karyotype_file, fusioncatcher_file, arriba_file
     processor.collect_fusion_data(fusioncatcher_file, arriba_file, classification_df)
     processor.create_summary_dataframe()
     
-    # ========== PHASE 2: SIMPLE MATCHING ==========
-    logger.info("🎯 PHASE 2: Attempting exact matching...")
-    results, match_type = processor.find_exact_matches(classification_df)
+    # ========== PHASE 2: SUBTYPE-AWARE MATCHING ==========
+    logger.info("🎯 PHASE 2: Attempting subtype-aware matching...")
+    results, match_type = processor.find_subtype_aware_matches(classification_df)
     
     # ========== PHASE 3: COMPLEX RULES (if needed) ==========
     if match_type != 'exact_single':

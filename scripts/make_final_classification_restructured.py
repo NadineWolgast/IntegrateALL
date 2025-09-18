@@ -57,28 +57,48 @@ SUBTYPE_RULES = {
         'fusion_policy': 'optional',
         'secondary_driver_policy': 'ignore'
     },
-    'with mutated ZEB2 (p.H1038R)/IGH::CEBPE (provisional entity)': {
-        'evidence_type': 'snv',
-        'required_columns': ['ALLCatchR', 'Confidence', 'ZEB2_H1038R'],
-        'required_values': {'ZEB2_H1038R': True},
-        'confidence_policy': 'restricted',
-        'allowed_confidence': ['high-confidence', 'candidate'],
+    'CEBP': {
+        'evidence_type': 'hybrid',  # Can be SNV or fusion based
+        'snv_rules': {
+            'required_columns': ['ALLCatchR', 'Confidence', 'ZEB2_H1038R'],
+            'required_values': {'ZEB2_H1038R': True},
+            'confidence_policy': 'restricted',
+            'allowed_confidence': ['high-confidence', 'candidate confidence']
+        },
+        'fusion_rules': {
+            'required_columns': ['ALLCatchR', 'fusion'],
+            'expected_fusions': ['CEBPA', 'CEBPE', 'CEBPB', 'CEBPD', 'IGH@'],
+            'confidence_policy': 'any',
+            'min_fusion_reads': 1
+        },
         'fusion_policy': 'optional',
         'secondary_driver_policy': 'ignore'
     },
     'Ph-like': {
         'evidence_type': 'fusion',
-        'required_columns': ['ALLCatchR', 'fusion'],
-        'confidence_policy': 'flexible',  # ignore if empty in Class_test.csv
+        'required_columns': ['ALLCatchR', 'fusion', 'Confidence'],
+        'confidence_policy': 'restricted',  # high-confidence required
+        'allowed_confidence': ['high-confidence'],
         'fusion_policy': 'required',
-        'expected_fusions': ['CRLF2', 'IGH@', 'EPOR', 'P2RY8', 'JAK2', 'ABL1', 'BCR'],  # Common Ph-like genes
+        'expected_fusions': ['CRLF2', 'IGH@', 'EPOR', 'P2RY8', 'JAK2', 'ABL1', 'BCR', 'PDGFRB', 'ABL2', 'CSF1R', 'ETV6', 'NTRK3', 'ROS1'],  # Ph-like genes
         'min_fusion_reads': 1,
         'secondary_driver_policy': 'manual_curation'  # secondary drivers → manual curation
     },
+    'BCR::ABL1-like': {
+        'evidence_type': 'fusion',
+        'required_columns': ['ALLCatchR', 'fusion', 'Confidence'],
+        'confidence_policy': 'restricted',  # high-confidence required
+        'allowed_confidence': ['high-confidence'],
+        'fusion_policy': 'required',
+        'expected_fusions': ['CRLF2', 'IGH@', 'EPOR', 'P2RY8', 'JAK2', 'ABL1', 'BCR', 'PDGFRB', 'ABL2', 'CSF1R', 'ETV6', 'NTRK3', 'ROS1'],  # Same as Ph-like
+        'min_fusion_reads': 1,
+        'secondary_driver_policy': 'manual_curation'
+    },
     'BCL2/MYC': {
         'evidence_type': 'fusion',
-        'required_columns': ['ALLCatchR', 'fusion'],
-        'confidence_policy': 'flexible',
+        'required_columns': ['ALLCatchR', 'fusion', 'Confidence'],
+        'confidence_policy': 'restricted',  # high-confidence required
+        'allowed_confidence': ['high-confidence'],
         'fusion_policy': 'required', 
         'expected_fusions': ['BCL2', 'MYC', 'BCL6', 'IGH@'],
         'min_fusion_reads': 1,
@@ -93,16 +113,173 @@ SUBTYPE_RULES = {
         'fusion_read_threshold': 3,  # >=3 reads → manual curation
         'secondary_driver_policy': 'read_threshold'
     },
+    'hyperdiploid': {
+        'evidence_type': 'karyotype',
+        'required_columns': ['ALLCatchR', 'karyotype_classifier'], 
+        'required_values': {'karyotype_classifier': 'Hyperdiploid'},
+        'confidence_policy': 'any',
+        'fusion_policy': 'conditional',
+        'fusion_read_threshold': 3,
+        'secondary_driver_policy': 'read_threshold'
+    },
     'DUX4': {
         'evidence_type': 'fusion',
-        'required_columns': ['ALLCatchR', 'fusion'],
-        'confidence_policy': 'flexible',
+        'required_columns': ['ALLCatchR', 'fusion', 'Confidence'],
+        'confidence_policy': 'restricted',  # high-confidence required
+        'allowed_confidence': ['high-confidence'],
         'fusion_policy': 'required',
         'expected_fusions': ['DUX4'],
         'min_fusion_reads': 3,  # DUX4 fusions need >2 reads for non-DUX4 subtypes
         'secondary_driver_policy': 'ignore'
+    },
+    'PAX5alt': {
+        'evidence_type': 'fusion',
+        'required_columns': ['ALLCatchR', 'fusion', 'Confidence'],
+        'confidence_policy': 'restricted',  # high-confidence required
+        'allowed_confidence': ['high-confidence'],
+        'fusion_policy': 'required',
+        'expected_fusions': ['PAX5'],  # PAX5 fusions
+        'min_fusion_reads': 1,
+        'secondary_driver_policy': 'ignore'
+    },
+    'ETV6::RUNX1-like': {
+        'evidence_type': 'fusion',
+        'required_columns': ['ALLCatchR', 'fusion'],
+        'confidence_policy': 'flexible',
+        'fusion_policy': 'required',
+        'expected_fusions': ['ETV6'],  # ETV6 fusions (not ETV6::RUNX1)
+        'min_fusion_reads': 1,
+        'secondary_driver_policy': 'ignore'
+    },
+    'ZNF384': {
+        'evidence_type': 'fusion',
+        'required_columns': ['ALLCatchR', 'fusion', 'Confidence'],
+        'confidence_policy': 'restricted',  # high-confidence required
+        'allowed_confidence': ['high-confidence'],
+        'fusion_policy': 'required',
+        'expected_fusions': ['ZNF384'],
+        'min_fusion_reads': 1,
+        'secondary_driver_policy': 'ignore'
+    },
+    'KMT2A': {
+        'evidence_type': 'fusion',
+        'required_columns': ['ALLCatchR', 'fusion', 'Confidence'],
+        'confidence_policy': 'restricted',  # high-confidence required
+        'allowed_confidence': ['high-confidence'],
+        'fusion_policy': 'required',
+        'expected_fusions': ['KMT2A'],
+        'min_fusion_reads': 1,
+        'secondary_driver_policy': 'ignore'
+    },
+    'MEF2D': {
+        'evidence_type': 'fusion',
+        'required_columns': ['ALLCatchR', 'fusion'],
+        'confidence_policy': 'flexible',
+        'fusion_policy': 'required',
+        'expected_fusions': ['MEF2D'],
+        'min_fusion_reads': 1,
+        'secondary_driver_policy': 'ignore'
+    },
+    'NUTM1': {
+        'evidence_type': 'fusion',
+        'required_columns': ['ALLCatchR', 'fusion'],
+        'confidence_policy': 'flexible',
+        'fusion_policy': 'required',
+        'expected_fusions': ['NUTM1'],
+        'min_fusion_reads': 1,
+        'secondary_driver_policy': 'ignore'
+    },
+    'Ph-pos': {
+        'evidence_type': 'fusion',
+        'required_columns': ['ALLCatchR', 'fusion'],
+        'confidence_policy': 'flexible',
+        'fusion_policy': 'required',
+        'expected_fusions': ['BCR', 'ABL1'],  # BCR::ABL1 fusion
+        'min_fusion_reads': 1,
+        'secondary_driver_policy': 'ignore'
+    },
+    'HLF': {
+        'evidence_type': 'fusion',
+        'required_columns': ['ALLCatchR', 'fusion'],
+        'confidence_policy': 'flexible',
+        'fusion_policy': 'required',
+        'expected_fusions': ['HLF'],
+        'min_fusion_reads': 1,
+        'secondary_driver_policy': 'ignore'
+    },
+    'Near haploid': {
+        'evidence_type': 'karyotype',
+        'required_columns': ['ALLCatchR', 'karyotype_classifier'],
+        'required_values': {'karyotype_classifier': 'Near haploid'},
+        'confidence_policy': 'any',
+        'fusion_policy': 'conditional',
+        'fusion_read_threshold': 3,
+        'secondary_driver_policy': 'ignore'
+    },
+    'Low hypodiploid': {
+        'evidence_type': 'karyotype',
+        'required_columns': ['ALLCatchR', 'karyotype_classifier'],
+        'required_values': {'karyotype_classifier': 'Low hypodiploid'},
+        'confidence_policy': 'any',
+        'fusion_policy': 'conditional',
+        'fusion_read_threshold': 3,
+        'secondary_driver_policy': 'ignore'
+    },
+    'KMT2A rearranged-like (provisional entity)': {
+        'evidence_type': 'fusion',
+        'required_columns': ['ALLCatchR', 'fusion'],
+        'confidence_policy': 'flexible',
+        'fusion_policy': 'required',
+        'expected_fusions': ['KMT2A'],  # Same as KMT2A but different subtype
+        'min_fusion_reads': 1,
+        'secondary_driver_policy': 'ignore'
+    },
+    'iAMP21': {
+        'evidence_type': 'karyotype',
+        'required_columns': ['ALLCatchR', 'karyotype_classifier'],
+        'required_values': {'karyotype_classifier': 'iAMP21'},
+        'confidence_policy': 'any',
+        'fusion_policy': 'conditional',
+        'fusion_read_threshold': 3,
+        'secondary_driver_policy': 'ignore'
+    },
+    'TCF3::PBX1': {
+        'evidence_type': 'fusion',
+        'required_columns': ['ALLCatchR', 'fusion'],
+        'confidence_policy': 'flexible',
+        'fusion_policy': 'required',
+        'expected_fusions': ['TCF3', 'PBX1'],
+        'min_fusion_reads': 1,
+        'secondary_driver_policy': 'ignore'
+    },
+    'ETV6::RUNX1': {
+        'evidence_type': 'fusion',
+        'required_columns': ['ALLCatchR', 'fusion', 'Confidence'],
+        'confidence_policy': 'restricted',  # high-confidence required
+        'allowed_confidence': ['high-confidence'],
+        'fusion_policy': 'required',
+        'expected_fusions': ['ETV6', 'RUNX1'],
+        'min_fusion_reads': 1,
+        'secondary_driver_policy': 'ignore'
+    },
+    'CDX2/UBTF': {
+        'evidence_type': 'fusion',
+        'required_columns': ['ALLCatchR', 'fusion'],
+        'confidence_policy': 'flexible',
+        'fusion_policy': 'required',
+        'expected_fusions': ['UBTF', 'ATXN7L3'],  # UBTF::ATXN7L3 fusion
+        'min_fusion_reads': 1,
+        'secondary_driver_policy': 'ignore'
+    },
+    'ZNF384 rearranged-like (provisional entity)': {
+        'evidence_type': 'fusion',
+        'required_columns': ['ALLCatchR', 'fusion'],
+        'confidence_policy': 'flexible',
+        'fusion_policy': 'required',
+        'expected_fusions': ['ZNF384'],  # Same as ZNF384 but different subtype
+        'min_fusion_reads': 1,
+        'secondary_driver_policy': 'ignore'
     }
-    # Add more subtypes as needed...
 }
 
 

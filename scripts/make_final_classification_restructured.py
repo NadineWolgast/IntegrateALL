@@ -190,11 +190,18 @@ SUBTYPE_RULES = {
         'secondary_driver_policy': 'ignore'
     },
     'Ph-pos': {
-        'evidence_type': 'fusion',
-        'required_columns': ['ALLCatchR', 'fusion'],
+        'evidence_type': 'allcatchr_fusion',  # Requires both ALLCatchR Ph-pos prediction and BCR::ABL1 fusion
+        'required_columns': ['ALLCatchR', 'Ph-pos', 'fusion', 'karyotype_classifier'],
+        'required_values': {'ALLCatchR': 'Ph-pos'},
+        'allcatchr_ph_pos_allowed': ['lymphoid', 'multilineage', 'not Ph-pos predicted'],  # All Ph-pos predictions valid
+        'ph_pos_icc_rules': {
+            'lymphoid': {'allowed_karyotypes': ['other', 'Hyperdiploid'], 'icc_classification': 'lymphoid only involvement'},
+            'multilineage': {'allowed_karyotypes': ['other'], 'icc_classification': 'multilineage involvement'},
+            'not Ph-pos predicted': {'allowed_karyotypes': ['other', 'Hyperdiploid'], 'icc_classification': None}  # No ICC classification
+        },
         'confidence_policy': 'flexible',
         'fusion_policy': 'required',
-        'expected_fusions': ['BCR', 'ABL1'],  # BCR::ABL1 fusion only
+        'expected_fusions': ['BCR', 'ABL1'],  # BCR::ABL1 fusion required
         'min_fusion_reads': 1,
         'secondary_driver_policy': 'ignore'
     },
@@ -720,6 +727,10 @@ class ClassificationProcessor:
             return self._match_fusion_subtype(classification_df, rules)
         elif rules['evidence_type'] == 'karyotype':
             return self._match_karyotype_subtype(classification_df, rules)
+        elif rules['evidence_type'] == 'allcatchr_fusion':
+            return self._match_allcatchr_fusion_subtype(classification_df, rules)
+        elif rules['evidence_type'] == 'hybrid':
+            return self._match_hybrid_subtype(classification_df, rules)
         else:
             logger.info(f"⚠️ Unknown evidence type: {rules['evidence_type']}")
             return self.find_exact_matches(classification_df)
@@ -991,6 +1002,114 @@ class ClassificationProcessor:
         if filtered_fusions != self.data['fusions']:
             self.create_summary_dataframe()
     
+    def _match_allcatchr_fusion_subtype(self, classification_df, rules):
+        """Handle ALLCatchR+Fusion-based subtypes like Ph-pos."""
+        logger.info("🧬 Matching ALLCatchR+Fusion-based subtype (Ph-pos)...")
+        
+        # Check ALLCatchR subtype requirement
+        allcatchr_subtype = self.data['allcatchr']['subtype']
+        required_allcatchr = rules.get('required_values', {}).get('ALLCatchR')
+        if allcatchr_subtype != required_allcatchr:
+            logger.info(f"❌ ALLCatchR subtype mismatch: {allcatchr_subtype}, expected {required_allcatchr}")
+            return None, 'allcatchr_mismatch'
+        
+        # Check Ph-pos prediction from ALLCatchR data
+        ph_pos_prediction = self.data['allcatchr'].get('ph_pos', 'unknown')
+        allowed_ph_pos = rules.get('allcatchr_ph_pos_allowed', [])
+        if ph_pos_prediction not in allowed_ph_pos:
+            logger.info(f"❌ Ph-pos prediction not allowed: {ph_pos_prediction}, allowed: {allowed_ph_pos}")
+            return None, 'ph_pos_prediction_mismatch'
+        
+        logger.info(f"✅ Ph-pos prediction valid: {ph_pos_prediction}")
+        
+        # Check karyotype compatibility based on Ph-pos prediction
+        karyotype_prediction = self.data['karyotype'].get('prediction', 'other')
+        icc_rules = rules.get('ph_pos_icc_rules', {})
+        ph_pos_rule = icc_rules.get(ph_pos_prediction, {})
+        allowed_karyotypes = ph_pos_rule.get('allowed_karyotypes', ['other'])
+        
+        if karyotype_prediction not in allowed_karyotypes:
+            logger.info(f"❌ Karyotype incompatible with Ph-pos prediction: {karyotype_prediction}, allowed for {ph_pos_prediction}: {allowed_karyotypes}")
+            return None, 'karyotype_ph_pos_incompatible'
+        
+        logger.info(f"✅ Karyotype compatible: {karyotype_prediction} for Ph-pos {ph_pos_prediction}")
+        
+        # Check required fusion (BCR::ABL1)
+        expected_fusions = rules.get('expected_fusions', [])
+        fusion_found = False
+        
+        for fusion_data in self.data['fusions']:
+            gene1 = fusion_data.get('gene1', '')
+            gene2 = fusion_data.get('gene2', '')
+            
+            # Check both orientations: BCR::ABL1 and ABL1::BCR
+            if (gene1 in expected_fusions and gene2 in expected_fusions) or \
+               (gene2 in expected_fusions and gene1 in expected_fusions):
+                fusion_found = True
+                logger.info(f"✅ Required fusion found: {gene1}::{gene2}")
+                break
+        
+        if not fusion_found:
+            logger.info(f"❌ Required BCR::ABL1 fusion not found")
+            return None, 'required_fusion_missing'
+        
+        # Determine ICC classification
+        icc_classification = ph_pos_rule.get('icc_classification', None)
+        if icc_classification:
+            logger.info(f"✅ ICC classification: {icc_classification}")
+        else:
+            logger.info(f"✅ No ICC classification (Ph-pos prediction: {ph_pos_prediction})")
+        
+        # Create matching entry for Ph-pos with ICC info
+        match_data = {
+            'ALLCatchR': required_allcatchr,
+            'Ph-pos': ph_pos_prediction,
+            'karyotype_classifier': karyotype_prediction,
+            'icc_classification': icc_classification,
+            'fusion_confirmed': True
+        }
+        
+        logger.info(f"✅ Ph-pos subtype matched successfully: {match_data}")
+        return pd.DataFrame([match_data]), 'ph_pos_match'
+    
+    def _match_hybrid_subtype(self, classification_df, rules):
+        """Handle hybrid subtypes like CEBP (SNV + Fusion)."""
+        logger.info("🧬 Matching hybrid subtype (CEBP)...")
+        
+        # Try SNV rules first
+        snv_rules = rules.get('snv_rules', {})
+        if snv_rules:
+            logger.info("🔍 Checking SNV evidence...")
+            for col, required_value in snv_rules.get('required_values', {}).items():
+                sample_value = self.data['snvs'].get(col.replace('_', ' '), False)
+                if sample_value == required_value:
+                    logger.info(f"✅ SNV evidence found: {col} = {sample_value}")
+                    # Check confidence for SNV path
+                    confidence_policy = snv_rules.get('confidence_policy', 'any')
+                    if confidence_policy == 'restricted':
+                        allcatchr_confidence = self.data['allcatchr'].get('confidence', '')
+                        allowed_confidence = snv_rules.get('allowed_confidence', [])
+                        if allcatchr_confidence in allowed_confidence:
+                            logger.info(f"✅ SNV confidence valid: {allcatchr_confidence}")
+                            return pd.DataFrame([{'ALLCatchR': 'CEBP', 'evidence_type': 'snv'}]), 'hybrid_snv_match'
+                        else:
+                            logger.info(f"❌ SNV confidence invalid: {allcatchr_confidence}")
+        
+        # Try fusion rules
+        fusion_rules = rules.get('fusion_rules', {})
+        if fusion_rules:
+            logger.info("🔍 Checking fusion evidence...")
+            expected_fusions = fusion_rules.get('expected_fusions', [])
+            for fusion_data in self.data['fusions']:
+                gene1 = fusion_data.get('gene1', '')
+                gene2 = fusion_data.get('gene2', '')
+                if gene1 in expected_fusions and gene2 in expected_fusions:
+                    logger.info(f"✅ CEBP fusion found: {gene1}::{gene2}")
+                    return pd.DataFrame([{'ALLCatchR': 'CEBP', 'evidence_type': 'fusion'}]), 'hybrid_fusion_match'
+        
+        logger.info("❌ No hybrid evidence found")
+        return None, 'hybrid_no_evidence'
+
     # ========== FALLBACK: GENERAL MATCHING ==========
     
     def find_exact_matches(self, classification_df):

@@ -324,12 +324,35 @@ class ClassificationProcessor:
     
     def _flexible_fusion_merge(self, summary_df, classification_df, match_cols):
         """Merge with fusion orientation flexibility - try both orientations."""
+        logger.info(f"🔍 DEBUG: Attempting merge with columns: {match_cols}")
+        logger.info(f"🔍 DEBUG: Summary data shape: {summary_df.shape}")
+        logger.info(f"🔍 DEBUG: Classification data shape: {classification_df.shape}")
+        
+        # Show sample data being matched
+        if not summary_df.empty:
+            logger.info("🔍 DEBUG: Summary data sample:")
+            for col in match_cols:
+                if col in summary_df.columns:
+                    logger.info(f"      {col}: {summary_df[col].iloc[0]}")
+        
+        # Show some classification data being matched against
+        if not classification_df.empty:
+            logger.info("🔍 DEBUG: First few rows of classification data:")
+            for i, row in classification_df.head(3).iterrows():
+                logger.info(f"      Row {i}:")
+                for col in match_cols:
+                    if col in classification_df.columns:
+                        logger.info(f"        {col}: {row[col]}")
+        
         # First try standard merge (exact orientation)
+        logger.info("🔍 DEBUG: Trying exact orientation merge...")
         matches = pd.merge(
             summary_df, classification_df,
             on=match_cols, how='inner',
             suffixes=('', '_class')
         )
+        
+        logger.info(f"🔍 DEBUG: Exact orientation matches: {len(matches)}")
         
         if not matches.empty:
             return matches
@@ -345,6 +368,11 @@ class ClassificationProcessor:
             summary_swapped['Gene_1_symbol(5end_fusion_partner)'] = summary_df['Gene_2_symbol(3end_fusion_partner)']
             summary_swapped['Gene_2_symbol(3end_fusion_partner)'] = summary_df['Gene_1_symbol(5end_fusion_partner)']
             
+            logger.info("🔍 DEBUG: Swapped summary data:")
+            for col in match_cols:
+                if col in summary_swapped.columns:
+                    logger.info(f"      {col}: {summary_swapped[col].iloc[0]}")
+            
             # Try merge with swapped orientation
             matches_swapped = pd.merge(
                 summary_swapped, classification_df,
@@ -352,10 +380,13 @@ class ClassificationProcessor:
                 suffixes=('', '_class')
             )
             
+            logger.info(f"🔍 DEBUG: Swapped orientation matches: {len(matches_swapped)}")
+            
             if not matches_swapped.empty:
                 logger.info("✅ Match found with swapped fusion orientation")
                 return matches_swapped
         
+        logger.info("🔍 DEBUG: No matches found in either orientation")
         return matches  # Return empty if no matches found
     
     # ========== PHASE 2: SIMPLE MATCHING ==========

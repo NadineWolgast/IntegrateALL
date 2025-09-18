@@ -574,7 +574,8 @@ class ClassificationProcessor:
         match_cols.extend(['Ph-pos', 'karyotype_classifier', 'IKZF1_N159Y'])
         
         # Smart ZEB2 handling for non-CEBP subtypes (same logic as general matching)
-        if subtype == 'with mutated ZEB2 (p.H1038R)/IGH::CEBPE (provisional entity)':
+        sample_subtype = self.data['allcatchr']['subtype']
+        if sample_subtype == 'with mutated ZEB2 (p.H1038R)/IGH::CEBPE (provisional entity)':
             # CEBP subtype: ZEB2_H1038R must be True (exact match required)
             match_cols.append('ZEB2_H1038R')
             logger.info("🎯 CEBP subtype: ZEB2_H1038R must be True (exact matching)")

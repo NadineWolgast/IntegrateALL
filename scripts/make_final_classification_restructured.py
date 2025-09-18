@@ -253,25 +253,32 @@ class ClassificationProcessor:
     
     def _is_driver_fusion_in_classtest(self, gene1, gene2, classification_df):
         """Check if fusion is driver gene pair and exists in Class_test.csv."""
+        logger.info(f"      🔍 Checking genes: {gene1}, {gene2}")
+        
         # Normalize IGH genes for matching - remove @ for Class_test.csv matching
         gene1_norm = 'IGH' if gene1.startswith('IGH') else gene1
         gene2_norm = 'IGH' if gene2.startswith('IGH') else gene2
+        logger.info(f"      🔍 Normalized for matching: {gene1_norm}, {gene2_norm}")
         
         # Check if both genes are driver genes (use original names with @ for driver gene check)
         gene1_driver_check = 'IGH@' if gene1.startswith('IGH') else gene1
         gene2_driver_check = 'IGH@' if gene2.startswith('IGH') else gene2
+        logger.info(f"      🔍 Driver gene check: {gene1_driver_check} in DRIVER_GENES={gene1_driver_check in DRIVER_FUSION_GENES}, {gene2_driver_check} in DRIVER_GENES={gene2_driver_check in DRIVER_FUSION_GENES}")
         
         if not (gene1_driver_check in DRIVER_FUSION_GENES and gene2_driver_check in DRIVER_FUSION_GENES):
+            logger.info(f"      ❌ Not both driver genes")
             return False
         
         # Check if combination exists in Class_test.csv (both orientations)
-        exists = (
-            ((classification_df['Gene_1_symbol(5end_fusion_partner)'] == gene1_norm) &
-             (classification_df['Gene_2_symbol(3end_fusion_partner)'] == gene2_norm)).any() or
-            ((classification_df['Gene_1_symbol(5end_fusion_partner)'] == gene2_norm) &
-             (classification_df['Gene_2_symbol(3end_fusion_partner)'] == gene1_norm)).any()
-        )
+        exists1 = ((classification_df['Gene_1_symbol(5end_fusion_partner)'] == gene1_norm) &
+                  (classification_df['Gene_2_symbol(3end_fusion_partner)'] == gene2_norm)).any()
+        exists2 = ((classification_df['Gene_1_symbol(5end_fusion_partner)'] == gene2_norm) &
+                  (classification_df['Gene_2_symbol(3end_fusion_partner)'] == gene1_norm)).any()
         
+        logger.info(f"      🔍 Class_test.csv check: {gene1_norm}::{gene2_norm}={exists1}, {gene2_norm}::{gene1_norm}={exists2}")
+        
+        exists = exists1 or exists2
+        logger.info(f"      {'✅' if exists else '❌'} Final result: {exists}")
         return exists
     
     def create_summary_dataframe(self):

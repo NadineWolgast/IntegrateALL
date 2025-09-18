@@ -71,6 +71,7 @@ SUBTYPE_RULES = {
         'required_columns': ['ALLCatchR', 'fusion'],
         'confidence_policy': 'flexible',  # ignore if empty in Class_test.csv
         'fusion_policy': 'required',
+        'expected_fusions': ['CRLF2', 'IGH@', 'EPOR', 'P2RY8', 'JAK2', 'ABL1', 'BCR'],  # Common Ph-like genes
         'min_fusion_reads': 1,
         'secondary_driver_policy': 'manual_curation'  # secondary drivers → manual curation
     },
@@ -676,14 +677,35 @@ class ClassificationProcessor:
     
     def _detect_secondary_drivers(self, rules):
         """Detect secondary driver fusions that might cause conflicts."""
-        secondary_drivers = []
         expected_genes = set(rules.get('expected_fusions', []))
+        logger.info(f"🔍 Expected genes for {self.data['allcatchr']['subtype']}: {expected_genes}")
         
+        # Group fusions by unique gene pairs
+        unique_fusions = set()
         for fusion in self.data['fusions']:
-            fusion_genes = {fusion['gene_1'], fusion['gene_2']}
-            # If fusion contains genes not expected for this subtype
-            if not fusion_genes.intersection(expected_genes):
-                secondary_drivers.append(f"{fusion['gene_1']}::{fusion['gene_2']}")
+            fusion_pair = tuple(sorted([fusion['gene_1'], fusion['gene_2']]))
+            unique_fusions.add(fusion_pair)
+        
+        logger.info(f"🔍 Unique fusion pairs found: {unique_fusions}")
+        
+        # Check each unique fusion pair
+        secondary_drivers = []
+        primary_fusions = []
+        
+        for gene1, gene2 in unique_fusions:
+            fusion_genes = {gene1, gene2}
+            
+            # If expected_fusions is empty, all driver fusions are considered primary for this subtype
+            if not expected_genes:
+                primary_fusions.append(f"{gene1}::{gene2}")
+            # If fusion contains any expected gene, it's primary for this subtype
+            elif fusion_genes.intersection(expected_genes):
+                primary_fusions.append(f"{gene1}::{gene2}")
+            else:
+                secondary_drivers.append(f"{gene1}::{gene2}")
+        
+        logger.info(f"🔍 Primary fusions: {primary_fusions}")
+        logger.info(f"🔍 Secondary drivers: {secondary_drivers}")
         
         return secondary_drivers
     

@@ -586,8 +586,11 @@ class ClassificationProcessor:
                 logger.info("🔧 ZEB2=False in data, allowing match with ZEB2=True in classification DB")
         
         # Filter classification data for entries without fusions (SNV-only)
+        # Include both null and empty string values
         classification_for_match = classification_df[
-            classification_df['Gene_1_symbol(5end_fusion_partner)'].isnull()
+            (classification_df['Gene_1_symbol(5end_fusion_partner)'].isnull()) |
+            (classification_df['Gene_1_symbol(5end_fusion_partner)'] == '') |
+            (classification_df['Gene_1_symbol(5end_fusion_partner)'].astype(str).str.strip() == '')
         ]
         
         logger.info(f"🔍 Matching SNV subtype on columns: {match_cols}")
@@ -682,8 +685,11 @@ class ClassificationProcessor:
             match_cols.append('Confidence')
         
         # Filter classification data for entries without fusions (karyotype-only)
+        # Include both null and empty string values
         classification_for_match = classification_df[
-            classification_df['Gene_1_symbol(5end_fusion_partner)'].isnull()
+            (classification_df['Gene_1_symbol(5end_fusion_partner)'].isnull()) |
+            (classification_df['Gene_1_symbol(5end_fusion_partner)'] == '') |
+            (classification_df['Gene_1_symbol(5end_fusion_partner)'].astype(str).str.strip() == '')
         ]
         
         logger.info(f"🔍 Matching karyotype subtype on columns: {match_cols}")

@@ -322,8 +322,8 @@ class ClassificationProcessor:
         
         logger.info(f"✅ Summary created: {len(self.data['summary'])} row(s)")
     
-    def _flexible_fusion_merge(self, summary_df, classification_df, match_cols):
-        """Merge with fusion orientation flexibility - try both orientations."""
+    def _flexible_confidence_and_fusion_merge(self, summary_df, classification_df, match_cols):
+        """Merge with flexible Confidence and fusion orientation handling."""
         logger.info(f"🔍 DEBUG: Attempting merge with columns: {match_cols}")
         logger.info(f"🔍 DEBUG: Summary data shape: {summary_df.shape}")
         logger.info(f"🔍 DEBUG: Classification data shape: {classification_df.shape}")
@@ -335,28 +335,11 @@ class ClassificationProcessor:
                 if col in summary_df.columns:
                     logger.info(f"      {col}: {summary_df[col].iloc[0]}")
         
-        # Show some classification data being matched against
-        if not classification_df.empty:
-            logger.info("🔍 DEBUG: First few rows of classification data:")
-            for i, row in classification_df.head(3).iterrows():
-                logger.info(f"      Row {i}:")
-                for col in match_cols:
-                    if col in classification_df.columns:
-                        logger.info(f"        {col}: {row[col]}")
-        
-        # First try standard merge (exact orientation)
-        logger.info("🔍 DEBUG: Trying exact orientation merge...")
-        matches = pd.merge(
-            summary_df, classification_df,
-            on=match_cols, how='inner',
-            suffixes=('', '_class')
-        )
-        
-        logger.info(f"🔍 DEBUG: Exact orientation matches: {len(matches)}")
-        
+        # Try both orientations
+        matches = self._try_confidence_aware_merge(summary_df, classification_df, match_cols, swapped=False)
         if not matches.empty:
             return matches
-        
+            
         # If no matches and we have fusion columns, try swapped orientation
         if ('Gene_1_symbol(5end_fusion_partner)' in match_cols and 
             'Gene_2_symbol(3end_fusion_partner)' in match_cols):
@@ -368,26 +351,77 @@ class ClassificationProcessor:
             summary_swapped['Gene_1_symbol(5end_fusion_partner)'] = summary_df['Gene_2_symbol(3end_fusion_partner)']
             summary_swapped['Gene_2_symbol(3end_fusion_partner)'] = summary_df['Gene_1_symbol(5end_fusion_partner)']
             
+            matches = self._try_confidence_aware_merge(summary_swapped, classification_df, match_cols, swapped=True)
+            if not matches.empty:
+                return matches
+        
+        logger.info("🔍 DEBUG: No matches found in either orientation")
+        return pd.DataFrame()  # Return empty if no matches found
+    
+    def _try_confidence_aware_merge(self, summary_df, classification_df, match_cols, swapped=False):
+        """Try merge with intelligent Confidence handling."""
+        orientation = "swapped" if swapped else "exact"
+        logger.info(f"🔍 DEBUG: Trying {orientation} orientation merge...")
+        
+        if swapped:
             logger.info("🔍 DEBUG: Swapped summary data:")
             for col in match_cols:
-                if col in summary_swapped.columns:
-                    logger.info(f"      {col}: {summary_swapped[col].iloc[0]}")
-            
-            # Try merge with swapped orientation
-            matches_swapped = pd.merge(
-                summary_swapped, classification_df,
+                if col in summary_df.columns:
+                    logger.info(f"      {col}: {summary_df[col].iloc[0]}")
+        
+        # If Confidence is not in match_cols, use standard merge
+        if 'Confidence' not in match_cols:
+            matches = pd.merge(
+                summary_df, classification_df,
                 on=match_cols, how='inner',
                 suffixes=('', '_class')
             )
-            
-            logger.info(f"🔍 DEBUG: Swapped orientation matches: {len(matches_swapped)}")
-            
-            if not matches_swapped.empty:
-                logger.info("✅ Match found with swapped fusion orientation")
-                return matches_swapped
+            logger.info(f"🔍 DEBUG: {orientation} orientation matches (no Confidence): {len(matches)}")
+            return matches
         
-        logger.info("🔍 DEBUG: No matches found in either orientation")
-        return matches  # Return empty if no matches found
+        # Confidence-aware matching: split classification data
+        non_confidence_cols = [col for col in match_cols if col != 'Confidence']
+        
+        # First, get potential matches on all non-Confidence columns
+        potential_matches = pd.merge(
+            summary_df, classification_df,
+            on=non_confidence_cols, how='inner',
+            suffixes=('', '_class')
+        )
+        
+        if potential_matches.empty:
+            logger.info(f"🔍 DEBUG: {orientation} orientation - no potential matches on non-Confidence columns")
+            return potential_matches
+        
+        logger.info(f"🔍 DEBUG: {orientation} orientation - found {len(potential_matches)} potential matches on non-Confidence columns")
+        
+        # Now filter based on Confidence logic
+        sample_confidence = summary_df['Confidence'].iloc[0]
+        logger.info(f"🔍 DEBUG: Sample Confidence: {sample_confidence}")
+        
+        final_matches = []
+        for _, match_row in potential_matches.iterrows():
+            class_confidence = match_row['Confidence_class']
+            
+            # Check if classification confidence is empty/null
+            is_empty_confidence = (pd.isnull(class_confidence) or 
+                                 class_confidence == '' or 
+                                 str(class_confidence).strip() == '')
+            
+            if is_empty_confidence:
+                # Empty confidence in classification - always matches
+                logger.info(f"🔍 DEBUG: Match accepted - empty Confidence in class_test")
+                final_matches.append(match_row)
+            elif str(class_confidence).lower() == str(sample_confidence).lower():
+                # Specific confidence values must match
+                logger.info(f"🔍 DEBUG: Match accepted - Confidence values match: {sample_confidence}")
+                final_matches.append(match_row)
+            else:
+                logger.info(f"🔍 DEBUG: Match rejected - Confidence mismatch: {sample_confidence} vs {class_confidence}")
+        
+        result = pd.DataFrame(final_matches) if final_matches else pd.DataFrame()
+        logger.info(f"🔍 DEBUG: {orientation} orientation final matches: {len(result)}")
+        return result
     
     # ========== PHASE 2: SIMPLE MATCHING ==========
     
@@ -434,17 +468,14 @@ class ClassificationProcessor:
                 classification_df['Gene_1_symbol(5end_fusion_partner)'].isnull()
             ]
         
-        # Handle Confidence matching - exclude for Ph-like as they have empty values in Class_test.csv
-        if 'Confidence' in match_cols and subtype == 'Ph-like':
-            logger.info("🔧 Ph-like subtype: excluding Confidence from matching (empty in Class_test.csv)")
-            match_cols = [col for col in match_cols if col != 'Confidence']
+        # Confidence will be handled flexibly in the merge function
         
         # For non-CEBP subtypes with ZEB2=False in data, allow matching with ZEB2=True in class_test
         if subtype != 'CEBP' and not summary_for_match['ZEB2_H1038R'].iloc[0]:
             logger.info("🔧 ZEB2=False in data, allowing match with ZEB2=True in classification DB")
         
         # Perform exact merge on selected columns, but handle fusion orientation flexibility
-        matches = self._flexible_fusion_merge(summary_for_match, classification_for_match, match_cols)
+        matches = self._flexible_confidence_and_fusion_merge(summary_for_match, classification_for_match, match_cols)
         
         if not matches.empty:
             logger.info(f"✅ Exact matches found: {len(matches)}")

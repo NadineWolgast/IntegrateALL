@@ -99,13 +99,16 @@ SUBTYPE_RULES = {
         'secondary_driver_policy': 'manual_curation'
     },
     'BCL2/MYC': {
-        'evidence_type': 'fusion',
-        'required_columns': ['ALLCatchR', 'fusion', 'Confidence'],
-        'confidence_policy': 'restricted',  # high-confidence required
-        'allowed_confidence': ['high-confidence'],
-        'fusion_policy': 'required', 
+        'evidence_type': 'fusion_or_confidence',
+        'required_columns': ['ALLCatchR'],
+        'confidence_policy': 'conditional',  # high-confidence required only for NOS
+        'fusion_policy': 'conditional',
         'expected_fusions': ['BCL2', 'MYC', 'BCL6', 'IGH@'],
         'min_fusion_reads': 1,
+        'nos_classification': {
+            'icc_classification': 'B-ALL with MYC rearrangement, NOS',
+            'who_classification': 'B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities'
+        },
         'secondary_driver_policy': 'manual_curation'
     },
     'Hyperdiploid': {
@@ -127,52 +130,68 @@ SUBTYPE_RULES = {
         'secondary_driver_policy': 'read_threshold'
     },
     'DUX4': {
-        'evidence_type': 'fusion',
-        'required_columns': ['ALLCatchR', 'fusion', 'Confidence'],
-        'confidence_policy': 'restricted',  # high-confidence required
-        'allowed_confidence': ['high-confidence'],
-        'fusion_policy': 'required',
+        'evidence_type': 'fusion_or_confidence',
+        'required_columns': ['ALLCatchR'],
+        'confidence_policy': 'conditional',  # high-confidence required only for NOS
+        'fusion_policy': 'conditional',
         'expected_fusions': ['DUX4', 'IGH@', 'ETV6', 'PCGF5'],
-        'min_fusion_reads': 3,  # DUX4 fusions need >2 reads for non-DUX4 subtypes
+        'min_fusion_reads': 3,  # DUX4 fusions need >2 reads
+        'nos_classification': {
+            'icc_classification': 'B-ALL with DUX4 rearrangement, NOS',
+            'who_classification': 'B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities'
+        },
         'secondary_driver_policy': 'ignore'
     },
     'PAX5alt': {
-        'evidence_type': 'fusion',
-        'required_columns': ['ALLCatchR', 'fusion', 'Confidence'],
-        'confidence_policy': 'restricted',  # high-confidence required
-        'allowed_confidence': ['high-confidence'],
-        'fusion_policy': 'required',
-        'expected_fusions': ['PAX5', 'ETV6', 'NOL4L', 'AUTS2', 'ZNF521', 'CBFA2T3', 'DACH1', 'ELN', 'FBRSL1', 'CBFA2T2', 'NCOA5', 'ADAMTSL5', 'TCF3', 'ANTXR1', 'BMP2K', 'LEF1', 'DACH2', 'DBX1', 'DMRTA2', 'ESRRA', 'FKBP15', 'FOXP2', 'ID4', 'IGH@', 'MBNL1', 'MEIS2', 'MPRIP', 'PML', 'RHOXF2B', 'TAF3', 'TMPRSS9', 'WDR5', 'ZNF276'],  # Complete PAX5alt fusions
+        'evidence_type': 'fusion_or_confidence',
+        'required_columns': ['ALLCatchR'],
+        'confidence_policy': 'conditional',  # high-confidence required only for NOS
+        'fusion_policy': 'conditional',
+        'expected_fusions': ['PAX5', 'ETV6', 'NOL4L', 'AUTS2', 'ZNF521', 'CBFA2T3', 'DACH1', 'ELN', 'FBRSL1', 'CBFA2T2', 'NCOA5', 'ADAMTSL5', 'TCF3', 'ANTXR1', 'BMP2K', 'LEF1', 'DACH2', 'DBX1', 'DMRTA2', 'ESRRA', 'FKBP15', 'FOXP2', 'ID4', 'IGH@', 'MBNL1', 'MEIS2', 'MPRIP', 'PML', 'RHOXF2B', 'TAF3', 'TMPRSS9', 'WDR5', 'ZNF276'],
         'min_fusion_reads': 1,
+        'nos_classification': {
+            'icc_classification': 'B-ALL, with PAX5 alteration, NOS',
+            'who_classification': 'B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities'
+        },
         'secondary_driver_policy': 'ignore'
     },
     'ETV6::RUNX1-like': {
-        'evidence_type': 'fusion',
-        'required_columns': ['ALLCatchR', 'fusion'],
-        'confidence_policy': 'flexible',
-        'fusion_policy': 'required',
-        'expected_fusions': ['ETV6', 'ELMO1', 'AMPH', 'C7ORF72', 'CASC15', 'CD163', 'EBF1', 'ERC1', 'EXTL1', 'FAM136A', 'FOXO3', 'IKZF1', 'QSOX1', 'SLC30A7', 'SRRM1', 'TMTC1', 'RNFT2', 'STIM2', 'ZPBP'],  # ETV6::RUNX1-like fusions
+        'evidence_type': 'fusion_or_confidence',
+        'required_columns': ['ALLCatchR'],
+        'confidence_policy': 'conditional',  # high-confidence required only for NOS
+        'fusion_policy': 'conditional',
+        'expected_fusions': ['ETV6', 'ELMO1', 'AMPH', 'C7ORF72', 'CASC15', 'CD163', 'EBF1', 'ERC1', 'EXTL1', 'FAM136A', 'FOXO3', 'IKZF1', 'QSOX1', 'SLC30A7', 'SRRM1', 'TMTC1', 'RNFT2', 'STIM2', 'ZPBP'],
         'min_fusion_reads': 1,
+        'nos_classification': {
+            'icc_classification': 'B-ALL, ETV6::RUNX1-like, NOS',
+            'who_classification': 'B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1-like features'
+        },
         'secondary_driver_policy': 'ignore'
     },
     'ZNF384': {
-        'evidence_type': 'fusion',
-        'required_columns': ['ALLCatchR', 'fusion', 'Confidence'],
-        'confidence_policy': 'restricted',  # high-confidence required
-        'allowed_confidence': ['high-confidence'],
-        'fusion_policy': 'required',
+        'evidence_type': 'fusion_or_confidence',
+        'required_columns': ['ALLCatchR'],
+        'confidence_policy': 'conditional',  # high-confidence required only for NOS
+        'fusion_policy': 'conditional',
         'expected_fusions': ['ZNF384', 'EP300', 'TAF15', 'TCF3', 'EWSR1', 'ZNF362', 'SMARCA2', 'ARID1B', 'CLTC', 'CREBBP', 'DDX42', 'NIPBL'],
         'min_fusion_reads': 1,
+        'nos_classification': {
+            'icc_classification': 'B-ALL with ZNF384(362) rearrangement, NOS',
+            'who_classification': 'B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities'
+        },
         'secondary_driver_policy': 'ignore'
     },
     'KMT2A': {
-        'evidence_type': 'fusion',
-        'required_columns': ['ALLCatchR', 'fusion', 'Confidence'],
-        'confidence_policy': 'restricted',  # high-confidence required
-        'allowed_confidence': ['high-confidence'],
-        'fusion_policy': 'required',
+        'evidence_type': 'fusion_or_confidence',
+        'required_columns': ['ALLCatchR'],
+        'confidence_policy': 'conditional',  # high-confidence required only for NOS
+        'fusion_policy': 'conditional',
         'expected_fusions': ['KMT2A', 'AFF1', 'MLLT1', 'MLLT3', 'MLLT10', 'USP2', 'DCPS', 'EPS15', 'IKZF1', 'TNS3', 'UBASH3B'],
         'min_fusion_reads': 1,
+        'nos_classification': {
+            'icc_classification': 'B-ALLwith t(v;11q23.3)/KMT2A rearranged, NOS',
+            'who_classification': 'B-lymphoblastic leukaemia/lymphoma with KMT2A rearrangement'
+        },
         'secondary_driver_policy': 'ignore'
     },
     'MEF2D': {
@@ -1117,21 +1136,13 @@ class ClassificationProcessor:
         return None, 'hybrid_no_evidence'
     
     def _match_fusion_or_confidence_subtype(self, classification_df, rules):
-        """Handle Ph-like: fusion-based OR confidence-only (NOS) classification."""
-        logger.info("🧬 Matching fusion-or-confidence subtype (Ph-like)...")
+        """Handle fusion-or-confidence subtypes: fusion-based (any confidence) OR confidence-only (NOS) classification."""
+        subtype = self.data['allcatchr']['subtype']
+        logger.info(f"🧬 Matching fusion-or-confidence subtype ({subtype})...")
         
-        # Check confidence requirement first
-        confidence_policy = rules.get('confidence_policy', 'any')
-        if confidence_policy == 'restricted':
-            allcatchr_confidence = self.data['allcatchr'].get('confidence', '')
-            allowed_confidence = rules.get('allowed_confidence', [])
-            if allcatchr_confidence not in allowed_confidence:
-                logger.info(f"❌ Confidence requirement not met: {allcatchr_confidence}, required: {allowed_confidence}")
-                return None, 'confidence_mismatch'
+        allcatchr_confidence = self.data['allcatchr'].get('confidence', '')
         
-        logger.info(f"✅ Confidence requirement met: {allcatchr_confidence}")
-        
-        # Check for driver fusion first
+        # Check for driver fusion first (confidence irrelevant if fusion found)
         expected_fusions = rules.get('expected_fusions', [])
         driver_fusion_found = False
         found_fusion_details = None
@@ -1144,42 +1155,42 @@ class ClassificationProcessor:
             if gene1 in expected_fusions and gene2 in expected_fusions:
                 driver_fusion_found = True
                 found_fusion_details = fusion_data
-                logger.info(f"✅ Driver fusion found: {gene1}::{gene2}")
+                logger.info(f"✅ Driver fusion found: {gene1}::{gene2} (confidence irrelevant)")
                 break
         
         if driver_fusion_found:
-            # Standard Ph-like classification with specific driver fusion
-            logger.info("✅ Ph-like classified with driver fusion")
+            # Standard classification with specific driver fusion (confidence irrelevant)
+            logger.info(f"✅ {subtype} classified with driver fusion (any confidence accepted)")
             match_data = {
-                'ALLCatchR': 'Ph-like',
+                'ALLCatchR': subtype,
                 'Confidence': allcatchr_confidence,
                 'driver_fusion': f"{found_fusion_details['gene1']}::{found_fusion_details['gene2']}",
                 'classification_type': 'driver_fusion'
             }
-            return pd.DataFrame([match_data]), 'ph_like_driver_fusion'
+            return pd.DataFrame([match_data]), f'{subtype.lower()}_driver_fusion'
         
         else:
-            # No driver fusion found - check for NOS classification
-            logger.info("🔍 No driver fusion found - checking for NOS classification...")
+            # No driver fusion found - check confidence for NOS classification
+            logger.info("🔍 No driver fusion found - checking confidence for NOS classification...")
             
-            # For NOS: high-confidence Ph-like without driver fusion
+            # For NOS: high-confidence without driver fusion
             if allcatchr_confidence == 'high-confidence':
                 nos_info = rules.get('nos_classification', {})
-                logger.info("✅ Ph-like NOS classification (high-confidence without driver fusion)")
+                logger.info(f"✅ {subtype} NOS classification (high-confidence without driver fusion)")
                 
                 match_data = {
-                    'ALLCatchR': 'Ph-like',
+                    'ALLCatchR': subtype,
                     'Confidence': allcatchr_confidence,
                     'karyotype_classifier': 'other',  # NOS typically has 'other' karyotype
-                    'icc_classification': nos_info.get('icc_classification', 'B-ALL, BCR::ABL1-like, NOS'),
-                    'who_classification': nos_info.get('who_classification', 'B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features'),
+                    'icc_classification': nos_info.get('icc_classification'),
+                    'who_classification': nos_info.get('who_classification'),
                     'classification_type': 'nos'
                 }
-                return pd.DataFrame([match_data]), 'ph_like_nos'
+                return pd.DataFrame([match_data]), f'{subtype.lower()}_nos'
             
             else:
                 logger.info(f"❌ No driver fusion and confidence not sufficient for NOS: {allcatchr_confidence}")
-                return None, 'ph_like_insufficient_evidence'
+                return None, f'{subtype.lower()}_insufficient_evidence'
 
     # ========== FALLBACK: GENERAL MATCHING ==========
     

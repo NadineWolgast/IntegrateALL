@@ -106,7 +106,7 @@ SUBTYPE_RULES = {
         'expected_fusions': ['BCL2', 'MYC', 'BCL6', 'IGH@'],
         'min_fusion_reads': 1,
         'nos_classification': {
-            'icc_classification': 'B-ALL with MYC rearrangement, NOS',
+            'icc_classification': 'B-ALL with MYC rearrangement',
             'who_classification': 'B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities'
         },
         'secondary_driver_policy': 'manual_curation'
@@ -137,7 +137,7 @@ SUBTYPE_RULES = {
         'expected_fusions': ['DUX4', 'IGH@', 'ETV6', 'PCGF5'],
         'min_fusion_reads': 3,  # DUX4 fusions need >2 reads
         'nos_classification': {
-            'icc_classification': 'B-ALL with DUX4 rearrangement, NOS',
+            'icc_classification': 'B-ALL with DUX4 rearrangement',
             'who_classification': 'B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities'
         },
         'secondary_driver_policy': 'ignore'
@@ -150,7 +150,7 @@ SUBTYPE_RULES = {
         'expected_fusions': ['PAX5', 'ETV6', 'NOL4L', 'AUTS2', 'ZNF521', 'CBFA2T3', 'DACH1', 'ELN', 'FBRSL1', 'CBFA2T2', 'NCOA5', 'ADAMTSL5', 'TCF3', 'ANTXR1', 'BMP2K', 'LEF1', 'DACH2', 'DBX1', 'DMRTA2', 'ESRRA', 'FKBP15', 'FOXP2', 'ID4', 'IGH@', 'MBNL1', 'MEIS2', 'MPRIP', 'PML', 'RHOXF2B', 'TAF3', 'TMPRSS9', 'WDR5', 'ZNF276'],
         'min_fusion_reads': 1,
         'nos_classification': {
-            'icc_classification': 'B-ALL, with PAX5 alteration, NOS',
+            'icc_classification': 'B-ALL, with PAX5 alteration (provisional entity)',
             'who_classification': 'B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities'
         },
         'secondary_driver_policy': 'ignore'
@@ -163,7 +163,7 @@ SUBTYPE_RULES = {
         'expected_fusions': ['ETV6', 'ELMO1', 'AMPH', 'C7ORF72', 'CASC15', 'CD163', 'EBF1', 'ERC1', 'EXTL1', 'FAM136A', 'FOXO3', 'IKZF1', 'QSOX1', 'SLC30A7', 'SRRM1', 'TMTC1', 'RNFT2', 'STIM2', 'ZPBP'],
         'min_fusion_reads': 1,
         'nos_classification': {
-            'icc_classification': 'B-ALL, ETV6::RUNX1-like, NOS',
+            'icc_classification': 'B-ALL, ETV6::RUNX1-like (provisional entity)',
             'who_classification': 'B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1-like features'
         },
         'secondary_driver_policy': 'ignore'
@@ -176,7 +176,7 @@ SUBTYPE_RULES = {
         'expected_fusions': ['ZNF384', 'EP300', 'TAF15', 'TCF3', 'EWSR1', 'ZNF362', 'SMARCA2', 'ARID1B', 'CLTC', 'CREBBP', 'DDX42', 'NIPBL'],
         'min_fusion_reads': 1,
         'nos_classification': {
-            'icc_classification': 'B-ALL with ZNF384(362) rearrangement, NOS',
+            'icc_classification': 'B-ALL, ZNF384 rearranged-like (provisional entity)',
             'who_classification': 'B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities'
         },
         'secondary_driver_policy': 'ignore'
@@ -189,8 +189,8 @@ SUBTYPE_RULES = {
         'expected_fusions': ['KMT2A', 'AFF1', 'MLLT1', 'MLLT3', 'MLLT10', 'USP2', 'DCPS', 'EPS15', 'IKZF1', 'TNS3', 'UBASH3B'],
         'min_fusion_reads': 1,
         'nos_classification': {
-            'icc_classification': 'B-ALLwith t(v;11q23.3)/KMT2A rearranged, NOS',
-            'who_classification': 'B-lymphoblastic leukaemia/lymphoma with KMT2A rearrangement'
+            'icc_classification': 'B-ALL, KMT2A rearranged-like (provisional entity)',
+            'who_classification': 'B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities'
         },
         'secondary_driver_policy': 'ignore'
     },

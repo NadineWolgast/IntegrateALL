@@ -988,21 +988,6 @@ class ClassificationProcessor:
         
         return secondary_drivers
     
-    def _check_fusion_read_thresholds(self, rules):
-        """Check if any fusions exceed read count thresholds."""
-        threshold = rules.get('fusion_read_threshold', 3)
-        high_read_fusions = []
-        
-        for fusion in self.data['fusions']:
-            try:
-                reads = int(fusion['spanning_reads'])
-                if reads >= threshold:
-                    high_read_fusions.append(f"{fusion['gene_1']}::{fusion['gene_2']} (reads: {reads})")
-            except:
-                continue
-        
-        return high_read_fusions
-    
     def _filter_low_read_fusions(self, rules):
         """Remove low-read fusions based on thresholds."""
         threshold = rules.get('fusion_read_threshold', 3)
@@ -1479,31 +1464,6 @@ class ClassificationProcessor:
             fusion_list.append(f"{fusion['caller']}: {fusion['gene_1']}::{fusion['gene_2']} (reads: {fusion['spanning_reads']})")
         
         return "; ".join(fusion_list)
-    
-    def _format_detailed_fusions(self):
-        """Format detailed fusion information for manual curation."""
-        if not self.data['fusions']:
-            return "No driver fusions identified"
-        
-        detailed_list = []
-        for fusion in self.data['fusions']:
-            details = [
-                f"{fusion['gene_1']}::{fusion['gene_2']}",
-                f"Caller: {fusion['caller']}",
-                f"Reads: {fusion['spanning_reads']}"
-            ]
-            
-            if fusion.get('breakpoint_1') or fusion.get('breakpoint_2'):
-                breakpoints = f"BP1: {fusion.get('breakpoint_1', 'N/A')}, BP2: {fusion.get('breakpoint_2', 'N/A')}"
-                details.append(breakpoints)
-            
-            if fusion.get('sequence_data'):
-                seq_data = str(fusion.get('sequence_data'))  # Convert to string first
-                details.append(f"Seq: {seq_data[:50]}...")  # Truncate long sequences
-            
-            detailed_list.append(" | ".join(details))
-        
-        return "; ".join(detailed_list)
     
     def _generate_driver_fusion_file(self, output_driver):
         """Generate driver fusion output file."""

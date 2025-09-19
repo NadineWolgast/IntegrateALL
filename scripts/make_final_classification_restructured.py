@@ -75,13 +75,17 @@ SUBTYPE_RULES = {
         'secondary_driver_policy': 'ignore'
     },
     'Ph-like': {
-        'evidence_type': 'fusion',
-        'required_columns': ['ALLCatchR', 'fusion', 'Confidence'],
+        'evidence_type': 'fusion_or_confidence',  # Can be fusion-based OR confidence-only (NOS)
+        'required_columns': ['ALLCatchR', 'Confidence'],
         'confidence_policy': 'restricted',  # high-confidence required
         'allowed_confidence': ['high-confidence'],
-        'fusion_policy': 'required',
+        'fusion_policy': 'conditional',  # fusion preferred but not required for NOS classification
         'expected_fusions': ['CRLF2', 'IGH@', 'EPOR', 'P2RY8', 'JAK2', 'ABL1', 'BCR', 'PDGFRB', 'ABL2', 'CSF1R', 'ETV6', 'NTRK3', 'ROS1', 'PDGFRA', 'LYN', 'PTK2B', 'IGK', 'IL2RB', 'MYH9', 'IL7-R', 'TYK2', 'MYB', 'ZNF340', 'GOPC', 'TMEM2', 'CBL', 'KANK1', 'DGKH', 'ZFAND3', 'IKZF1', 'ZEB2', 'RCSD1', 'ZC3HAV1', 'EBF1', 'NUP214', 'SSBP2', 'ZMIZ1', 'TNIP1', 'RANBP2', 'ATF7IP', 'SNX2', 'PAG1', 'MEF2D', 'CENPC', 'LSM14A', 'TBL1XR1', 'FIP1L1', 'GATAD2A', 'ZMYND8', 'SNX29', 'EXOSC2', 'FOXP1', 'MYO18B', 'NUP153', 'SFPQ', 'SNX1', 'GATA2DA', 'NCOR1', 'LAIR1', 'PCM1', 'PPFIBP1', 'TERF2', 'TPR', 'OFD1', 'STRN3', 'USP25', 'ZNF274', 'THADA', 'RFX3', 'SMU1', 'WDR37'],  # Complete Ph-like genes from official table
         'min_fusion_reads': 1,
+        'nos_classification': {  # NOS classification when no driver fusion found
+            'icc_classification': 'B-ALL, BCR::ABL1-like, NOS',
+            'who_classification': 'B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features'
+        },
         'secondary_driver_policy': 'manual_curation'  # secondary drivers → manual curation
     },
     'BCR::ABL1-like': {
@@ -731,6 +735,8 @@ class ClassificationProcessor:
             return self._match_allcatchr_fusion_subtype(classification_df, rules)
         elif rules['evidence_type'] == 'hybrid':
             return self._match_hybrid_subtype(classification_df, rules)
+        elif rules['evidence_type'] == 'fusion_or_confidence':
+            return self._match_fusion_or_confidence_subtype(classification_df, rules)
         else:
             logger.info(f"⚠️ Unknown evidence type: {rules['evidence_type']}")
             return self.find_exact_matches(classification_df)
@@ -1109,6 +1115,71 @@ class ClassificationProcessor:
         
         logger.info("❌ No hybrid evidence found")
         return None, 'hybrid_no_evidence'
+    
+    def _match_fusion_or_confidence_subtype(self, classification_df, rules):
+        """Handle Ph-like: fusion-based OR confidence-only (NOS) classification."""
+        logger.info("🧬 Matching fusion-or-confidence subtype (Ph-like)...")
+        
+        # Check confidence requirement first
+        confidence_policy = rules.get('confidence_policy', 'any')
+        if confidence_policy == 'restricted':
+            allcatchr_confidence = self.data['allcatchr'].get('confidence', '')
+            allowed_confidence = rules.get('allowed_confidence', [])
+            if allcatchr_confidence not in allowed_confidence:
+                logger.info(f"❌ Confidence requirement not met: {allcatchr_confidence}, required: {allowed_confidence}")
+                return None, 'confidence_mismatch'
+        
+        logger.info(f"✅ Confidence requirement met: {allcatchr_confidence}")
+        
+        # Check for driver fusion first
+        expected_fusions = rules.get('expected_fusions', [])
+        driver_fusion_found = False
+        found_fusion_details = None
+        
+        for fusion_data in self.data['fusions']:
+            gene1 = fusion_data.get('gene1', '')
+            gene2 = fusion_data.get('gene2', '')
+            
+            # Check if both genes are in expected fusion list (driver fusion)
+            if gene1 in expected_fusions and gene2 in expected_fusions:
+                driver_fusion_found = True
+                found_fusion_details = fusion_data
+                logger.info(f"✅ Driver fusion found: {gene1}::{gene2}")
+                break
+        
+        if driver_fusion_found:
+            # Standard Ph-like classification with specific driver fusion
+            logger.info("✅ Ph-like classified with driver fusion")
+            match_data = {
+                'ALLCatchR': 'Ph-like',
+                'Confidence': allcatchr_confidence,
+                'driver_fusion': f"{found_fusion_details['gene1']}::{found_fusion_details['gene2']}",
+                'classification_type': 'driver_fusion'
+            }
+            return pd.DataFrame([match_data]), 'ph_like_driver_fusion'
+        
+        else:
+            # No driver fusion found - check for NOS classification
+            logger.info("🔍 No driver fusion found - checking for NOS classification...")
+            
+            # For NOS: high-confidence Ph-like without driver fusion
+            if allcatchr_confidence == 'high-confidence':
+                nos_info = rules.get('nos_classification', {})
+                logger.info("✅ Ph-like NOS classification (high-confidence without driver fusion)")
+                
+                match_data = {
+                    'ALLCatchR': 'Ph-like',
+                    'Confidence': allcatchr_confidence,
+                    'karyotype_classifier': 'other',  # NOS typically has 'other' karyotype
+                    'icc_classification': nos_info.get('icc_classification', 'B-ALL, BCR::ABL1-like, NOS'),
+                    'who_classification': nos_info.get('who_classification', 'B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features'),
+                    'classification_type': 'nos'
+                }
+                return pd.DataFrame([match_data]), 'ph_like_nos'
+            
+            else:
+                logger.info(f"❌ No driver fusion and confidence not sufficient for NOS: {allcatchr_confidence}")
+                return None, 'ph_like_insufficient_evidence'
 
     # ========== FALLBACK: GENERAL MATCHING ==========
     

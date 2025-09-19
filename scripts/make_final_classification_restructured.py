@@ -47,7 +47,7 @@ SUBTYPE_RULES = {
         'required_values': {'PAX5_P80R': True},
         'confidence_policy': 'any',  # any confidence value accepted
         'fusion_policy': 'optional',  # fusions are optional
-        'secondary_driver_policy': 'ignore'  # ignore secondary drivers
+        'secondary_driver_policy': 'manual_curation'  # ignore secondary drivers
     },
     'IKZF1 N159Y': {
         'evidence_type': 'snv', 
@@ -55,7 +55,7 @@ SUBTYPE_RULES = {
         'required_values': {'IKZF1_N159Y': True},
         'confidence_policy': 'any',
         'fusion_policy': 'optional',
-        'secondary_driver_policy': 'ignore'
+        'secondary_driver_policy': 'manual_curation'
     },
     'CEBP': {
         'evidence_type': 'hybrid',  # Can be SNV or fusion based
@@ -72,7 +72,7 @@ SUBTYPE_RULES = {
             'min_fusion_reads': 1
         },
         'fusion_policy': 'optional',
-        'secondary_driver_policy': 'ignore'
+        'secondary_driver_policy': 'manual_curation'
     },
     'Ph-like': {
         'evidence_type': 'fusion_or_confidence',  # Can be fusion-based OR confidence-only (NOS)
@@ -140,7 +140,7 @@ SUBTYPE_RULES = {
             'icc_classification': 'B-ALL with DUX4 rearrangement',
             'who_classification': 'B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities'
         },
-        'secondary_driver_policy': 'ignore'
+        'secondary_driver_policy': 'manual_curation'
     },
     'PAX5alt': {
         'evidence_type': 'fusion_or_confidence',
@@ -153,7 +153,7 @@ SUBTYPE_RULES = {
             'icc_classification': 'B-ALL, with PAX5 alteration (provisional entity)',
             'who_classification': 'B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities'
         },
-        'secondary_driver_policy': 'ignore'
+        'secondary_driver_policy': 'manual_curation'
     },
     'ETV6::RUNX1-like': {
         'evidence_type': 'fusion_or_confidence',
@@ -166,7 +166,7 @@ SUBTYPE_RULES = {
             'icc_classification': 'B-ALL, ETV6::RUNX1-like (provisional entity)',
             'who_classification': 'B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1-like features'
         },
-        'secondary_driver_policy': 'ignore'
+        'secondary_driver_policy': 'manual_curation'
     },
     'ZNF384': {
         'evidence_type': 'fusion_or_confidence',
@@ -179,7 +179,7 @@ SUBTYPE_RULES = {
             'icc_classification': 'B-ALL, ZNF384 rearranged-like (provisional entity)',
             'who_classification': 'B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities'
         },
-        'secondary_driver_policy': 'ignore'
+        'secondary_driver_policy': 'manual_curation'
     },
     'KMT2A': {
         'evidence_type': 'fusion_or_confidence',
@@ -192,7 +192,7 @@ SUBTYPE_RULES = {
             'icc_classification': 'B-ALL, KMT2A rearranged-like (provisional entity)',
             'who_classification': 'B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities'
         },
-        'secondary_driver_policy': 'ignore'
+        'secondary_driver_policy': 'manual_curation'
     },
     'MEF2D': {
         'evidence_type': 'fusion',
@@ -201,7 +201,7 @@ SUBTYPE_RULES = {
         'fusion_policy': 'required',
         'expected_fusions': ['MEF2D', 'BCL9', 'HNRNPUL1', 'PYGO2', 'DAZAP1', 'FOXJ2', 'HNRNPM', 'SS18'],
         'min_fusion_reads': 1,
-        'secondary_driver_policy': 'ignore'
+        'secondary_driver_policy': 'manual_curation'
     },
     'NUTM1': {
         'evidence_type': 'fusion',
@@ -210,7 +210,7 @@ SUBTYPE_RULES = {
         'fusion_policy': 'required',
         'expected_fusions': ['NUTM1', 'SLC12A6', 'ACIN1', 'CUX1', 'BRD9', 'ZNF618', 'IKZF1'],
         'min_fusion_reads': 1,
-        'secondary_driver_policy': 'ignore'
+        'secondary_driver_policy': 'manual_curation'
     },
     'Ph-pos': {
         'evidence_type': 'allcatchr_fusion',  # Requires both ALLCatchR Ph-pos prediction and BCR::ABL1 fusion
@@ -226,7 +226,7 @@ SUBTYPE_RULES = {
         'fusion_policy': 'required',
         'expected_fusions': ['BCR', 'ABL1'],  # BCR::ABL1 fusion required
         'min_fusion_reads': 1,
-        'secondary_driver_policy': 'ignore'
+        'secondary_driver_policy': 'manual_curation'
     },
     'HLF': {
         'evidence_type': 'fusion',
@@ -235,7 +235,7 @@ SUBTYPE_RULES = {
         'fusion_policy': 'required',
         'expected_fusions': ['HLF', 'TCF3', 'TCF4'],
         'min_fusion_reads': 1,
-        'secondary_driver_policy': 'ignore'
+        'secondary_driver_policy': 'manual_curation'
     },
     'Near haploid': {
         'evidence_type': 'karyotype',
@@ -244,7 +244,7 @@ SUBTYPE_RULES = {
         'confidence_policy': 'any',
         'fusion_policy': 'conditional',
         'fusion_read_threshold': 3,
-        'secondary_driver_policy': 'ignore'
+        'secondary_driver_policy': 'manual_curation'
     },
     'Low hypodiploid': {
         'evidence_type': 'karyotype',
@@ -253,7 +253,7 @@ SUBTYPE_RULES = {
         'confidence_policy': 'any',
         'fusion_policy': 'conditional',
         'fusion_read_threshold': 3,
-        'secondary_driver_policy': 'ignore'
+        'secondary_driver_policy': 'manual_curation'
     },
     'KMT2A rearranged-like (provisional entity)': {
         'evidence_type': 'fusion',
@@ -262,7 +262,7 @@ SUBTYPE_RULES = {
         'fusion_policy': 'required',
         'expected_fusions': ['KMT2A', 'HOXA9', 'MED12'],  # KMT2A rearranged-like specific
         'min_fusion_reads': 1,
-        'secondary_driver_policy': 'ignore'
+        'secondary_driver_policy': 'manual_curation'
     },
     'iAMP21': {
         'evidence_type': 'karyotype',
@@ -271,7 +271,7 @@ SUBTYPE_RULES = {
         'confidence_policy': 'any',
         'fusion_policy': 'conditional',
         'fusion_read_threshold': 3,
-        'secondary_driver_policy': 'ignore'
+        'secondary_driver_policy': 'manual_curation'
     },
     'TCF3::PBX1': {
         'evidence_type': 'fusion',
@@ -280,7 +280,7 @@ SUBTYPE_RULES = {
         'fusion_policy': 'required',
         'expected_fusions': ['TCF3', 'PBX1'],  # TCF3::PBX1 fusion
         'min_fusion_reads': 1,
-        'secondary_driver_policy': 'ignore'
+        'secondary_driver_policy': 'manual_curation'
     },
     'ETV6::RUNX1': {
         'evidence_type': 'fusion',
@@ -290,7 +290,7 @@ SUBTYPE_RULES = {
         'fusion_policy': 'required',
         'expected_fusions': ['ETV6', 'RUNX1'],  # ETV6::RUNX1 direct fusion
         'min_fusion_reads': 1,
-        'secondary_driver_policy': 'ignore'
+        'secondary_driver_policy': 'manual_curation'
     },
     'CDX2/UBTF': {
         'evidence_type': 'fusion',
@@ -299,7 +299,7 @@ SUBTYPE_RULES = {
         'fusion_policy': 'required',
         'expected_fusions': ['UBTF', 'ATXN7L3'],  # UBTF::ATXN7L3 fusion
         'min_fusion_reads': 1,
-        'secondary_driver_policy': 'ignore'
+        'secondary_driver_policy': 'manual_curation'
     },
     'ZNF384 rearranged-like (provisional entity)': {
         'evidence_type': 'fusion',
@@ -308,7 +308,7 @@ SUBTYPE_RULES = {
         'fusion_policy': 'required',
         'expected_fusions': ['ZNF384', 'EP300', 'TAF15', 'TCF3', 'EWSR1', 'ZNF362', 'SMARCA2', 'ARID1B', 'CLTC', 'CREBBP', 'DDX42', 'NIPBL'],  # Same as ZNF384
         'min_fusion_reads': 1,
-        'secondary_driver_policy': 'ignore'
+        'secondary_driver_policy': 'manual_curation'
     }
 }
 
@@ -899,7 +899,7 @@ class ClassificationProcessor:
         # Handle fusion filtering based on policy
         if rules.get('fusion_policy') == 'conditional':
             # Filter out low-read fusions first
-            self._filter_low_read_fusions(rules)
+            self._filter_non_driver_fusions(rules)
             
             # Check if any high-read fusions remain
             if self.data['fusions']:
@@ -988,28 +988,42 @@ class ClassificationProcessor:
         
         return secondary_drivers
     
-    def _filter_low_read_fusions(self, rules):
-        """Remove low-read fusions based on thresholds."""
-        threshold = rules.get('fusion_read_threshold', 3)
+    def _filter_non_driver_fusions(self, rules):
+        """Remove low-read NON-DRIVER fusions only. Driver fusions are preserved regardless of read count."""
+        expected_genes = set(rules.get('expected_fusions', []))
+        threshold = rules.get('min_fusion_reads', 1)
         original_count = len(self.data['fusions'])
         
         filtered_fusions = []
         for fusion in self.data['fusions']:
-            try:
-                reads = int(fusion['spanning_reads'])
-                if reads < threshold:
-                    logger.info(f"🔧 Filtering low-read fusion: {fusion['gene_1']}::{fusion['gene_2']} (reads: {reads} < {threshold})")
-                else:
-                    filtered_fusions.append(fusion)
-            except:
-                # Keep fusion if read count can't be parsed
+            gene1, gene2 = fusion['gene_1'], fusion['gene_2']
+            
+            # Check if this is a driver fusion for current subtype
+            is_driver = any(gene in expected_genes for gene in [gene1, gene2])
+            
+            if is_driver:
+                # Driver fusion - always keep regardless of reads
                 filtered_fusions.append(fusion)
+                logger.info(f"✅ Driver fusion preserved: {gene1}::{gene2} (reads: {fusion['spanning_reads']}, driver for current subtype)")
+            else:
+                # Non-driver fusion - apply read threshold
+                try:
+                    reads = int(fusion['spanning_reads'])
+                    if reads >= threshold:
+                        filtered_fusions.append(fusion)
+                        logger.info(f"✅ Non-driver fusion kept: {gene1}::{gene2} (reads: {reads} >= {threshold})")
+                    else:
+                        logger.info(f"🔧 Non-driver fusion filtered: {gene1}::{gene2} (reads: {reads} < {threshold})")
+                except:
+                    # Keep fusion if read count can't be parsed
+                    filtered_fusions.append(fusion)
+                    logger.info(f"✅ Fusion kept (unparseable reads): {gene1}::{gene2}")
         
         self.data['fusions'] = filtered_fusions
-        logger.info(f"🔧 Fusions filtered: {original_count} → {len(filtered_fusions)}")
+        logger.info(f"🔧 Fusions filtered: {original_count} → {len(filtered_fusions)} (drivers preserved, non-drivers filtered)")
         
         # Recreate summary after filtering
-        if filtered_fusions != self.data['fusions']:
+        if len(filtered_fusions) != original_count:
             self.create_summary_dataframe()
     
     def _match_allcatchr_fusion_subtype(self, classification_df, rules):

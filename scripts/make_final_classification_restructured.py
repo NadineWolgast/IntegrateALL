@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 # Driver fusion gene list - optimized as set for O(1) lookup
 DRIVER_FUSION_GENES = {
-    "ABL1", "ABL2", "ACIN1", "ADAMTSL5", "AFF1", "AMPH", "ANTXR1", "ARID1B", "ATF7IP",
+    "ABL1", "ABL2", "ACIN1", "ADAMTSL5", "AFF1", "AMPH", "ANTXR1", "ARID1B", "ATF7IP", "ATXN7L3",
     "AUTS2", "BCL2", "BCL6", "BCL9", "BCR", "BMP2K", "BRD9", "C7ORF72",
     "CASC15", "CBFA2T2", "CBFA2T3", "CBL", "CD163", "CEBPA", "CEBPB", "CEBPD", "CEBPE",
     "CENPC", "CLTC", "CREBBP", "CRLF2", "CSF1R", "CUX1", "DACH1", "DACH2", "DAZAP1",
@@ -82,21 +82,7 @@ SUBTYPE_RULES = {
         'fusion_policy': 'conditional',  # fusion preferred but not required for NOS classification
         'expected_fusions': ['CRLF2', 'IGH@', 'EPOR', 'P2RY8', 'JAK2', 'ABL1', 'BCR', 'PDGFRB', 'ABL2', 'CSF1R', 'ETV6', 'NTRK3', 'ROS1', 'PDGFRA', 'LYN', 'PTK2B', 'IGK', 'IL2RB', 'MYH9', 'IL7-R', 'TYK2', 'MYB', 'ZNF340', 'GOPC', 'TMEM2', 'CBL', 'KANK1', 'DGKH', 'ZFAND3', 'IKZF1', 'ZEB2', 'RCSD1', 'ZC3HAV1', 'EBF1', 'NUP214', 'SSBP2', 'ZMIZ1', 'TNIP1', 'RANBP2', 'ATF7IP', 'SNX2', 'PAG1', 'MEF2D', 'CENPC', 'LSM14A', 'TBL1XR1', 'FIP1L1', 'GATAD2A', 'ZMYND8', 'SNX29', 'EXOSC2', 'FOXP1', 'MYO18B', 'NUP153', 'SFPQ', 'SNX1', 'GATA2DA', 'NCOR1', 'LAIR1', 'PCM1', 'PPFIBP1', 'TERF2', 'TPR', 'OFD1', 'STRN3', 'USP25', 'ZNF274', 'THADA', 'RFX3', 'SMU1', 'WDR37'],  # Complete Ph-like genes from official table
         'min_fusion_reads': 1,
-        'nos_classification': {  # NOS classification when no driver fusion found
-            'icc_classification': 'B-ALL, BCR::ABL1-like, NOS',
-            'who_classification': 'B-lymphoblastic leukaemia/lymphoma with BCR::ABL1-like features'
-        },
         'secondary_driver_policy': 'manual_curation'  # secondary drivers → manual curation
-    },
-    'BCR::ABL1-like': {
-        'evidence_type': 'fusion',
-        'required_columns': ['ALLCatchR', 'fusion', 'Confidence'],
-        'confidence_policy': 'restricted',  # high-confidence required
-        'allowed_confidence': ['high-confidence'],
-        'fusion_policy': 'required',
-        'expected_fusions': ['CRLF2', 'IGH@', 'EPOR', 'P2RY8', 'JAK2', 'ABL1', 'BCR', 'PDGFRB', 'ABL2', 'CSF1R', 'ETV6', 'NTRK3', 'ROS1', 'PDGFRA', 'LYN', 'PTK2B', 'IGK', 'IL2RB', 'MYH9', 'IL7-R', 'TYK2', 'MYB', 'ZNF340', 'GOPC', 'TMEM2', 'CBL', 'KANK1', 'DGKH', 'ZFAND3', 'IKZF1', 'ZEB2', 'RCSD1', 'ZC3HAV1', 'EBF1', 'NUP214', 'SSBP2', 'ZMIZ1', 'TNIP1', 'RANBP2', 'ATF7IP', 'SNX2', 'PAG1', 'MEF2D', 'CENPC', 'LSM14A', 'TBL1XR1', 'FIP1L1', 'GATAD2A', 'ZMYND8', 'SNX29', 'EXOSC2', 'FOXP1', 'MYO18B', 'NUP153', 'SFPQ', 'SNX1', 'GATA2DA', 'NCOR1', 'LAIR1', 'PCM1', 'PPFIBP1', 'TERF2', 'TPR', 'OFD1', 'STRN3', 'USP25', 'ZNF274', 'THADA', 'RFX3', 'SMU1', 'WDR37'],  # Same as Ph-like - complete list
-        'min_fusion_reads': 1,
-        'secondary_driver_policy': 'manual_curation'
     },
     'BCL2/MYC': {
         'evidence_type': 'fusion_or_confidence',
@@ -105,10 +91,6 @@ SUBTYPE_RULES = {
         'fusion_policy': 'conditional',
         'expected_fusions': ['BCL2', 'MYC', 'BCL6', 'IGH@'],
         'min_fusion_reads': 1,
-        'nos_classification': {
-            'icc_classification': 'B-ALL with MYC rearrangement',
-            'who_classification': 'B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities'
-        },
         'secondary_driver_policy': 'manual_curation'
     },
     'Hyperdiploid': {
@@ -120,15 +102,6 @@ SUBTYPE_RULES = {
         'fusion_read_threshold': 3,  # >=3 reads → manual curation
         'secondary_driver_policy': 'read_threshold'
     },
-    'hyperdiploid': {
-        'evidence_type': 'karyotype',
-        'required_columns': ['ALLCatchR', 'karyotype_classifier'], 
-        'required_values': {'karyotype_classifier': 'Hyperdiploid'},
-        'confidence_policy': 'any',
-        'fusion_policy': 'conditional',
-        'fusion_read_threshold': 3,
-        'secondary_driver_policy': 'read_threshold'
-    },
     'DUX4': {
         'evidence_type': 'fusion_or_confidence',
         'required_columns': ['ALLCatchR'],
@@ -136,10 +109,6 @@ SUBTYPE_RULES = {
         'fusion_policy': 'conditional',
         'expected_fusions': ['DUX4', 'IGH@', 'ETV6', 'PCGF5'],
         'min_fusion_reads': 3,  # DUX4 fusions need >2 reads
-        'nos_classification': {
-            'icc_classification': 'B-ALL with DUX4 rearrangement',
-            'who_classification': 'B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities'
-        },
         'secondary_driver_policy': 'manual_curation'
     },
     'PAX5alt': {
@@ -149,10 +118,6 @@ SUBTYPE_RULES = {
         'fusion_policy': 'conditional',
         'expected_fusions': ['PAX5', 'ETV6', 'NOL4L', 'AUTS2', 'ZNF521', 'CBFA2T3', 'DACH1', 'ELN', 'FBRSL1', 'CBFA2T2', 'NCOA5', 'ADAMTSL5', 'TCF3', 'ANTXR1', 'BMP2K', 'LEF1', 'DACH2', 'DBX1', 'DMRTA2', 'ESRRA', 'FKBP15', 'FOXP2', 'ID4', 'IGH@', 'MBNL1', 'MEIS2', 'MPRIP', 'PML', 'RHOXF2B', 'TAF3', 'TMPRSS9', 'WDR5', 'ZNF276'],
         'min_fusion_reads': 1,
-        'nos_classification': {
-            'icc_classification': 'B-ALL, with PAX5 alteration (provisional entity)',
-            'who_classification': 'B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities'
-        },
         'secondary_driver_policy': 'manual_curation'
     },
     'ETV6::RUNX1-like': {
@@ -162,10 +127,6 @@ SUBTYPE_RULES = {
         'fusion_policy': 'conditional',
         'expected_fusions': ['ETV6', 'ELMO1', 'AMPH', 'C7ORF72', 'CASC15', 'CD163', 'EBF1', 'ERC1', 'EXTL1', 'FAM136A', 'FOXO3', 'IKZF1', 'QSOX1', 'SLC30A7', 'SRRM1', 'TMTC1', 'RNFT2', 'STIM2', 'ZPBP'],
         'min_fusion_reads': 1,
-        'nos_classification': {
-            'icc_classification': 'B-ALL, ETV6::RUNX1-like (provisional entity)',
-            'who_classification': 'B-lymphoblastic leukaemia/lymphoma with ETV6::RUNX1-like features'
-        },
         'secondary_driver_policy': 'manual_curation'
     },
     'ZNF384': {
@@ -175,23 +136,15 @@ SUBTYPE_RULES = {
         'fusion_policy': 'conditional',
         'expected_fusions': ['ZNF384', 'EP300', 'TAF15', 'TCF3', 'EWSR1', 'ZNF362', 'SMARCA2', 'ARID1B', 'CLTC', 'CREBBP', 'DDX42', 'NIPBL'],
         'min_fusion_reads': 1,
-        'nos_classification': {
-            'icc_classification': 'B-ALL, ZNF384 rearranged-like (provisional entity)',
-            'who_classification': 'B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities'
-        },
         'secondary_driver_policy': 'manual_curation'
     },
     'KMT2A': {
         'evidence_type': 'fusion_or_confidence',
         'required_columns': ['ALLCatchR'],
-        'confidence_policy': 'conditional',  # high-confidence required only for NOS
+        'confidence_policy': 'conditional',  # high-confidence required only when no fusion
         'fusion_policy': 'conditional',
-        'expected_fusions': ['KMT2A', 'AFF1', 'MLLT1', 'MLLT3', 'MLLT10', 'USP2', 'DCPS', 'EPS15', 'IKZF1', 'TNS3', 'UBASH3B'],
+        'expected_fusions': ['KMT2A', 'AFF1', 'MLLT1', 'MLLT3', 'MLLT10', 'USP2', 'DCPS', 'EPS15', 'IKZF1', 'TNS3', 'UBASH3B', 'HOXA9', 'MED12'],
         'min_fusion_reads': 1,
-        'nos_classification': {
-            'icc_classification': 'B-ALL, KMT2A rearranged-like (provisional entity)',
-            'who_classification': 'B-lymphoblastic leukaemia/lymphoma with other defined genetic abnormalities'
-        },
         'secondary_driver_policy': 'manual_curation'
     },
     'MEF2D': {
@@ -216,11 +169,11 @@ SUBTYPE_RULES = {
         'evidence_type': 'allcatchr_fusion',  # Requires both ALLCatchR Ph-pos prediction and BCR::ABL1 fusion
         'required_columns': ['ALLCatchR', 'Ph-pos', 'fusion', 'karyotype_classifier'],
         'required_values': {'ALLCatchR': 'Ph-pos'},
-        'allcatchr_ph_pos_allowed': ['lymphoid', 'multilineage', 'not Ph-pos predicted'],  # All Ph-pos predictions valid
+        'allcatchr_ph_pos_allowed': ['lymphoid', 'multilineage', 'not Ph-pos predicted'],  # All Ph-pos predictions valid for automatic classification
         'ph_pos_icc_rules': {
             'lymphoid': {'allowed_karyotypes': ['other', 'Hyperdiploid'], 'icc_classification': 'lymphoid only involvement'},
             'multilineage': {'allowed_karyotypes': ['other'], 'icc_classification': 'multilineage involvement'},
-            'not Ph-pos predicted': {'allowed_karyotypes': ['other', 'Hyperdiploid'], 'icc_classification': None}  # No ICC classification
+            'not Ph-pos predicted': {'allowed_karyotypes': ['other', 'Hyperdiploid'], 'icc_classification': None}  # Automatic classification but no ICC
         },
         'confidence_policy': 'flexible',
         'fusion_policy': 'required',
@@ -253,15 +206,6 @@ SUBTYPE_RULES = {
         'confidence_policy': 'any',
         'fusion_policy': 'conditional',
         'fusion_read_threshold': 3,
-        'secondary_driver_policy': 'manual_curation'
-    },
-    'KMT2A rearranged-like (provisional entity)': {
-        'evidence_type': 'fusion',
-        'required_columns': ['ALLCatchR', 'fusion'],
-        'confidence_policy': 'flexible',
-        'fusion_policy': 'required',
-        'expected_fusions': ['KMT2A', 'HOXA9', 'MED12'],  # KMT2A rearranged-like specific
-        'min_fusion_reads': 1,
         'secondary_driver_policy': 'manual_curation'
     },
     'iAMP21': {
@@ -301,15 +245,6 @@ SUBTYPE_RULES = {
         'min_fusion_reads': 1,
         'secondary_driver_policy': 'manual_curation'
     },
-    'ZNF384 rearranged-like (provisional entity)': {
-        'evidence_type': 'fusion',
-        'required_columns': ['ALLCatchR', 'fusion'],
-        'confidence_policy': 'flexible',
-        'fusion_policy': 'required',
-        'expected_fusions': ['ZNF384', 'EP300', 'TAF15', 'TCF3', 'EWSR1', 'ZNF362', 'SMARCA2', 'ARID1B', 'CLTC', 'CREBBP', 'DDX42', 'NIPBL'],  # Same as ZNF384
-        'min_fusion_reads': 1,
-        'secondary_driver_policy': 'manual_curation'
-    }
 }
 
 
@@ -664,6 +599,11 @@ class ClassificationProcessor:
                 on=match_cols, how='inner',
                 suffixes=('', '_class')
             )
+            # Preserve SNV columns from summary_df if they're missing in matches
+            snv_cols = ['PAX5_P80R', 'IKZF1_N159Y', 'ZEB2_H1038R']
+            for col in snv_cols:
+                if col in summary_df.columns and col not in matches.columns:
+                    matches[col] = summary_df[col].iloc[0]
             logger.info(f"🔍 DEBUG: {orientation} orientation matches (no Confidence): {len(matches)}")
             return matches
         
@@ -708,6 +648,14 @@ class ClassificationProcessor:
                 logger.info(f"🔍 DEBUG: Match rejected - Confidence mismatch: {sample_confidence} vs {class_confidence}")
         
         result = pd.DataFrame(final_matches) if final_matches else pd.DataFrame()
+        
+        # Preserve SNV columns from summary_df if they're missing in result
+        if not result.empty:
+            snv_cols = ['PAX5_P80R', 'IKZF1_N159Y', 'ZEB2_H1038R']
+            for col in snv_cols:
+                if col in summary_df.columns and col not in result.columns:
+                    result[col] = summary_df[col].iloc[0]
+        
         logger.info(f"🔍 DEBUG: {orientation} orientation final matches: {len(result)}")
         return result
     
@@ -751,14 +699,46 @@ class ClassificationProcessor:
         elif rules['evidence_type'] == 'karyotype':
             return self._match_karyotype_subtype(classification_df, rules)
         elif rules['evidence_type'] == 'allcatchr_fusion':
-            return self._match_allcatchr_fusion_subtype(classification_df, rules)
+            result, match_type = self._match_allcatchr_fusion_subtype(classification_df, rules)
+            if result is not None and not result.empty:
+                # Check if this is a Ph-pos case with custom ICC - don't override
+                if not (result.iloc[0].get('ALLCatchR') == 'Ph-pos' and 'ICC' in result.columns):
+                    result = self._add_classification_info(result, classification_df)
+            return result, match_type
         elif rules['evidence_type'] == 'hybrid':
-            return self._match_hybrid_subtype(classification_df, rules)
+            result, match_type = self._match_hybrid_subtype(classification_df, rules)
+            if result is not None and not result.empty:
+                result = self._add_classification_info(result, classification_df)
+            return result, match_type
         elif rules['evidence_type'] == 'fusion_or_confidence':
-            return self._match_fusion_or_confidence_subtype(classification_df, rules)
+            result, match_type = self._match_fusion_or_confidence_subtype(classification_df, rules)
+            if result is not None and not result.empty:
+                result = self._add_classification_info(result, classification_df)
+            return result, match_type
         else:
             logger.info(f"⚠️ Unknown evidence type: {rules['evidence_type']}")
             return self.find_exact_matches(classification_df)
+    
+    def _add_classification_info(self, result_df, classification_df):
+        """Add WHO-HAEM5 and ICC classification information from classification_df."""
+        if result_df.empty:
+            return result_df
+        
+        # Get the first row to determine what to match against
+        sample_row = result_df.iloc[0]
+        subtype = sample_row['ALLCatchR']
+        
+        # Find matching rows in classification_df for this subtype
+        matching_rows = classification_df[classification_df['ALLCatchR'] == subtype]
+        
+        if not matching_rows.empty:
+            # Take the first match and add WHO-HAEM5 and ICC
+            match_row = matching_rows.iloc[0]
+            result_df = result_df.copy()
+            result_df['WHO-HAEM5'] = match_row.get('WHO-HAEM5', '')
+            result_df['ICC'] = match_row.get('ICC', '')
+        
+        return result_df
     
     def _match_snv_subtype(self, classification_df, rules):
         """Handle SNV-based subtypes like PAX5 P80R, IKZF1 N159Y."""
@@ -1063,8 +1043,8 @@ class ClassificationProcessor:
         fusion_found = False
         
         for fusion_data in self.data['fusions']:
-            gene1 = fusion_data.get('gene1', '')
-            gene2 = fusion_data.get('gene2', '')
+            gene1 = fusion_data.get('gene_1', '')
+            gene2 = fusion_data.get('gene_2', '')
             
             # Check both orientations: BCR::ABL1 and ABL1::BCR
             if (gene1 in expected_fusions and gene2 in expected_fusions) or \
@@ -1077,20 +1057,31 @@ class ClassificationProcessor:
             logger.info(f"❌ Required BCR::ABL1 fusion not found")
             return None, 'required_fusion_missing'
         
-        # Determine ICC classification
+        # Determine ICC classification and manual curation requirement
         icc_classification = ph_pos_rule.get('icc_classification', None)
+        
+        # Build WHO-HAEM5 (always the same for Ph-pos)
+        who_haem5 = 'B-lymphoblastic leukaemia/lymphoma with BCR::ABL1 fusion'
+        
         if icc_classification:
             logger.info(f"✅ ICC classification: {icc_classification}")
+            icc_text = f'B-ALLwith t(9;22)(q34.1;q11.2)/BCR::ABL1 with {icc_classification}'
         else:
-            logger.info(f"✅ No ICC classification (Ph-pos prediction: {ph_pos_prediction})")
+            logger.info(f"✅ No ICC classification for 'not Ph-pos predicted' - automatic classification but WHO only")
+            icc_text = ''  # Empty ICC for "not Ph-pos predicted" cases
         
-        # Create matching entry for Ph-pos with ICC info
+        # Create matching entry for Ph-pos with specific ICC info
         match_data = {
             'ALLCatchR': required_allcatchr,
+            'Confidence': self.data['allcatchr']['confidence'],
             'Ph-pos': ph_pos_prediction,
             'karyotype_classifier': karyotype_prediction,
-            'icc_classification': icc_classification,
-            'fusion_confirmed': True
+            'WHO-HAEM5': who_haem5,
+            'ICC': icc_text,
+            'fusion_confirmed': True,
+            'PAX5_P80R': self.data['snvs']['PAX5_P80R'],
+            'IKZF1_N159Y': self.data['snvs']['IKZF1_N159Y'],
+            'ZEB2_H1038R': self.data['snvs']['ZEB2_H1038R']
         }
         
         logger.info(f"✅ Ph-pos subtype matched successfully: {match_data}")
@@ -1105,7 +1096,7 @@ class ClassificationProcessor:
         if snv_rules:
             logger.info("🔍 Checking SNV evidence...")
             for col, required_value in snv_rules.get('required_values', {}).items():
-                sample_value = self.data['snvs'].get(col.replace('_', ' '), False)
+                sample_value = self.data['snvs'].get(col, False)
                 if sample_value == required_value:
                     logger.info(f"✅ SNV evidence found: {col} = {sample_value}")
                     # Check confidence for SNV path
@@ -1115,7 +1106,16 @@ class ClassificationProcessor:
                         allowed_confidence = snv_rules.get('allowed_confidence', [])
                         if allcatchr_confidence in allowed_confidence:
                             logger.info(f"✅ SNV confidence valid: {allcatchr_confidence}")
-                            return pd.DataFrame([{'ALLCatchR': 'CEBP', 'evidence_type': 'snv'}]), 'hybrid_snv_match'
+                            result_data = {
+                                'ALLCatchR': 'CEBP', 
+                                'Confidence': self.data['allcatchr']['confidence'],
+                                'karyotype_classifier': self.data['karyotype']['prediction'],
+                                'evidence_type': 'snv',
+                                'PAX5_P80R': self.data['snvs']['PAX5_P80R'],
+                                'IKZF1_N159Y': self.data['snvs']['IKZF1_N159Y'],
+                                'ZEB2_H1038R': self.data['snvs']['ZEB2_H1038R']
+                            }
+                            return pd.DataFrame([result_data]), 'hybrid_snv_match'
                         else:
                             logger.info(f"❌ SNV confidence invalid: {allcatchr_confidence}")
         
@@ -1125,11 +1125,23 @@ class ClassificationProcessor:
             logger.info("🔍 Checking fusion evidence...")
             expected_fusions = fusion_rules.get('expected_fusions', [])
             for fusion_data in self.data['fusions']:
-                gene1 = fusion_data.get('gene1', '')
-                gene2 = fusion_data.get('gene2', '')
+                gene1 = fusion_data.get('gene_1', '')
+                gene2 = fusion_data.get('gene_2', '')
                 if gene1 in expected_fusions and gene2 in expected_fusions:
                     logger.info(f"✅ CEBP fusion found: {gene1}::{gene2}")
-                    return pd.DataFrame([{'ALLCatchR': 'CEBP', 'evidence_type': 'fusion'}]), 'hybrid_fusion_match'
+                    result_data = {
+                        'ALLCatchR': 'CEBP', 
+                        'Confidence': self.data['allcatchr']['confidence'],
+                        'karyotype_classifier': self.data['karyotype']['prediction'],
+                        'evidence_type': 'fusion',
+                        'Gene_1_symbol(5end_fusion_partner)': gene1,
+                        'Gene_2_symbol(3end_fusion_partner)': gene2,
+                        'Fusioncaller': fusion_data.get('caller', 'Unknown'),
+                        'PAX5_P80R': self.data['snvs']['PAX5_P80R'],
+                        'IKZF1_N159Y': self.data['snvs']['IKZF1_N159Y'],
+                        'ZEB2_H1038R': self.data['snvs']['ZEB2_H1038R']
+                    }
+                    return pd.DataFrame([result_data]), 'hybrid_fusion_match'
         
         logger.info("❌ No hybrid evidence found")
         return None, 'hybrid_no_evidence'
@@ -1147,8 +1159,8 @@ class ClassificationProcessor:
         found_fusion_details = None
         
         for fusion_data in self.data['fusions']:
-            gene1 = fusion_data.get('gene1', '')
-            gene2 = fusion_data.get('gene2', '')
+            gene1 = fusion_data.get('gene_1', '')
+            gene2 = fusion_data.get('gene_2', '')
             
             # Check if both genes are in expected fusion list (driver fusion)
             if gene1 in expected_fusions and gene2 in expected_fusions:
@@ -1163,32 +1175,42 @@ class ClassificationProcessor:
             match_data = {
                 'ALLCatchR': subtype,
                 'Confidence': allcatchr_confidence,
-                'driver_fusion': f"{found_fusion_details['gene1']}::{found_fusion_details['gene2']}",
-                'classification_type': 'driver_fusion'
+                'driver_fusion': f"{found_fusion_details['gene_1']}::{found_fusion_details['gene_2']}",
+                'classification_type': 'driver_fusion',
+                'karyotype_classifier': 'other',  # Default for driver fusion cases
+                'Gene_1_symbol(5end_fusion_partner)': found_fusion_details['gene_1'],
+                'Gene_2_symbol(3end_fusion_partner)': found_fusion_details['gene_2'],
+                'Fusioncaller': found_fusion_details.get('caller', 'Unknown'),
+                'PAX5_P80R': self.data['snvs']['PAX5_P80R'],
+                'IKZF1_N159Y': self.data['snvs']['IKZF1_N159Y'],
+                'ZEB2_H1038R': self.data['snvs']['ZEB2_H1038R']
             }
             return pd.DataFrame([match_data]), f'{subtype.lower()}_driver_fusion'
         
         else:
-            # No driver fusion found - check confidence for NOS classification
-            logger.info("🔍 No driver fusion found - checking confidence for NOS classification...")
+            # No driver fusion found - check confidence for classification via Class_test.csv lookup
+            logger.info("🔍 No driver fusion found - checking confidence for Class_test.csv lookup...")
             
-            # For NOS: high-confidence without driver fusion
+            # For confidence-only: high-confidence required
             if allcatchr_confidence == 'high-confidence':
-                nos_info = rules.get('nos_classification', {})
-                logger.info(f"✅ {subtype} NOS classification (high-confidence without driver fusion)")
+                logger.info(f"✅ {subtype} confidence-only classification (high-confidence without driver fusion)")
                 
+                # Create data for Class_test.csv lookup (no fusion columns)
                 match_data = {
                     'ALLCatchR': subtype,
                     'Confidence': allcatchr_confidence,
-                    'karyotype_classifier': 'other',  # NOS typically has 'other' karyotype
-                    'icc_classification': nos_info.get('icc_classification'),
-                    'who_classification': nos_info.get('who_classification'),
-                    'classification_type': 'nos'
+                    'karyotype_classifier': self.data['karyotype']['prediction'],
+                    'classification_type': 'confidence_only',
+                    'Gene_1_symbol(5end_fusion_partner)': None,  # No fusion
+                    'Gene_2_symbol(3end_fusion_partner)': None,  # No fusion
+                    'PAX5_P80R': self.data['snvs']['PAX5_P80R'],
+                    'IKZF1_N159Y': self.data['snvs']['IKZF1_N159Y'],
+                    'ZEB2_H1038R': self.data['snvs']['ZEB2_H1038R']
                 }
-                return pd.DataFrame([match_data]), f'{subtype.lower()}_nos'
+                return pd.DataFrame([match_data]), f'{subtype.lower()}_confidence_only'
             
             else:
-                logger.info(f"❌ No driver fusion and confidence not sufficient for NOS: {allcatchr_confidence}")
+                logger.info(f"❌ No driver fusion and confidence not sufficient: {allcatchr_confidence}")
                 return None, f'{subtype.lower()}_insufficient_evidence'
 
     # ========== FALLBACK: GENERAL MATCHING ==========

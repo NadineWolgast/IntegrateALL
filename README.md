@@ -8,7 +8,6 @@ IntegrateALL is a machine learning based pipeline for multilevel-data extraction
 - **Comprehensive Analysis**: Fusion detection, CNV analysis, variant calling, and quality control
 - **Interactive Reporting**: HTML reports with visualizations and predictions
 - **Two-Workflow Architecture**: Separate setup and analysis workflows for improved stability
-- **Robust Installation**: Protected reference files and intelligent component reuse
 - **Automatic Classification**: Classification according to WHO-HAEM5 and ICC classification
 
 ## Overview
@@ -52,11 +51,11 @@ conda install mamba=1.5.8 -n base -c conda-forge
 
 ```bash
 # Clone the repository
-git clone https://github.com/NadineKraft/IntegrateALL.git
+git clone https://github.com/NadineWolgast/IntegrateALL.git
 cd IntegrateALL
 
 # Or download and extract the zip file
-wget https://github.com/NadineKraft/IntegrateALL/archive/refs/heads/main.zip
+wget https://github.com/NadineWolgast/IntegrateALL/archive/refs/heads/main.zip
 unzip main.zip && cd IntegrateALL-main
 ```
 
@@ -103,7 +102,7 @@ snakemake --snakefile setup.smk --cores 4
 
 **⏱️ Time**: 1-3 hours (depending on internet speed)
 
-All reference files are **write-protected** to prevent accidental deletion. Setup only runs once - subsequent executions skip existing components.
+Setup only runs once - subsequent executions skip existing components.
 
 ---
 
@@ -130,7 +129,7 @@ Test,/path/to/IntegrateALL/data/samples/sub1_new.fq.gz,/path/to/IntegrateALL/dat
 
 1. **Dry run** (preview jobs):
 ```bash
-snakemake -n
+snakemake -n --use-conda --conda-frontend conda
 ```
 
 2. **Full analysis**:

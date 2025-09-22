@@ -18,10 +18,12 @@ IntegrateALL is a machine learning based pipeline for multilevel-data extraction
 
 ![Rule Flowchart](pipeline_rule_flowchart.png?raw=true)
 
-IntegrateALL uses a **two-workflow architecture**:
+IntegrateALL uses a **two-workflow architecture** with multiple Snakefiles:
 
 1. **Setup Workflow** (`setup.smk`): One-time installation of reference data and tools (~21GB)
-2. **Analysis Workflow** (`Snakefile`): Sample analysis using the installed references
+2. **Analysis Workflows**:
+   - `Snakefile`: Standard analysis workflow for local/single-node execution
+   - `Snakefile.cluster`: Optimized workflow for cluster environments with job-specific resource allocation
 
 ---
 
@@ -127,6 +129,15 @@ Test,/path/to/IntegrateALL/data/samples/sub1_new.fq.gz,/path/to/IntegrateALL/dat
 
 ### Running the Analysis
 
+#### Workflow Selection
+
+Choose the appropriate Snakefile for your environment:
+
+- **`Snakefile`**: Standard workflow for local execution or single-node processing
+- **`Snakefile.cluster`**: Optimized for cluster environments with tailored resource allocation for memory-intensive steps
+
+#### Local Execution
+
 1. **Dry run** (preview jobs):
 ```bash
 snakemake -n --use-conda --conda-frontend conda
@@ -146,12 +157,31 @@ snakemake --cores 4 --use-conda --conda-frontend conda STAR_output/YOUR_SAMPLE_I
 
 ### Cluster Execution
 
-**Simple SLURM:**
+**Option 1: Using the cluster-optimized Snakefile**
+```bash
+snakemake -s Snakefile.cluster --cores 20 --use-conda --conda-frontend conda
+```
+
+**Option 2: SBATCH submission script**
+
+First, configure the submission script for your cluster:
+```bash
+# Edit submit_snakemake_job.sh to match your cluster configuration
+cp submit_snakemake_job.sh my_submit_script.sh
+# Adjust partition name, memory, CPU count, and conda paths
+```
+
+Then submit the job:
+```bash
+sbatch my_submit_script.sh
+```
+
+**Option 3: Simple SLURM:**
 ```bash
 srun -c 20 --mem 100G snakemake --cores 20 --use-conda --conda-frontend conda
 ```
 
-**SLURM Executor:**
+**Option 4: SLURM Executor:**
 ```bash
 snakemake --slurm --default-resources mem_mb=5000 threads=4 slurm_partition=YOUR_PARTITION --jobs 200 --use-conda --conda-frontend conda --keep-going
 ```

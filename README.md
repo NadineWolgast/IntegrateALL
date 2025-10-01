@@ -258,4 +258,4 @@ For issues and bug reports, please use the GitHub issue tracker.
 ## Citation
 
 If you use IntegrateALL in your research, please cite:
-https://doi.org/10.1182/blood-2024-199557
+https://doi.org/10.1101/2025.09.25.673987

@@ -830,6 +830,24 @@ rule aggregate_final_classification:
         "scripts/aggregate_final_classification.py"
 
 
+rule fusion_intersect:
+    input:
+        arriba_file="fusions/{sample}.tsv",
+        fusioncatcher_file="fusioncatcher_output/{sample}/final-list_candidate-fusion-genes.txt"
+    output:
+        "data/fusion_intersect/{sample}.csv"
+    conda:
+        "envs/subtype.yaml"
+    resources:
+        mem_mb=2000,
+        tmpdir="/tmp"
+    benchmark:
+        "benchmarks/fusion_intersect_{sample}.benchmark.txt"
+    shell:
+        """
+        python scripts/fusion_intersect_analysis.py {wildcards.sample} {input.arriba_file} {input.fusioncatcher_file} {output}
+        """
+
 rule combine_counts:
     input:
         count_files=expand("data/single_counts/{sample_id}.txt", sample_id=list(samples.keys())),

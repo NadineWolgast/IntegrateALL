@@ -1,4 +1,5 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
 Restructured IntegrateALL final classification script.
 3-Phase approach: Data Collection -> Simple Matching -> Complex Rules
@@ -9,7 +10,6 @@ import os
 import pandas as pd
 import numpy as np
 import sys
-from pathlib import Path
 import logging
 
 # Set up logging
@@ -82,7 +82,7 @@ SUBTYPE_RULES = {
         'fusion_policy': 'conditional',  # fusion preferred but not required for NOS classification
         'expected_fusions': ['CRLF2', 'IGH@', 'EPOR', 'P2RY8', 'JAK2', 'ABL1', 'BCR', 'PDGFRB', 'ABL2', 'CSF1R', 'ETV6', 'NTRK3', 'ROS1', 'PDGFRA', 'LYN', 'PTK2B', 'IGK', 'IL2RB', 'MYH9', 'IL7-R', 'TYK2', 'MYB', 'ZNF340', 'GOPC', 'TMEM2', 'CBL', 'KANK1', 'DGKH', 'ZFAND3', 'IKZF1', 'ZEB2', 'RCSD1', 'ZC3HAV1', 'EBF1', 'NUP214', 'SSBP2', 'ZMIZ1', 'TNIP1', 'RANBP2', 'ATF7IP', 'SNX2', 'PAG1', 'MEF2D', 'CENPC', 'LSM14A', 'TBL1XR1', 'FIP1L1', 'GATAD2A', 'ZMYND8', 'SNX29', 'EXOSC2', 'FOXP1', 'MYO18B', 'NUP153', 'SFPQ', 'SNX1', 'GATA2DA', 'NCOR1', 'LAIR1', 'PCM1', 'PPFIBP1', 'TERF2', 'TPR', 'OFD1', 'STRN3', 'USP25', 'ZNF274', 'THADA', 'RFX3', 'SMU1', 'WDR37'],  # Complete Ph-like genes from official table
         'min_fusion_reads': 1,
-        'secondary_driver_policy': 'manual_curation'  # secondary drivers → manual curation
+        'secondary_driver_policy': 'manual_curation'  # secondary drivers -> manual curation
     },
     'BCL2/MYC': {
         'evidence_type': 'fusion_or_confidence',
@@ -98,8 +98,8 @@ SUBTYPE_RULES = {
         'required_columns': ['ALLCatchR', 'karyotype_classifier'], 
         'required_values': {'karyotype_classifier': 'Hyperdiploid'},
         'confidence_policy': 'any',
-        'fusion_policy': 'conditional',  # low reads ignored, high reads → manual
-        'fusion_read_threshold': 3,  # >=3 reads → manual curation
+        'fusion_policy': 'conditional',  # low reads ignored, high reads -> manual
+        'fusion_read_threshold': 3,  # >=3 reads -> manual curation
         'secondary_driver_policy': 'read_threshold'
     },
     'DUX4': {
@@ -277,10 +277,10 @@ class ClassificationProcessor:
                 'confidence': row["Confidence"],
                 'ph_pos': row.get("BCR_ABL1_maincluster_pred", "not Ph-pos predicted")
             }
-            logger.info(f"✅ ALLCatchR: {self.data['allcatchr']['subtype']} ({self.data['allcatchr']['confidence']})")
+            logger.info(" ALLCatchR: {self.data['allcatchr']['subtype']} ({self.data['allcatchr']['confidence']})")
             
         except Exception as e:
-            logger.warning(f"Error loading ALLCatchR data: {e}")
+            logger.warning("Error loading ALLCatchR data: e")
             self.data['allcatchr'] = {'subtype': '', 'confidence': '', 'ph_pos': ''}
     
     def collect_karyotype_data(self, karyotype_file):
@@ -301,10 +301,10 @@ class ClassificationProcessor:
                 'raw_prediction': raw_prediction
             }
             
-            logger.info(f"✅ Karyotype (raw): {raw_prediction}")
+            logger.info(" Karyotype (raw): raw_prediction")
             
         except Exception as e:
-            logger.warning(f"Error loading karyotype data: {e}")
+            logger.warning("Error loading karyotype data: e")
             self.data['karyotype'] = {'prediction': '', 'score': '', 'raw_prediction': ''}
     
     def apply_karyotype_filtering(self):
@@ -314,14 +314,14 @@ class ClassificationProcessor:
         
         # Apply iAMP21 filtering: only use iAMP21 karyotype if ALLCatchR subtype is also iAMP21
         if raw_prediction == 'iAMP21' and allcatchr_subtype != 'iAMP21':
-            logger.info(f"🔧 iAMP21 karyotype filtered out - ALLCatchR subtype is '{allcatchr_subtype}', not 'iAMP21'")
+            logger.info(" iAMP21 karyotype filtered out - ALLCatchR subtype is 'allcatchr_subtype', not 'iAMP21'")
             # Use fallback - could be 'other' or check for second highest prediction
             # For now, use 'other' as fallback
             filtered_prediction = 'other'
             self.data['karyotype']['prediction'] = filtered_prediction
-            logger.info(f"✅ Karyotype: {filtered_prediction} (filtered from {raw_prediction})")
+            logger.info(" Karyotype: filtered_prediction (filtered from raw_prediction)")
         else:
-            logger.info(f"✅ Karyotype: {raw_prediction} (no filtering needed)")
+            logger.info(" Karyotype: raw_prediction (no filtering needed)")
     
     def collect_snv_data(self, hotspot_dir):
         """Collect hotspot SNV data - both standard and extended."""
@@ -336,7 +336,7 @@ class ClassificationProcessor:
         extended_hotspots = []
         
         try:
-            hotspot_path = Path(hotspot_dir)
+            hotspot_path = hotspot_dir
             if not hotspot_path.exists():
                 self.data['snvs'] = snv_patterns
                 self.data['extended_hotspots'] = extended_hotspots
@@ -360,18 +360,18 @@ class ClassificationProcessor:
                     if len(mutation_parts) >= 2:
                         gene = mutation_parts[0]
                         mutation = '_'.join(mutation_parts[1:]).split('.')[0]  # Remove extension
-                        extended_hotspots.append(f"{gene}_{mutation}")
+                        extended_hotspots.append("gene_mutation")
             
             self.data['snvs'] = snv_patterns
             self.data['extended_hotspots'] = extended_hotspots
             
             standard_snvs = [k for k, v in snv_patterns.items() if v]
-            logger.info(f"✅ Standard SNVs: {standard_snvs if standard_snvs else 'None'}")
+            logger.info(" Standard SNVs: {standard_snvs if standard_snvs else 'None'}")
             if extended_hotspots:
-                logger.info(f"✅ Extended hotspots: {extended_hotspots}")
+                logger.info(" Extended hotspots: extended_hotspots")
             
         except Exception as e:
-            logger.warning(f"Error checking hotspot files: {e}")
+            logger.warning("Error checking hotspot files: e")
             self.data['snvs'] = snv_patterns
             self.data['extended_hotspots'] = extended_hotspots
     
@@ -383,13 +383,13 @@ class ClassificationProcessor:
         try:
             fc_df = pd.read_csv(fusioncatcher_file, sep='\t', skiprows=1, header=None)
             if not fc_df.empty and len(fc_df.columns) >= 6:
-                logger.info(f"🔍 FusionCatcher: Processing {len(fc_df)} fusion candidates...")
+                logger.info("🔍 FusionCatcher: Processing {len(fc_df)} fusion candidates...")
                 for _, row in fc_df.iterrows():
                     gene1, gene2, spanning_reads = row[0], row[1], row[5]
-                    logger.info(f"   Checking fusion: {gene1}::{gene2}")
+                    logger.info("   Checking fusion: gene1::gene2")
                     
                     if self._is_driver_fusion_in_classtest(gene1, gene2, classification_df):
-                        logger.info(f"   ✅ Driver fusion accepted: {gene1}::{gene2}")
+                        logger.info("    Driver fusion accepted: gene1::gene2")
                         fusion_data = {
                             'gene_1': gene1,
                             'gene_2': gene2,
@@ -411,15 +411,15 @@ class ClassificationProcessor:
                         
                         fusions.append(fusion_data)
                     else:
-                        logger.info(f"   ❌ Fusion rejected: {gene1}::{gene2}")
+                        logger.info("   ERROR: Fusion rejected: gene1::gene2")
         except Exception as e:
-            logger.warning(f"Error loading FusionCatcher data: {e}")
+            logger.warning("Error loading FusionCatcher data: e")
         
         # Load Arriba data  
         try:
             arriba_df = pd.read_csv(arriba_file, sep='\t', skiprows=1, header=None)
             if not arriba_df.empty and len(arriba_df.columns) >= 2:
-                logger.info(f"🔍 Arriba: Processing {len(arriba_df)} fusion candidates...")
+                logger.info("🔍 Arriba: Processing {len(arriba_df)} fusion candidates...")
                 for _, row in arriba_df.iterrows():
                     original_gene1, original_gene2 = row[0], row[1]
                     gene1, gene2 = original_gene1, original_gene2
@@ -427,12 +427,12 @@ class ClassificationProcessor:
                     # Normalize IGH genes for Arriba (add @ if missing)
                     if gene1.startswith('IGH') and not gene1.endswith('@'):
                         gene1 = 'IGH@'
-                        logger.info(f"   🔧 IGH normalization: {original_gene1} → {gene1}")
+                        logger.info("   IGH normalization: {} -> {}".format(original_gene1, gene1))
                     if gene2.startswith('IGH') and not gene2.endswith('@'):
                         gene2 = 'IGH@'
-                        logger.info(f"   🔧 IGH normalization: {original_gene2} → {gene2}")
+                        logger.info("   IGH normalization: {} -> {}".format(original_gene2, gene2))
                     
-                    logger.info(f"   Checking fusion: {gene1}::{gene2}")
+                    logger.info("   Checking fusion: gene1::gene2")
                     
                     # Spanning reads: try column 11 first (real Arriba), then column 5 (test data)
                     if len(row) > 11:
@@ -443,7 +443,7 @@ class ClassificationProcessor:
                         spanning_reads = 1  # Default fallback
                     
                     if self._is_driver_fusion_in_classtest(gene1, gene2, classification_df):
-                        logger.info(f"   ✅ Driver fusion accepted: {gene1}::{gene2}")
+                        logger.info("    Driver fusion accepted: gene1::gene2")
                         fusion_data = {
                             'gene_1': gene1,
                             'gene_2': gene2,
@@ -465,31 +465,31 @@ class ClassificationProcessor:
                         
                         fusions.append(fusion_data)
                     else:
-                        logger.info(f"   ❌ Fusion rejected: {gene1}::{gene2}")
+                        logger.info("   ERROR: Fusion rejected: gene1::gene2")
         except Exception as e:
-            logger.warning(f"Error loading Arriba data: {e}")
+            logger.warning("Error loading Arriba data: e")
         
         self.data['fusions'] = fusions
-        logger.info(f"✅ Driver fusions found: {len(fusions)}")
+        logger.info(" Driver fusions found: {len(fusions)}")
         for fusion in fusions:
-            logger.info(f"   {fusion['gene_1']}::{fusion['gene_2']} ({fusion['caller']}, reads: {fusion['spanning_reads']})")
+            logger.info("   {fusion['gene_1']}::{fusion['gene_2']} ({fusion['caller']}, reads: {fusion['spanning_reads']})")
     
     def _is_driver_fusion_in_classtest(self, gene1, gene2, classification_df):
         """Check if fusion is driver gene pair and exists in Class_test.csv."""
-        logger.info(f"      🔍 Checking genes: {gene1}, {gene2}")
+        logger.info("      🔍 Checking genes: gene1, gene2")
         
         # Normalize IGH genes for matching - remove @ for Class_test.csv matching
         gene1_norm = 'IGH' if gene1.startswith('IGH') else gene1
         gene2_norm = 'IGH' if gene2.startswith('IGH') else gene2
-        logger.info(f"      🔍 Normalized for matching: {gene1_norm}, {gene2_norm}")
+        logger.info("      🔍 Normalized for matching: gene1_norm, gene2_norm")
         
         # Check if both genes are driver genes (use original names with @ for driver gene check)
         gene1_driver_check = 'IGH@' if gene1.startswith('IGH') else gene1
         gene2_driver_check = 'IGH@' if gene2.startswith('IGH') else gene2
-        logger.info(f"      🔍 Driver gene check: {gene1_driver_check} in DRIVER_GENES={gene1_driver_check in DRIVER_FUSION_GENES}, {gene2_driver_check} in DRIVER_GENES={gene2_driver_check in DRIVER_FUSION_GENES}")
+        logger.info("      🔍 Driver gene check: gene1_driver_check in DRIVER_GENES={gene1_driver_check in DRIVER_FUSION_GENES}, gene2_driver_check in DRIVER_GENES={gene2_driver_check in DRIVER_FUSION_GENES}")
         
         if not (gene1_driver_check in DRIVER_FUSION_GENES and gene2_driver_check in DRIVER_FUSION_GENES):
-            logger.info(f"      ❌ Not both driver genes")
+            logger.info("      ERROR: Not both driver genes")
             return False
         
         # Check if combination exists in Class_test.csv (both orientations)
@@ -499,10 +499,10 @@ class ClassificationProcessor:
         exists2 = ((classification_df['Gene_1_symbol(5end_fusion_partner)'] == gene2) &
                   (classification_df['Gene_2_symbol(3end_fusion_partner)'] == gene1)).any()
         
-        logger.info(f"      🔍 Class_test.csv check: {gene1}::{gene2}={exists1}, {gene2}::{gene1}={exists2}")
+        logger.info("      🔍 Class_test.csv check: gene1::gene2=exists1, gene2::gene1=exists2")
         
         exists = exists1 or exists2
-        logger.info(f"      {'✅' if exists else '❌'} Final result: {exists}")
+        logger.info("      {'' if exists else 'ERROR:'} Final result: exists")
         return exists
     
     def create_summary_dataframe(self):
@@ -543,20 +543,20 @@ class ClassificationProcessor:
             
             self.data['summary'] = pd.DataFrame(rows)
         
-        logger.info(f"✅ Summary created: {len(self.data['summary'])} row(s)")
+        logger.info(" Summary created: {len(self.data['summary'])} row(s)")
     
     def _flexible_confidence_and_fusion_merge(self, summary_df, classification_df, match_cols):
         """Merge with flexible Confidence and fusion orientation handling."""
-        logger.info(f"🔍 DEBUG: Attempting merge with columns: {match_cols}")
-        logger.info(f"🔍 DEBUG: Summary data shape: {summary_df.shape}")
-        logger.info(f"🔍 DEBUG: Classification data shape: {classification_df.shape}")
+        logger.info("🔍 DEBUG: Attempting merge with columns: match_cols")
+        logger.info("🔍 DEBUG: Summary data shape: {summary_df.shape}")
+        logger.info("🔍 DEBUG: Classification data shape: {classification_df.shape}")
         
         # Show sample data being matched
         if not summary_df.empty:
             logger.info("🔍 DEBUG: Summary data sample:")
             for col in match_cols:
                 if col in summary_df.columns:
-                    logger.info(f"      {col}: {summary_df[col].iloc[0]}")
+                    logger.info("      col: {summary_df[col].iloc[0]}")
         
         # Try both orientations
         matches = self._try_confidence_aware_merge(summary_df, classification_df, match_cols, swapped=False)
@@ -584,13 +584,13 @@ class ClassificationProcessor:
     def _try_confidence_aware_merge(self, summary_df, classification_df, match_cols, swapped=False):
         """Try merge with intelligent Confidence handling."""
         orientation = "swapped" if swapped else "exact"
-        logger.info(f"🔍 DEBUG: Trying {orientation} orientation merge...")
+        logger.info("🔍 DEBUG: Trying orientation orientation merge...")
         
         if swapped:
             logger.info("🔍 DEBUG: Swapped summary data:")
             for col in match_cols:
                 if col in summary_df.columns:
-                    logger.info(f"      {col}: {summary_df[col].iloc[0]}")
+                    logger.info("      col: {summary_df[col].iloc[0]}")
         
         # If Confidence is not in match_cols, use standard merge
         if 'Confidence' not in match_cols:
@@ -604,7 +604,7 @@ class ClassificationProcessor:
             for col in snv_cols:
                 if col in summary_df.columns and col not in matches.columns:
                     matches[col] = summary_df[col].iloc[0]
-            logger.info(f"🔍 DEBUG: {orientation} orientation matches (no Confidence): {len(matches)}")
+            logger.info("🔍 DEBUG: orientation orientation matches (no Confidence): {len(matches)}")
             return matches
         
         # Confidence-aware matching: split classification data
@@ -618,14 +618,14 @@ class ClassificationProcessor:
         )
         
         if potential_matches.empty:
-            logger.info(f"🔍 DEBUG: {orientation} orientation - no potential matches on non-Confidence columns")
+            logger.info("🔍 DEBUG: orientation orientation - no potential matches on non-Confidence columns")
             return potential_matches
         
-        logger.info(f"🔍 DEBUG: {orientation} orientation - found {len(potential_matches)} potential matches on non-Confidence columns")
+        logger.info("🔍 DEBUG: orientation orientation - found {len(potential_matches)} potential matches on non-Confidence columns")
         
         # Now filter based on Confidence logic
         sample_confidence = summary_df['Confidence'].iloc[0]
-        logger.info(f"🔍 DEBUG: Sample Confidence: {sample_confidence}")
+        logger.info("🔍 DEBUG: Sample Confidence: sample_confidence")
         
         final_matches = []
         for _, match_row in potential_matches.iterrows():
@@ -638,14 +638,14 @@ class ClassificationProcessor:
             
             if is_empty_confidence:
                 # Empty confidence in classification - always matches
-                logger.info(f"🔍 DEBUG: Match accepted - empty Confidence in class_test")
+                logger.info("🔍 DEBUG: Match accepted - empty Confidence in class_test")
                 final_matches.append(match_row)
             elif str(class_confidence).lower() == str(sample_confidence).lower():
                 # Specific confidence values must match
-                logger.info(f"🔍 DEBUG: Match accepted - Confidence values match: {sample_confidence}")
+                logger.info("🔍 DEBUG: Match accepted - Confidence values match: sample_confidence")
                 final_matches.append(match_row)
             else:
-                logger.info(f"🔍 DEBUG: Match rejected - Confidence mismatch: {sample_confidence} vs {class_confidence}")
+                logger.info("🔍 DEBUG: Match rejected - Confidence mismatch: sample_confidence vs class_confidence")
         
         result = pd.DataFrame(final_matches) if final_matches else pd.DataFrame()
         
@@ -656,7 +656,7 @@ class ClassificationProcessor:
                 if col in summary_df.columns and col not in result.columns:
                     result[col] = summary_df[col].iloc[0]
         
-        logger.info(f"🔍 DEBUG: {orientation} orientation final matches: {len(result)}")
+        logger.info("🔍 DEBUG: orientation orientation final matches: {len(result)}")
         return result
     
     # ========== PHASE 2: SUBTYPE-AWARE MATCHING ==========
@@ -680,16 +680,16 @@ class ClassificationProcessor:
                 }).fillna(classification_df[col])  # Keep original if not a boolean string
         
         subtype = self.data['allcatchr']['subtype']
-        logger.info(f"🎯 SUBTYPE-AWARE MATCHING: {subtype}")
+        logger.info(" SUBTYPE-AWARE MATCHING: subtype")
         
         # Check if we have specific rules for this subtype
         if subtype not in SUBTYPE_RULES:
-            logger.info(f"⚠️ No specific rules for {subtype} - using fallback to general matching")
-            logger.info(f"🔍 Available rules for subtypes: {list(SUBTYPE_RULES.keys())}")
+            logger.info("WARNING: No specific rules for subtype - using fallback to general matching")
+            logger.info("🔍 Available rules for subtypes: {list(SUBTYPE_RULES.keys())}")
             return self.find_exact_matches(classification_df)
         
         rules = SUBTYPE_RULES[subtype]
-        logger.info(f"📋 Rules for {subtype}: {rules['evidence_type']} evidence type")
+        logger.info("📋 Rules for subtype: {rules['evidence_type']} evidence type")
         
         # Apply subtype-specific logic
         if rules['evidence_type'] == 'snv':
@@ -716,7 +716,7 @@ class ClassificationProcessor:
                 result = self._add_classification_info(result, classification_df)
             return result, match_type
         else:
-            logger.info(f"⚠️ Unknown evidence type: {rules['evidence_type']}")
+            logger.info("WARNING: Unknown evidence type: {rules['evidence_type']}")
             return self.find_exact_matches(classification_df)
     
     def _add_classification_info(self, result_df, classification_df):
@@ -750,12 +750,12 @@ class ClassificationProcessor:
             return None, 'no_data'
         
         # Check if required SNV is present
-        logger.info(f"🔍 SNV data available: {self.data.get('snvs', {})}")
+        logger.info("🔍 SNV data available: {self.data.get('snvs', {})}")
         for snv_col, required_value in rules.get('required_values', {}).items():
             sample_value = self.data.get('snvs', {}).get(snv_col, False)
-            logger.info(f"🔍 Checking SNV: {snv_col}={sample_value} (expected: {required_value})")
+            logger.info("🔍 Checking SNV: snv_col=sample_value (expected: required_value)")
             if sample_value != required_value:
-                logger.info(f"❌ Required SNV not met: {snv_col}={sample_value}, expected {required_value}")
+                logger.info("ERROR: Required SNV not met: snv_col=sample_value, expected required_value")
                 return None, 'snv_mismatch'
         
         # Build matching columns based on rules
@@ -772,7 +772,7 @@ class ClassificationProcessor:
             sample_confidence = self.data['allcatchr']['confidence']
             allowed = rules.get('allowed_confidence', [])
             if sample_confidence not in allowed:
-                logger.info(f"❌ Confidence {sample_confidence} not in allowed values: {allowed}")
+                logger.info("ERROR: Confidence sample_confidence not in allowed values: allowed")
                 return None, 'confidence_mismatch'
             match_cols.append('Confidence')
         elif rules['confidence_policy'] != 'any':
@@ -786,12 +786,12 @@ class ClassificationProcessor:
         if sample_subtype == 'with mutated ZEB2 (p.H1038R)/IGH::CEBPE (provisional entity)':
             # CEBP subtype: ZEB2_H1038R must be True (exact match required)
             match_cols.append('ZEB2_H1038R')
-            logger.info("🎯 CEBP subtype: ZEB2_H1038R must be True (exact matching)")
+            logger.info(" CEBP subtype: ZEB2_H1038R must be True (exact matching)")
         else:
             # Non-CEBP subtype: ZEB2_H1038R ignored in matching
-            logger.info("🎯 Non-CEBP subtype: ZEB2_H1038R ignored in matching")
+            logger.info(" Non-CEBP subtype: ZEB2_H1038R ignored in matching")
             if not summary_df['ZEB2_H1038R'].iloc[0]:
-                logger.info("🔧 ZEB2=False in data, allowing match with ZEB2=True in classification DB")
+                logger.info(" ZEB2=False in data, allowing match with ZEB2=True in classification DB")
         
         # Filter classification data for entries without fusions (SNV-only)
         # Include both null and empty string values
@@ -801,33 +801,33 @@ class ClassificationProcessor:
             (classification_df['Gene_1_symbol(5end_fusion_partner)'].astype(str).str.strip() == '')
         ]
         
-        logger.info(f"🔍 Matching SNV subtype on columns: {match_cols}")
-        logger.info(f"🔍 Classification entries without fusions: {len(classification_for_match)}")
+        logger.info("🔍 Matching SNV subtype on columns: match_cols")
+        logger.info("🔍 Classification entries without fusions: {len(classification_for_match)}")
         
         # Debug: Show all ALLCatchR values to find PAX5 P80R entries
         if not classification_for_match.empty:
             unique_subtypes = classification_for_match['ALLCatchR'].unique()
-            logger.info(f"🔍 DEBUG: All ALLCatchR subtypes in filtered data: {unique_subtypes}")
+            logger.info("🔍 DEBUG: All ALLCatchR subtypes in filtered data: unique_subtypes")
             
             # Specifically look for PAX5 P80R entries
             pax5_entries = classification_for_match[classification_for_match['ALLCatchR'] == 'PAX5 P80R']
-            logger.info(f"🔍 DEBUG: PAX5 P80R entries found: {len(pax5_entries)}")
+            logger.info("🔍 DEBUG: PAX5 P80R entries found: {len(pax5_entries)}")
             
             if len(pax5_entries) > 0:
                 logger.info("🔍 DEBUG: PAX5 P80R entries details:")
                 for i, row in pax5_entries.iterrows():
-                    logger.info(f"      Row {i}:")
+                    logger.info("      Row i:")
                     for col in match_cols:
                         if col in classification_for_match.columns:
-                            logger.info(f"        {col}: {row[col]} (type: {type(row[col])})")
+                            logger.info("        col: {row[col]} (type: {type(row[col])})")
             else:
                 # Show Gene_1 and Gene_2 values to understand why PAX5 P80R is filtered out
                 logger.info("🔍 DEBUG: Checking original fusion column values:")
                 full_df_pax5 = classification_df[classification_df['ALLCatchR'] == 'PAX5 P80R']
-                logger.info(f"🔍 DEBUG: Total PAX5 P80R entries in full database: {len(full_df_pax5)}")
+                logger.info("🔍 DEBUG: Total PAX5 P80R entries in full database: {len(full_df_pax5)}")
                 if len(full_df_pax5) > 0:
                     for i, row in full_df_pax5.head(3).iterrows():
-                        logger.info(f"      Row {i}: Gene_1='{row['Gene_1_symbol(5end_fusion_partner)']}', Gene_2='{row['Gene_2_symbol(3end_fusion_partner)']}'")
+                        logger.info("      Row i: Gene_1='{row['Gene_1_symbol(5end_fusion_partner)']}', Gene_2='{row['Gene_2_symbol(3end_fusion_partner)']}'")
         
         # Use flexible confidence matching
         matches = self._flexible_confidence_and_fusion_merge(
@@ -835,13 +835,13 @@ class ClassificationProcessor:
         )
         
         if not matches.empty:
-            logger.info(f"✅ SNV subtype matches found: {len(matches)}")
+            logger.info(" SNV subtype matches found: {len(matches)}")
             if len(matches) == 1:
                 return matches, 'exact_single'
             else:
                 return matches, 'exact_multiple'
         else:
-            logger.info("❌ No SNV subtype matches found")
+            logger.info("ERROR: No SNV subtype matches found")
             return None, 'no_exact'
     
     def _match_fusion_subtype(self, classification_df, rules):
@@ -850,14 +850,14 @@ class ClassificationProcessor:
         
         # Check if we have required fusions
         if not self.data['fusions']:
-            logger.info("❌ No fusions found for fusion-based subtype")
+            logger.info("ERROR: No fusions found for fusion-based subtype")
             return None, 'no_fusions'
         
         # Check for secondary drivers if policy requires it
         if rules.get('secondary_driver_policy') == 'manual_curation':
             secondary_drivers = self._detect_secondary_drivers(rules)
             if secondary_drivers:
-                logger.info(f"⚠️ Secondary drivers detected: {secondary_drivers} → Manual curation")
+                logger.info("WARNING: Secondary drivers detected: secondary_drivers -> Manual curation")
                 return None, 'secondary_drivers'
         
         # Use the existing fusion matching logic but with subtype-specific rules
@@ -871,10 +871,10 @@ class ClassificationProcessor:
         for karyo_col, required_value in rules.get('required_values', {}).items():
             sample_value = self.data['karyotype'].get('prediction', 'other')
             if sample_value != required_value:
-                logger.info(f"❌ Required karyotype not met: {sample_value}, expected {required_value}")
+                logger.info("ERROR: Required karyotype not met: sample_value, expected required_value")
                 return None, 'karyotype_mismatch'
         
-        logger.info(f"✅ Required karyotype confirmed: {sample_value}")
+        logger.info(" Required karyotype confirmed: sample_value")
         
         # Handle fusion filtering based on policy
         if rules.get('fusion_policy') == 'conditional':
@@ -887,12 +887,12 @@ class ClassificationProcessor:
                 for fusion in self.data['fusions']:
                     try:
                         reads = int(fusion['spanning_reads'])
-                        high_read_fusions.append(f"{fusion['gene_1']}::{fusion['gene_2']} (reads: {reads})")
+                        high_read_fusions.append("{}::{} (reads: reads)".format(fusion['gene_1'], fusion['gene_2']))
                     except:
                         continue
                 
                 if high_read_fusions:
-                    logger.info(f"⚠️ High-read fusions detected after filtering: {high_read_fusions} → Manual curation")
+                    logger.info("WARNING: High-read fusions detected after filtering: high_read_fusions -> Manual curation")
                     return None, 'high_read_fusions'
         
         # For karyotype-based subtypes, match without fusion requirements
@@ -916,8 +916,8 @@ class ClassificationProcessor:
             (classification_df['Gene_1_symbol(5end_fusion_partner)'].astype(str).str.strip() == '')
         ]
         
-        logger.info(f"🔍 Matching karyotype subtype on columns: {match_cols}")
-        logger.info(f"🔍 Classification entries without fusions: {len(classification_for_match)}")
+        logger.info("🔍 Matching karyotype subtype on columns: match_cols")
+        logger.info("🔍 Classification entries without fusions: {len(classification_for_match)}")
         
         # Use flexible confidence matching (but no fusion columns)
         matches = self._flexible_confidence_and_fusion_merge(
@@ -925,19 +925,19 @@ class ClassificationProcessor:
         )
         
         if not matches.empty:
-            logger.info(f"✅ Karyotype subtype matches found: {len(matches)}")
+            logger.info(" Karyotype subtype matches found: {len(matches)}")
             if len(matches) == 1:
                 return matches, 'exact_single'
             else:
                 return matches, 'exact_multiple'
         else:
-            logger.info("❌ No karyotype subtype matches found")
+            logger.info("ERROR: No karyotype subtype matches found")
             return None, 'no_exact'
     
     def _detect_secondary_drivers(self, rules):
         """Detect secondary driver fusions that might cause conflicts."""
         expected_genes = set(rules.get('expected_fusions', []))
-        logger.info(f"🔍 Expected genes for {self.data['allcatchr']['subtype']}: {expected_genes}")
+        logger.info("🔍 Expected genes for {self.data['allcatchr']['subtype']}: expected_genes")
         
         # Group fusions by unique gene pairs
         unique_fusions = set()
@@ -945,7 +945,7 @@ class ClassificationProcessor:
             fusion_pair = tuple(sorted([fusion['gene_1'], fusion['gene_2']]))
             unique_fusions.add(fusion_pair)
         
-        logger.info(f"🔍 Unique fusion pairs found: {unique_fusions}")
+        logger.info("🔍 Unique fusion pairs found: unique_fusions")
         
         # Check each unique fusion pair
         secondary_drivers = []
@@ -956,15 +956,15 @@ class ClassificationProcessor:
             
             # If expected_fusions is empty, all driver fusions are considered primary for this subtype
             if not expected_genes:
-                primary_fusions.append(f"{gene1}::{gene2}")
+                primary_fusions.append("gene1::gene2")
             # If fusion contains any expected gene, it's primary for this subtype
             elif fusion_genes.intersection(expected_genes):
-                primary_fusions.append(f"{gene1}::{gene2}")
+                primary_fusions.append("gene1::gene2")
             else:
-                secondary_drivers.append(f"{gene1}::{gene2}")
+                secondary_drivers.append("gene1::gene2")
         
-        logger.info(f"🔍 Primary fusions: {primary_fusions}")
-        logger.info(f"🔍 Secondary drivers: {secondary_drivers}")
+        logger.info("🔍 Primary fusions: primary_fusions")
+        logger.info("🔍 Secondary drivers: secondary_drivers")
         
         return secondary_drivers
     
@@ -984,23 +984,23 @@ class ClassificationProcessor:
             if is_driver:
                 # Driver fusion - always keep regardless of reads
                 filtered_fusions.append(fusion)
-                logger.info(f"✅ Driver fusion preserved: {gene1}::{gene2} (reads: {fusion['spanning_reads']}, driver for current subtype)")
+                logger.info(" Driver fusion preserved: gene1::gene2 (reads: {fusion['spanning_reads']}, driver for current subtype)")
             else:
                 # Non-driver fusion - apply read threshold
                 try:
                     reads = int(fusion['spanning_reads'])
                     if reads >= threshold:
                         filtered_fusions.append(fusion)
-                        logger.info(f"✅ Non-driver fusion kept: {gene1}::{gene2} (reads: {reads} >= {threshold})")
+                        logger.info(" Non-driver fusion kept: gene1::gene2 (reads: reads >= threshold)")
                     else:
-                        logger.info(f"🔧 Non-driver fusion filtered: {gene1}::{gene2} (reads: {reads} < {threshold})")
+                        logger.info(" Non-driver fusion filtered: gene1::gene2 (reads: reads < threshold)")
                 except:
                     # Keep fusion if read count can't be parsed
                     filtered_fusions.append(fusion)
-                    logger.info(f"✅ Fusion kept (unparseable reads): {gene1}::{gene2}")
+                    logger.info(" Fusion kept (unparseable reads): gene1::gene2")
         
         self.data['fusions'] = filtered_fusions
-        logger.info(f"🔧 Fusions filtered: {original_count} → {len(filtered_fusions)} (drivers preserved, non-drivers filtered)")
+        logger.info(" Fusions filtered: original_count -> {len(filtered_fusions)} (drivers preserved, non-drivers filtered)")
         
         # Recreate summary after filtering
         if len(filtered_fusions) != original_count:
@@ -1014,17 +1014,17 @@ class ClassificationProcessor:
         allcatchr_subtype = self.data['allcatchr']['subtype']
         required_allcatchr = rules.get('required_values', {}).get('ALLCatchR')
         if allcatchr_subtype != required_allcatchr:
-            logger.info(f"❌ ALLCatchR subtype mismatch: {allcatchr_subtype}, expected {required_allcatchr}")
+            logger.info("ERROR: ALLCatchR subtype mismatch: allcatchr_subtype, expected required_allcatchr")
             return None, 'allcatchr_mismatch'
         
         # Check Ph-pos prediction from ALLCatchR data
         ph_pos_prediction = self.data['allcatchr'].get('ph_pos', 'unknown')
         allowed_ph_pos = rules.get('allcatchr_ph_pos_allowed', [])
         if ph_pos_prediction not in allowed_ph_pos:
-            logger.info(f"❌ Ph-pos prediction not allowed: {ph_pos_prediction}, allowed: {allowed_ph_pos}")
+            logger.info("ERROR: Ph-pos prediction not allowed: ph_pos_prediction, allowed: allowed_ph_pos")
             return None, 'ph_pos_prediction_mismatch'
         
-        logger.info(f"✅ Ph-pos prediction valid: {ph_pos_prediction}")
+        logger.info(" Ph-pos prediction valid: ph_pos_prediction")
         
         # Check karyotype compatibility based on Ph-pos prediction
         karyotype_prediction = self.data['karyotype'].get('prediction', 'other')
@@ -1033,10 +1033,10 @@ class ClassificationProcessor:
         allowed_karyotypes = ph_pos_rule.get('allowed_karyotypes', ['other'])
         
         if karyotype_prediction not in allowed_karyotypes:
-            logger.info(f"❌ Karyotype incompatible with Ph-pos prediction: {karyotype_prediction}, allowed for {ph_pos_prediction}: {allowed_karyotypes}")
+            logger.info("ERROR: Karyotype incompatible with Ph-pos prediction: karyotype_prediction, allowed for ph_pos_prediction: allowed_karyotypes")
             return None, 'karyotype_ph_pos_incompatible'
         
-        logger.info(f"✅ Karyotype compatible: {karyotype_prediction} for Ph-pos {ph_pos_prediction}")
+        logger.info(" Karyotype compatible: karyotype_prediction for Ph-pos ph_pos_prediction")
         
         # Check required fusion (BCR::ABL1)
         expected_fusions = rules.get('expected_fusions', [])
@@ -1050,11 +1050,11 @@ class ClassificationProcessor:
             if (gene1 in expected_fusions and gene2 in expected_fusions) or \
                (gene2 in expected_fusions and gene1 in expected_fusions):
                 fusion_found = True
-                logger.info(f"✅ Required fusion found: {gene1}::{gene2}")
+                logger.info(" Required fusion found: gene1::gene2")
                 break
         
         if not fusion_found:
-            logger.info(f"❌ Required BCR::ABL1 fusion not found")
+            logger.info("ERROR: Required BCR::ABL1 fusion not found")
             return None, 'required_fusion_missing'
         
         # Determine ICC classification and manual curation requirement
@@ -1064,10 +1064,10 @@ class ClassificationProcessor:
         who_haem5 = 'B-lymphoblastic leukaemia/lymphoma with BCR::ABL1 fusion'
         
         if icc_classification:
-            logger.info(f"✅ ICC classification: {icc_classification}")
-            icc_text = f'B-ALLwith t(9;22)(q34.1;q11.2)/BCR::ABL1 with {icc_classification}'
+            logger.info(" ICC classification: icc_classification")
+            icc_text = f'B-ALLwith t(9;22)(q34.1;q11.2)/BCR::ABL1 with icc_classification'
         else:
-            logger.info(f"✅ No ICC classification for 'not Ph-pos predicted' - automatic classification but WHO only")
+            logger.info(" No ICC classification for 'not Ph-pos predicted' - automatic classification but WHO only")
             icc_text = ''  # Empty ICC for "not Ph-pos predicted" cases
         
         # Create matching entry for Ph-pos with specific ICC info
@@ -1084,7 +1084,7 @@ class ClassificationProcessor:
             'ZEB2_H1038R': self.data['snvs']['ZEB2_H1038R']
         }
         
-        logger.info(f"✅ Ph-pos subtype matched successfully: {match_data}")
+        logger.info(" Ph-pos subtype matched successfully: match_data")
         return pd.DataFrame([match_data]), 'ph_pos_match'
     
     def _match_hybrid_subtype(self, classification_df, rules):
@@ -1098,14 +1098,14 @@ class ClassificationProcessor:
             for col, required_value in snv_rules.get('required_values', {}).items():
                 sample_value = self.data['snvs'].get(col, False)
                 if sample_value == required_value:
-                    logger.info(f"✅ SNV evidence found: {col} = {sample_value}")
+                    logger.info(" SNV evidence found: col = sample_value")
                     # Check confidence for SNV path
                     confidence_policy = snv_rules.get('confidence_policy', 'any')
                     if confidence_policy == 'restricted':
                         allcatchr_confidence = self.data['allcatchr'].get('confidence', '')
                         allowed_confidence = snv_rules.get('allowed_confidence', [])
                         if allcatchr_confidence in allowed_confidence:
-                            logger.info(f"✅ SNV confidence valid: {allcatchr_confidence}")
+                            logger.info(" SNV confidence valid: allcatchr_confidence")
                             result_data = {
                                 'ALLCatchR': 'CEBP', 
                                 'Confidence': self.data['allcatchr']['confidence'],
@@ -1117,7 +1117,7 @@ class ClassificationProcessor:
                             }
                             return pd.DataFrame([result_data]), 'hybrid_snv_match'
                         else:
-                            logger.info(f"❌ SNV confidence invalid: {allcatchr_confidence}")
+                            logger.info("ERROR: SNV confidence invalid: allcatchr_confidence")
         
         # Try fusion rules
         fusion_rules = rules.get('fusion_rules', {})
@@ -1128,7 +1128,7 @@ class ClassificationProcessor:
                 gene1 = fusion_data.get('gene_1', '')
                 gene2 = fusion_data.get('gene_2', '')
                 if gene1 in expected_fusions and gene2 in expected_fusions:
-                    logger.info(f"✅ CEBP fusion found: {gene1}::{gene2}")
+                    logger.info(" CEBP fusion found: gene1::gene2")
                     result_data = {
                         'ALLCatchR': 'CEBP', 
                         'Confidence': self.data['allcatchr']['confidence'],
@@ -1143,13 +1143,13 @@ class ClassificationProcessor:
                     }
                     return pd.DataFrame([result_data]), 'hybrid_fusion_match'
         
-        logger.info("❌ No hybrid evidence found")
+        logger.info("ERROR: No hybrid evidence found")
         return None, 'hybrid_no_evidence'
     
     def _match_fusion_or_confidence_subtype(self, classification_df, rules):
         """Handle fusion-or-confidence subtypes: fusion-based (any confidence) OR confidence-only (NOS) classification."""
         subtype = self.data['allcatchr']['subtype']
-        logger.info(f"🧬 Matching fusion-or-confidence subtype ({subtype})...")
+        logger.info("🧬 Matching fusion-or-confidence subtype (subtype)...")
         
         allcatchr_confidence = self.data['allcatchr'].get('confidence', '')
         
@@ -1166,16 +1166,16 @@ class ClassificationProcessor:
             if gene1 in expected_fusions and gene2 in expected_fusions:
                 driver_fusion_found = True
                 found_fusion_details = fusion_data
-                logger.info(f"✅ Driver fusion found: {gene1}::{gene2} (confidence irrelevant)")
+                logger.info(" Driver fusion found: gene1::gene2 (confidence irrelevant)")
                 break
         
         if driver_fusion_found:
             # Standard classification with specific driver fusion (confidence irrelevant)
-            logger.info(f"✅ {subtype} classified with driver fusion (any confidence accepted)")
+            logger.info(" subtype classified with driver fusion (any confidence accepted)")
             match_data = {
                 'ALLCatchR': subtype,
                 'Confidence': allcatchr_confidence,
-                'driver_fusion': f"{found_fusion_details['gene_1']}::{found_fusion_details['gene_2']}",
+                'driver_fusion': "{}::{}".format(found_fusion_details['gene_1'], found_fusion_details['gene_2']),
                 'classification_type': 'driver_fusion',
                 'karyotype_classifier': 'other',  # Default for driver fusion cases
                 'Gene_1_symbol(5end_fusion_partner)': found_fusion_details['gene_1'],
@@ -1185,7 +1185,7 @@ class ClassificationProcessor:
                 'IKZF1_N159Y': self.data['snvs']['IKZF1_N159Y'],
                 'ZEB2_H1038R': self.data['snvs']['ZEB2_H1038R']
             }
-            return pd.DataFrame([match_data]), f'{subtype.lower()}_driver_fusion'
+            return pd.DataFrame([match_data]), '{}_driver_fusion'.format(subtype.lower())
         
         else:
             # No driver fusion found - check confidence for classification via Class_test.csv lookup
@@ -1193,7 +1193,7 @@ class ClassificationProcessor:
             
             # For confidence-only: high-confidence required
             if allcatchr_confidence == 'high-confidence':
-                logger.info(f"✅ {subtype} confidence-only classification (high-confidence without driver fusion)")
+                logger.info(" subtype confidence-only classification (high-confidence without driver fusion)")
                 
                 # Create data for Class_test.csv lookup (no fusion columns)
                 match_data = {
@@ -1207,11 +1207,11 @@ class ClassificationProcessor:
                     'IKZF1_N159Y': self.data['snvs']['IKZF1_N159Y'],
                     'ZEB2_H1038R': self.data['snvs']['ZEB2_H1038R']
                 }
-                return pd.DataFrame([match_data]), f'{subtype.lower()}_confidence_only'
+                return pd.DataFrame([match_data]), '{}_confidence_only'.format(subtype.lower())
             
             else:
-                logger.info(f"❌ No driver fusion and confidence not sufficient: {allcatchr_confidence}")
-                return None, f'{subtype.lower()}_insufficient_evidence'
+                logger.info("ERROR: No driver fusion and confidence not sufficient: allcatchr_confidence")
+                return None, '{}_insufficient_evidence'.format(subtype.lower())
 
     # ========== FALLBACK: GENERAL MATCHING ==========
     
@@ -1239,11 +1239,11 @@ class ClassificationProcessor:
         if subtype == 'CEBP':
             # CEBP subtype: ZEB2_H1038R must be True (exact match required)
             match_cols = base_match_cols + ['ZEB2_H1038R']
-            logger.info("🎯 CEBP subtype: ZEB2_H1038R must be True (exact matching)")
+            logger.info(" CEBP subtype: ZEB2_H1038R must be True (exact matching)")
         else:
             # All other subtypes: ZEB2_H1038R can be True or False (ignore in matching)
             match_cols = base_match_cols
-            logger.info("🎯 Non-CEBP subtype: ZEB2_H1038R ignored in matching")
+            logger.info(" Non-CEBP subtype: ZEB2_H1038R ignored in matching")
         
         # Remove None values for matching (no fusions case)
         summary_for_match = summary_df.copy()
@@ -1262,28 +1262,28 @@ class ClassificationProcessor:
         
         # For non-CEBP subtypes with ZEB2=False in data, allow matching with ZEB2=True in class_test
         if subtype != 'CEBP' and not summary_for_match['ZEB2_H1038R'].iloc[0]:
-            logger.info("🔧 ZEB2=False in data, allowing match with ZEB2=True in classification DB")
+            logger.info(" ZEB2=False in data, allowing match with ZEB2=True in classification DB")
         
         # Perform exact merge on selected columns, but handle fusion orientation flexibility
         matches = self._flexible_confidence_and_fusion_merge(summary_for_match, classification_for_match, match_cols)
         
         if not matches.empty:
-            logger.info(f"✅ Exact matches found: {len(matches)}")
+            logger.info(" Exact matches found: {len(matches)}")
             if len(matches) == 1:
-                logger.info("✅ Single exact match - classification successful!")
+                logger.info(" Single exact match - classification successful!")
                 return matches, 'exact_single'
             else:
-                logger.info("⚠️ Multiple exact matches - need complex rules")
+                logger.info("WARNING: Multiple exact matches - need complex rules")
                 return matches, 'exact_multiple'
         else:
-            logger.info("⚠️ No exact matches - need complex rules")
+            logger.info("WARNING: No exact matches - need complex rules")
             return None, 'no_exact'
     
     # ========== PHASE 3: COMPLEX RULES ==========
     
     def apply_complex_rules(self, classification_df, matches=None, match_type=None):
         """Apply complex rules for multiple matches or inconsistencies."""
-        logger.info("🔧 Applying complex rules...")
+        logger.info(" Applying complex rules...")
         
         # Apply DUX4 specific rules when needed
         if match_type == 'exact_multiple' and matches is not None:
@@ -1299,7 +1299,7 @@ class ClassificationProcessor:
     
     def _resolve_multiple_matches(self, matches):
         """Resolve multiple exact matches - check if they have same diagnosis."""
-        logger.info("🔧 Resolving multiple matches...")
+        logger.info(" Resolving multiple matches...")
         
         # Check if all matches have the same WHO-HAEM5 and ICC diagnosis
         unique_who = matches['WHO-HAEM5'].nunique()
@@ -1307,16 +1307,16 @@ class ClassificationProcessor:
         
         if unique_who == 1 and unique_icc == 1:
             # All matches have same diagnosis - accept (multiple fusions for same diagnosis allowed)
-            logger.info(f"✅ Multiple matches with same diagnosis: {matches.iloc[0]['WHO-HAEM5']}")
+            logger.info(" Multiple matches with same diagnosis: {matches.iloc[0]['WHO-HAEM5']}")
             return matches.head(1)  # Take first match, they're all the same diagnosis
         else:
             # Different diagnoses - manual curation required
-            logger.info(f"❌ Multiple matches with different diagnoses: WHO-HAEM5={unique_who}, ICC={unique_icc}")
+            logger.info("ERROR: Multiple matches with different diagnoses: WHO-HAEM5=unique_who, ICC=unique_icc")
             return None
     
     def _resolve_no_matches(self, classification_df):
         """Resolve case with no exact matches using flexible rules."""
-        logger.info("🔧 Resolving no matches with flexible rules...")
+        logger.info(" Resolving no matches with flexible rules...")
         
         # Apply DUX4 rules here
         subtype = self.data['allcatchr']['subtype']
@@ -1332,11 +1332,11 @@ class ClassificationProcessor:
                         spanning_reads = int(fusion['spanning_reads'])
                         if spanning_reads > 2:
                             valid_fusions.append(fusion)
-                            logger.info(f"✅ DUX4 fusion accepted: {fusion['gene_1']}::{fusion['gene_2']} (reads: {spanning_reads})")
+                            logger.info(" DUX4 fusion accepted: {fusion['gene_1']}::{fusion['gene_2']} (reads: spanning_reads)")
                         else:
-                            logger.info(f"❌ DUX4 fusion rejected: {fusion['gene_1']}::{fusion['gene_2']} (reads: {spanning_reads} <= 2)")
+                            logger.info("ERROR: DUX4 fusion rejected: {fusion['gene_1']}::{fusion['gene_2']} (reads: spanning_reads <= 2)")
                     except:
-                        logger.info(f"❌ DUX4 fusion rejected: {fusion['gene_1']}::{fusion['gene_2']} (invalid read count)")
+                        logger.info("ERROR: DUX4 fusion rejected: {fusion['gene_1']}::{fusion['gene_2']} (invalid read count)")
                 else:
                     valid_fusions.append(fusion)
             
@@ -1350,7 +1350,7 @@ class ClassificationProcessor:
                 return exact_results
         
         # No flexible matching - if no exact matches after DUX4 filtering, it's manual curation
-        logger.info("❌ No exact matches found after applying rules")
+        logger.info("ERROR: No exact matches found after applying rules")
         return None, 'no_match_after_rules'
     
     # ========== OUTPUT GENERATION ==========
@@ -1381,16 +1381,24 @@ class ClassificationProcessor:
         
         with open(output_text, 'w') as f:
             f.write(
-                f"Consistency between gene expression-based subtype-allocation "
-                f"(ALLCatchR: {entry['ALLCatchR']} subtype, Confidence: {entry['Confidence']}) "
-                f"and the genomic driver profile ({fusion_detail}, "
-                f"RNA-Seq CNV karyotype classifier: {entry['karyotype_classifier']}, "
-                f"subtype defining SNPs: "
-                f"{'PAX5 P80R present' if entry['PAX5_P80R'] else 'PAX5 P80R absent'}, "
-                f"{'IKZF1 N159Y present' if entry['IKZF1_N159Y'] else 'IKZF1 N159Y absent'}) "
-                f"supports a classification as\n\n"
-                f"{entry['WHO-HAEM5']} according to WHO-HAEM5 (Alaggio R et al. Leukemia, 2022) and\n"
-                f"{entry['ICC']} according to ICC (Arber D et al. Blood, 2022).\n\n"
+                "Consistency between gene expression-based subtype-allocation "
+                "(ALLCatchR: {} subtype, Confidence: {}) "
+                "and the genomic driver profile ({}, "
+                "RNA-Seq CNV karyotype classifier: {}, "
+                "subtype defining SNPs: "
+                "{}, "
+                "{}) "
+                "supports a classification as\n\n"
+                "{} according to WHO-HAEM5 (Alaggio R et al. Leukemia, 2022) and\n"
+                "{} according to ICC (Arber D et al. Blood, 2022).\n\n".format(
+                    entry['ALLCatchR'], entry['Confidence'],
+                    fusion_detail,
+                    entry['karyotype_classifier'],
+                    'PAX5 P80R present' if entry['PAX5_P80R'] else 'PAX5 P80R absent',
+                    'IKZF1 N159Y present' if entry['IKZF1_N159Y'] else 'IKZF1 N159Y absent',
+                    entry['WHO-HAEM5'],
+                    entry['ICC']
+                )
             )
         
         # Write curation CSV
@@ -1414,17 +1422,23 @@ class ClassificationProcessor:
         
         with open(output_text, 'w') as f:
             f.write(
-                f"IntegrateALL classification:\n\n"
-                f"Gene expression-based subtype-allocation "
-                f"(ALLCatchR: {entry['ALLCatchR']} subtype, Confidence: {entry['Confidence']}) "
-                f"and the genomic driver profile ({fusion_detail}, "
-                f"RNA-Seq CNV karyotype classifier: {entry['karyotype_classifier']}, "
-                f"subtype defining SNPs: "
-                f"{'PAX5 P80R present' if entry['PAX5_P80R'] else 'PAX5 P80R absent'}, "
-                f"{'IKZF1 N159Y present' if entry['IKZF1_N159Y'] else 'IKZF1 N159Y absent'}) "
-                f"seem not to be consistent with an unambiguous diagnostic classification "
-                f"according to WHO-HAEM5 (Alaggio R et al. Leukemia, 2022) / "
-                f"ICC (Arber D et al. Blood, 2022)."
+                "IntegrateALL classification:\n\n"
+                "Gene expression-based subtype-allocation "
+                "(ALLCatchR: {} subtype, Confidence: {}) "
+                "and the genomic driver profile ({}, "
+                "RNA-Seq CNV karyotype classifier: {}, "
+                "subtype defining SNPs: "
+                "{}, "
+                "{}) "
+                "seem not to be consistent with an unambiguous diagnostic classification "
+                "according to WHO-HAEM5 (Alaggio R et al. Leukemia, 2022) / "
+                "ICC (Arber D et al. Blood, 2022).".format(
+                    entry['ALLCatchR'], entry['Confidence'],
+                    fusion_detail,
+                    entry['karyotype_classifier'],
+                    'PAX5 P80R present' if entry['PAX5_P80R'] else 'PAX5 P80R absent',
+                    'IKZF1 N159Y present' if entry['IKZF1_N159Y'] else 'IKZF1 N159Y absent'
+                )
             )
         
         self._write_curation_csv(entry, output_curation, "Manual Curation")
@@ -1476,7 +1490,7 @@ class ClassificationProcessor:
         # For automatic classification, use simplified format
         fusion = self.data['fusions'][0]  # Take first fusion
         callers = set()
-        fusion_name = f"{fusion['gene_1']}::{fusion['gene_2']}"
+        fusion_name = "{}::{}".format(fusion['gene_1'], fusion['gene_2'])
         
         # Check which callers found this fusion
         for f in self.data['fusions']:
@@ -1488,7 +1502,7 @@ class ClassificationProcessor:
         else:
             caller_str = fusion['caller']
         
-        return f"{caller_str}: {fusion_name}"
+        return "{}: {}".format(caller_str, fusion_name)
     
     def _format_all_fusions(self):
         """Format all detected fusions for display."""
@@ -1504,7 +1518,8 @@ class ClassificationProcessor:
     def _generate_driver_fusion_file(self, output_driver):
         """Generate driver fusion output file."""
         if not self.data['fusions']:
-            Path(output_driver).touch()
+            with open(output_driver, 'w') as f:
+                pass  # Create empty file
             return
         
         # Convert to DataFrame and save
@@ -1531,7 +1546,7 @@ def main(sample, allcatchr_file, karyotype_file, fusioncatcher_file, arriba_file
          output_driver):
     """Main processing function with 3-phase approach."""
     
-    logger.info(f"🔬 Processing final classification for sample: {sample}")
+    logger.info("🔬 Processing final classification for sample: sample")
     logger.info("📋 Starting 3-phase classification process...")
     
     # Initialize processor
@@ -1540,13 +1555,13 @@ def main(sample, allcatchr_file, karyotype_file, fusioncatcher_file, arriba_file
     # Load classification reference database
     try:
         classification_df = pd.read_csv(classification_file)
-        logger.info(f"✅ Loaded classification database: {len(classification_df)} entries")
+        logger.info(" Loaded classification database: {len(classification_df)} entries")
     except Exception as e:
-        logger.error(f"❌ Failed to load classification file: {e}")
+        logger.error("ERROR: Failed to load classification file: e")
         return
     
     # ========== PHASE 1: DATA COLLECTION ==========
-    logger.info("📊 PHASE 1: Collecting data...")
+    logger.info(" PHASE 1: Collecting data...")
     processor.collect_allcatchr_data(allcatchr_file)
     processor.collect_karyotype_data(karyotype_file)
     processor.apply_karyotype_filtering()  # Apply iAMP21 filtering after ALLCatchR is loaded
@@ -1555,12 +1570,12 @@ def main(sample, allcatchr_file, karyotype_file, fusioncatcher_file, arriba_file
     processor.create_summary_dataframe()
     
     # ========== PHASE 2: SUBTYPE-AWARE MATCHING ==========
-    logger.info("🎯 PHASE 2: Attempting subtype-aware matching...")
+    logger.info(" PHASE 2: Attempting subtype-aware matching...")
     results, match_type = processor.find_subtype_aware_matches(classification_df)
     
     # ========== PHASE 3: COMPLEX RULES (if needed) ==========
     if match_type != 'exact_single':
-        logger.info("🔧 PHASE 3: Applying complex rules...")
+        logger.info(" PHASE 3: Applying complex rules...")
         results, match_type = processor.apply_complex_rules(classification_df, results, match_type)
     
     # ========== OUTPUT GENERATION ==========
@@ -1569,11 +1584,11 @@ def main(sample, allcatchr_file, karyotype_file, fusioncatcher_file, arriba_file
     processor.generate_output_files(results, match_type, output_paths)
     
     if results is not None and not results.empty:
-        logger.info(f"✅ Classification successful: {match_type}")
+        logger.info(" Classification successful: match_type")
     else:
-        logger.info("⚠️ Manual curation required")
+        logger.info("WARNING: Manual curation required")
     
-    logger.info(f"📁 Output files generated: Final_classification/{sample}_*")
+    logger.info("📁 Output files generated: Final_classification/sample_*")
 
 
 if __name__ == "__main__":

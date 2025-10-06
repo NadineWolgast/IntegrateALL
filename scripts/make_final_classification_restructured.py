@@ -1381,16 +1381,24 @@ class ClassificationProcessor:
         
         with open(output_text, 'w') as f:
             f.write(
-                f"Consistency between gene expression-based subtype-allocation "
-                f"(ALLCatchR: {entry['ALLCatchR']} subtype, Confidence: {entry['Confidence']}) "
-                f"and the genomic driver profile (fusion_detail, "
-                f"RNA-Seq CNV karyotype classifier: {entry['karyotype_classifier']}, "
-                f"subtype defining SNPs: "
-                f"{'PAX5 P80R present' if entry['PAX5_P80R'] else 'PAX5 P80R absent'}, "
-                f"{'IKZF1 N159Y present' if entry['IKZF1_N159Y'] else 'IKZF1 N159Y absent'}) "
-                f"supports a classification as\n\n"
-                f"{entry['WHO-HAEM5']} according to WHO-HAEM5 (Alaggio R et al. Leukemia, 2022) and\n"
-                f"{entry['ICC']} according to ICC (Arber D et al. Blood, 2022).\n\n"
+                "Consistency between gene expression-based subtype-allocation "
+                "(ALLCatchR: {} subtype, Confidence: {}) "
+                "and the genomic driver profile ({}, "
+                "RNA-Seq CNV karyotype classifier: {}, "
+                "subtype defining SNPs: "
+                "{}, "
+                "{}) "
+                "supports a classification as\n\n"
+                "{} according to WHO-HAEM5 (Alaggio R et al. Leukemia, 2022) and\n"
+                "{} according to ICC (Arber D et al. Blood, 2022).\n\n".format(
+                    entry['ALLCatchR'], entry['Confidence'],
+                    fusion_detail,
+                    entry['karyotype_classifier'],
+                    'PAX5 P80R present' if entry['PAX5_P80R'] else 'PAX5 P80R absent',
+                    'IKZF1 N159Y present' if entry['IKZF1_N159Y'] else 'IKZF1 N159Y absent',
+                    entry['WHO-HAEM5'],
+                    entry['ICC']
+                )
             )
         
         # Write curation CSV
@@ -1414,17 +1422,23 @@ class ClassificationProcessor:
         
         with open(output_text, 'w') as f:
             f.write(
-                f"IntegrateALL classification:\n\n"
-                f"Gene expression-based subtype-allocation "
-                f"(ALLCatchR: {entry['ALLCatchR']} subtype, Confidence: {entry['Confidence']}) "
-                f"and the genomic driver profile (fusion_detail, "
-                f"RNA-Seq CNV karyotype classifier: {entry['karyotype_classifier']}, "
-                f"subtype defining SNPs: "
-                f"{'PAX5 P80R present' if entry['PAX5_P80R'] else 'PAX5 P80R absent'}, "
-                f"{'IKZF1 N159Y present' if entry['IKZF1_N159Y'] else 'IKZF1 N159Y absent'}) "
-                f"seem not to be consistent with an unambiguous diagnostic classification "
-                f"according to WHO-HAEM5 (Alaggio R et al. Leukemia, 2022) / "
-                f"ICC (Arber D et al. Blood, 2022)."
+                "IntegrateALL classification:\n\n"
+                "Gene expression-based subtype-allocation "
+                "(ALLCatchR: {} subtype, Confidence: {}) "
+                "and the genomic driver profile ({}, "
+                "RNA-Seq CNV karyotype classifier: {}, "
+                "subtype defining SNPs: "
+                "{}, "
+                "{}) "
+                "seem not to be consistent with an unambiguous diagnostic classification "
+                "according to WHO-HAEM5 (Alaggio R et al. Leukemia, 2022) / "
+                "ICC (Arber D et al. Blood, 2022).".format(
+                    entry['ALLCatchR'], entry['Confidence'],
+                    fusion_detail,
+                    entry['karyotype_classifier'],
+                    'PAX5 P80R present' if entry['PAX5_P80R'] else 'PAX5 P80R absent',
+                    'IKZF1 N159Y present' if entry['IKZF1_N159Y'] else 'IKZF1 N159Y absent'
+                )
             )
         
         self._write_curation_csv(entry, output_curation, "Manual Curation")
@@ -1476,7 +1490,7 @@ class ClassificationProcessor:
         # For automatic classification, use simplified format
         fusion = self.data['fusions'][0]  # Take first fusion
         callers = set()
-        fusion_name = f"{fusion['gene_1']}::{fusion['gene_2']}"
+        fusion_name = "{}::{}".format(fusion['gene_1'], fusion['gene_2'])
         
         # Check which callers found this fusion
         for f in self.data['fusions']:
@@ -1488,7 +1502,7 @@ class ClassificationProcessor:
         else:
             caller_str = fusion['caller']
         
-        return f"caller_str: fusion_name"
+        return "{}: {}".format(caller_str, fusion_name)
     
     def _format_all_fusions(self):
         """Format all detected fusions for display."""

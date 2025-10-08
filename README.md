@@ -134,7 +134,8 @@ Test,/path/to/IntegrateALL/data/samples/sub1_new.fq.gz,/path/to/IntegrateALL/dat
 Choose the appropriate Snakefile for your environment:
 
 - **`Snakefile`**: Standard workflow for local execution or single-node processing
-- **`Snakefile.cluster`**: Optimized for cluster environments with tailored resource allocation for memory-intensive steps
+- **`Snakefile.cluster`**: Standard cluster workflow that always runs both Arriba and FusionCatcher for comprehensive fusion detection
+- **`Snakefile.conditional`**: Optimized cluster workflow with Arriba-first approach that only runs FusionCatcher if initial classification fails, significantly reducing runtime for samples with clear driver fusions
 
 #### Local Execution
 
@@ -157,12 +158,19 @@ snakemake --cores 4 --use-conda --conda-frontend conda STAR_output/YOUR_SAMPLE_I
 
 ### Cluster Execution
 
-**Option 1: Using the cluster-optimized Snakefile**
+**Option 1: Standard cluster workflow (comprehensive fusion detection)**
 ```bash
 snakemake -s Snakefile.cluster --cores 20 --use-conda --conda-frontend conda
 ```
 
-**Option 2: SBATCH submission script**
+**Option 2: Optimized cluster workflow (Arriba-first approach)**
+```bash
+snakemake -s Snakefile.conditional --cores 20 --use-conda --conda-frontend conda
+```
+
+> **Recommendation**: Use `Snakefile.conditional` for faster processing when you expect clear driver fusions. Use `Snakefile.cluster` for comprehensive analysis when you need maximum sensitivity or are analyzing challenging samples.
+
+**Option 3: SBATCH submission script**
 
 First, configure the submission script for your cluster:
 ```bash
@@ -176,12 +184,12 @@ Then submit the job:
 sbatch my_submit_script.sh
 ```
 
-**Option 3: Simple SLURM:**
+**Option 4: Simple SLURM:**
 ```bash
 srun -c 20 --mem 100G snakemake --cores 20 --use-conda --conda-frontend conda
 ```
 
-**Option 4: SLURM Executor:**
+**Option 5: SLURM Executor:**
 ```bash
 snakemake --slurm --default-resources mem_mb=5000 threads=4 slurm_partition=YOUR_PARTITION --jobs 200 --use-conda --conda-frontend conda --keep-going
 ```

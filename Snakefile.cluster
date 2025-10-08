@@ -353,17 +353,11 @@ rule run_draw_arriba_fusion:
 
 
 
-# Conditional FusionCatcher rule - runs FusionCatcher only if needed
 rule run_fusioncatcher:
     input:
+        data_directory=absolute_path + "/refs/fusioncatcher/fusioncatcher-master/data/human_v102",
         left=lambda wildcards: samples[wildcards.sample_id][0],
-        right=lambda wildcards: samples[wildcards.sample_id][1],
-        # Dependencies for preliminary classification check
-        allcatchr_file="allcatch_output/{sample_id}/predictions.tsv",
-        karyotype="karyotype_prediction/{sample_id}.csv",
-        arriba_file="fusions/{sample_id}.tsv",
-        hotspots="Hotspots/{sample_id}",
-        classification_file="data/annotation/Class_test.csv"
+        right=lambda wildcards: samples[wildcards.sample_id][1]
 
     output:
         dir=directory("fusioncatcher_output/{sample_id}"),
@@ -377,8 +371,7 @@ rule run_fusioncatcher:
         "envs/fusioncatcher.yaml"
 
     params:
-        sample_id=lambda wildcards: wildcards.sample_id,
-        data_directory=absolute_path + "/refs/fusioncatcher/fusioncatcher-master/data/human_v102"
+        sample_id=lambda wildcards: wildcards.sample_id
 
     benchmark:
         "benchmarks/{sample_id}.fusioncatcher.benchmark.txt"
@@ -387,36 +380,19 @@ rule run_fusioncatcher:
     resources:
         threads=config['threads'],
         mem_mb=config['star_mem'],
-        runtime=10000,
+        runtime=10000, # Next try with runtime
         slurm_extra="'--qos=long'"
 
     shell:
         '''
-        # Create preliminary classification with empty FusionCatcher file
-        echo "Step 1: Running preliminary classification with Arriba only"
-        python scripts/create_empty_fusioncatcher.py {output.keep_file}
-        
-        # Run preliminary classification (use Python 3 from integrateall environment)
-        CONDA_SUBDIR=linux-64 conda run -n integrateall python scripts/make_final_classification_restructured.py {wildcards.sample_id} {input.allcatchr_file} {input.karyotype} {output.keep_file} {input.arriba_file} {input.hotspots} {input.classification_file} Final_classification/preliminary_{wildcards.sample_id}_output_report.csv Final_classification/preliminary_{wildcards.sample_id}_output_txt.csv Final_classification/preliminary_{wildcards.sample_id}_curation.csv Final_classification/preliminary_{wildcards.sample_id}_driver.csv
-        
-        # Check if FusionCatcher needs to run (also use Python 3)
-        echo "Step 2: Checking if classification was successful"
-        check_result=$(CONDA_SUBDIR=linux-64 conda run -n integrateall python scripts/check_classification_status.py Final_classification/preliminary_{wildcards.sample_id}_output_report.csv 2>&1 || true)
-        if echo "$check_result" | grep -q "RESULT: RUN_FUSIONCATCHER"; then
-            echo "Classification failed - running FusionCatcher"
-            fusioncatcher \
-            -d {params.data_directory} \
-            -i {input.left},{input.right} \
-            -o {output.dir} \
-            --skip-blat \
-            --threads={config[threads]} \
-            > {log} 2>&1
-        else
-            echo "Classification successful - skipping FusionCatcher"
-            echo "Using empty FusionCatcher file" >> {log}
-        fi
-        
-        touch {output.sentinel}
+        fusioncatcher \
+        -d {input.data_directory} \
+        -i {input.left},{input.right} \
+        -o {output.dir} \
+        --skip-blat \
+        --threads={config[threads]} \
+        > logs/fusioncatcher/{wildcards.sample_id}.log \
+        && touch {output.sentinel}
         '''
 
 
@@ -769,13 +745,11 @@ rule predict_karyotype:
         
 
 
-# Final classification with actual or empty FusionCatcher file
 rule final_classification:
     input:
         allcatchr_file="allcatch_output/{sample}/predictions.tsv",
         karyotype="karyotype_prediction/{sample}.csv",
         fusioncatcher_file="fusioncatcher_output/{sample}/final-list_candidate-fusion-genes.txt",
-        fusioncatcher_sentinel="fusioncatcher_output/{sample}/fusioncatcher_done.sentinel",
         arriba_file="fusions/{sample}.tsv",
         hotspots="Hotspots/{sample}",
         classification_file="data/annotation/Class_test.csv"

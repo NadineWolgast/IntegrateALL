@@ -204,17 +204,21 @@ snakemake --slurm --default-resources mem_mb=5000 threads=4 slurm_partition=YOUR
 ### Analysis Results
 - **Alignments**: `STAR_output/{SAMPLE_ID}/`
 - **Fusions**: `fusions/{SAMPLE_ID}.pdf`, `fusioncatcher_output/{SAMPLE_ID}/`
+- **Fusion Intersects**: `data/fusion_intersect/{SAMPLE_ID}.csv`
 - **Variants**: `Variants_RNA_Seq_Reads/{SAMPLE_ID}/`
 - **CNV Analysis**: `RNAseqCNV_output/{SAMPLE_ID}/`
 - **Classification**: `allcatch_output/{SAMPLE_ID}/predictions.tsv`
+- **Karyotype Prediction**: `karyotype_prediction/{SAMPLE_ID}.csv`
 - **Quality Control**: `qc/fastqc/{SAMPLE_ID}/`, `qc/multiqc/{SAMPLE_ID}/`
-- **Summary**: `aggregated_output/{SAMPLE_ID}.csv`
+- **Individual Classification**: `Final_classification/{SAMPLE_ID}_output_report.csv`
+- **Aggregated Summary**: `Final_classification/Aggregated_output_curation.csv`
 
 ### Expression Data
 - **TPM**: `data/tpm/{SAMPLE_ID}.tsv`
 - **CPM**: `data/cpm/{SAMPLE_ID}.tsv`
 - **Counts**: `data/counts/{SAMPLE_ID}.tsv`
-- **Raw counts**: `data/reads_per_gene/{SAMPLE_ID}ReadsPerGene.out.tab`
+- **Raw counts**: `STAR_output/{SAMPLE_ID}/ReadsPerGene.out.tab`
+- **Combined counts**: `data/combined_counts/ensemble_counts.tsv`, `data/combined_counts/gene_counts.tsv`
 
 ---
 

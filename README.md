@@ -91,8 +91,10 @@ threads: 4         # Adjust to your CPU cores
 Install all required reference data and tools:
 
 ```bash
-snakemake --snakefile setup.smk --cores 4
+snakemake --snakefile setup.smk --cores 4 --use-conda --conda-frontend conda
 ```
+
+**⚠️ Important**: Always use `--use-conda` to ensure correct tool versions are used for reference data creation.
 
 **This setup downloads (~21GB total):**
 - Reference genome and annotations (~16GB)

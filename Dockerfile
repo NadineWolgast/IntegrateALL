@@ -22,16 +22,18 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     && apt-get clean
 
-# Download and install Miniconda
-RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
-    bash Miniconda3-latest-Linux-x86_64.sh -b -p /opt/conda && \
-    rm Miniconda3-latest-Linux-x86_64.sh
+# Download and install Miniforge (conda-forge only, no ToS required)
+RUN wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh && \
+    bash Miniforge3-Linux-x86_64.sh -b -p /opt/conda && \
+    rm Miniforge3-Linux-x86_64.sh
 
 # Set the PATH environment variable to include conda
 ENV PATH=/opt/conda/bin:$PATH
 
-# Install mamba in the base environment
-RUN conda install mamba -n base -c conda-forge
+# Mamba is already included in Miniforge, configure conda to use only conda-forge
+RUN conda config --add channels conda-forge && \
+    conda config --add channels bioconda && \
+    conda config --set channel_priority strict
 
 # Install Snakemake using mamba
 RUN mamba install -c bioconda -c conda-forge snakemake
@@ -42,10 +44,16 @@ RUN mamba env create --name IALL --file environment.yaml
 # Initialize conda for bash
 RUN conda init bash
 
+# Create activation script for easy environment setup
+RUN echo '#!/bin/bash\n\
+source /opt/conda/etc/profile.d/conda.sh\n\
+conda activate IALL\n\
+exec "$@"' > /usr/local/bin/activate-env.sh && \
+    chmod +x /usr/local/bin/activate-env.sh
 
-# Set up the entrypoint to activate the conda environment
-ENTRYPOINT ["/bin/bash", "-c", "source /opt/conda/etc/profile.d/conda.sh && conda activate IALL && exec bash"]
+# Set the entrypoint to activate conda environment
+ENTRYPOINT ["/usr/local/bin/activate-env.sh"]
 
-# Ensure conda environments are activated properly
+# Default command is bash
 CMD ["bash"]
 

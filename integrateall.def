@@ -1,0 +1,91 @@
+Bootstrap: docker
+From: ubuntu:22.04
+
+%labels
+    Author nadine.wolgast@uksh.de
+    Version v1.0
+    Description IntegrateALL - Machine learning pipeline for B-cell precursor ALL classification
+
+%help
+    IntegrateALL: Comprehensive analysis pipeline for B-cell precursor ALL
+
+    Usage:
+        # Interactive mode
+        singularity shell integrateall.sif
+
+        # Run setup (one-time)
+        singularity exec --bind /path/to/refs:/IntegrateALL/refs \
+                         --bind /path/to/config.yaml:/IntegrateALL/config.yaml \
+                         integrateall.sif \
+                         snakemake --snakefile setup.smk --cores 4 --use-conda
+
+        # Run analysis
+        singularity exec --bind /path/to/data:/IntegrateALL/data \
+                         --bind /path/to/refs:/IntegrateALL/refs \
+                         --bind /path/to/output:/IntegrateALL/output \
+                         integrateall.sif \
+                         snakemake --cores 8 --use-conda
+
+%environment
+    export PATH=/opt/conda/bin:$PATH
+    export CONDA_PREFIX=/opt/conda/envs/integrateall
+    export LC_ALL=C
+
+%post
+    # Update and install system dependencies
+    apt-get update && apt-get install -y \
+        wget bzip2 curl git cmake \
+        build-essential \
+        && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+    # Install Miniforge (conda-forge only, no ToS)
+    cd /tmp
+    wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh
+    bash Miniforge3-Linux-x86_64.sh -b -p /opt/conda
+    rm Miniforge3-Linux-x86_64.sh
+
+    # Set up conda
+    export PATH=/opt/conda/bin:$PATH
+
+    # Configure channels
+    conda config --add channels conda-forge
+    conda config --add channels bioconda
+    conda config --set channel_priority strict
+
+    # Install Snakemake in base environment
+    mamba install -c bioconda -c conda-forge snakemake-minimal -y
+
+    # Create working directory
+    mkdir -p /IntegrateALL
+
+    # Initialize conda for bash
+    conda init bash
+
+%files
+    environment.yaml /IntegrateALL/environment.yaml
+    Snakefile /IntegrateALL/Snakefile
+    Snakefile.cluster /IntegrateALL/Snakefile.cluster
+    setup.smk /IntegrateALL/setup.smk
+    config.yaml /IntegrateALL/config.yaml
+    scripts /IntegrateALL/scripts
+    envs /IntegrateALL/envs
+    data/annotation /IntegrateALL/data/annotation
+
+%runscript
+    #!/bin/bash
+    # Activate conda environment and run command
+    source /opt/conda/etc/profile.d/conda.sh
+
+    # Create environment if it doesn't exist
+    if [ ! -d "/opt/conda/envs/integrateall" ]; then
+        echo "Creating IntegrateALL conda environment..."
+        mamba env create -n integrateall -f /IntegrateALL/environment.yaml
+    fi
+
+    conda activate integrateall
+    exec "$@"
+
+%startscript
+    #!/bin/bash
+    source /opt/conda/etc/profile.d/conda.sh
+    conda activate integrateall

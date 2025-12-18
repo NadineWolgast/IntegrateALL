@@ -120,20 +120,32 @@ def generate_hotspot_tables(hotspot_dir):
                 table_dict[display_name].append(f"<h3>{display_name}</h3>{html_table}")
 
         elif filename.endswith('_with_bases.tsv'):
-            columns = ["chrom", "pos", "ref", "reads_pp", "mismatches_pp", "deletions_pp", 
-                      "insertions_pp", "A_pp", "C_pp", "T_pp", "G_pp", "N_pp", "new_base"]
-            table_data = safe_read_csv(file_path, delimiter=' ', skiprows=1, names=columns)
+            # Read with header from file (R script writes header with col.names=TRUE by default)
+            table_data = safe_read_csv(file_path, delimiter='\t')
             if not table_data.empty:
                 html_table = table_data.to_html(classes='my-table-class no-sort', index=False)
                 display_name = filename.split('_with_bases.tsv')[0].replace('_', ': ')
                 table_dict[display_name + " variants"].append(f"<h3>{display_name} variants</h3>{html_table}")
 
         elif filename.endswith('_gatk_result.tsv'):
+            # Try to read as table first
             table_data = safe_read_csv(file_path, delimiter='\t')
+            display_name = filename.split('_gatk_result.tsv')[0].replace('_', ': ')
+
             if not table_data.empty:
                 html_table = table_data.to_html(classes='my-table-class no-sort', index=False)
-                display_name = filename.split('_gatk_result.tsv')[0].replace('_', ': ')
                 table_dict[display_name + " GATK Result"].append(f"<h3>{display_name} GATK Result</h3>{html_table}")
+            else:
+                # If empty DataFrame, try to read as text message (no variants found)
+                try:
+                    with open(file_path, 'r') as f:
+                        content = f.read().strip()
+                        if content and not content.startswith('#'):  # Ignore VCF headers
+                            table_dict[display_name + " GATK Result"].append(
+                                f"<h3>{display_name} GATK Result</h3><p>{content}</p>"
+                            )
+                except Exception as e:
+                    logger.warning(f"Could not read GATK result file {file_path}: {e}")
     
     return "<br>".join([content for key in sorted(table_dict.keys()) for content in table_dict[key]])
 

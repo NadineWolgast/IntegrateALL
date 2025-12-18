@@ -18,33 +18,31 @@ pysamstats_directory <- args[1]
 gatk_file <- args[2]
 output_dir <- args[3]
 
-# Optimized mutations data with strand information
-mutations <- data.frame(
-  Gene = c("ZEB2", "ZEB2", "KRAS", "KRAS", "KRAS", "KRAS", "NRAS", "NRAS", "NRAS", "NRAS", 
-           rep("FLT3", 27), "PAX5", "IKZF1"),
-  Hotspot = c("H1038", "Q1072", "G12", "G13", "Q16", "A146", "G12", "G13", "Q61", "A146", 
-              "P857", "V843", "Y842", "N841", "D839", "M837", "I836", "D835", "R834",
-              "A680", "N676", "A627", "K623", "Y599", "R595", "V592", "Y589", "N587",
-              "G583", "Q580", "V579", "Q577", "L576", "E573", "Y572", "V491", "S446", 
-              "P80R", "N159Y"),
-  Chromosome = c("2", "2", "12", "12", "12", "12", "1", "1", "1", "1", 
-                 rep("13", 27), "9", "7"),
-  Strand = c("-", "-", "-", "-", "-", "-", "-", "-", "-", "-", 
-             rep("-", 27), "-", "+"),  # Strand information from GTF analysis
-  Start = c(144389982, 144389880, 25245349, 25245346, 25227341, 25225626, 
-            114716125, 114716122, 114713907, 114709581, 
-            28015672, 28018479, 28018482, 28018485, 28018491, 28018497, 28018500, 28018503, 28018506,
-            28028191, 28028203, 28033948, 28033960, 28034122, 28034134, 28034143, 28034152, 28034158,
-            28034170, 28034179, 28034182, 28034188, 28034191, 28034200, 28034203, 28035619, 28036015,
-            37015167, 50382593),  # 1-based coordinates from original script
-  End = c(144389984, 144389882, 25245351, 25245348, 25227343, 25225628, 
-          114716127, 114716124, 114713909, 114709583,
-          28015674, 28018481, 28018484, 28018487, 28018493, 28018499, 28018502, 28018505, 28018508,
-          28028193, 28028205, 28033950, 28033962, 28034124, 28034136, 28034145, 28034154, 28034160,
-          28034172, 28034181, 28034184, 28034190, 28034193, 28034202, 28034205, 28035621, 28036017,
-          37015169, 50382596),
-  stringsAsFactors = FALSE
-)
+# Load hotspots configuration from CSV file
+script_dir <- dirname(sub("--file=", "", grep("--file=", commandArgs(trailingOnly = FALSE), value = TRUE)))
+if (length(script_dir) == 0) {
+  # If script_dir is empty, use current directory (for interactive sessions)
+  script_dir <- getwd()
+}
+config_file <- file.path(dirname(script_dir), "config", "hotspots_config.csv")
+
+if (!file.exists(config_file)) {
+  stop(paste("Hotspots config file not found:", config_file))
+}
+
+cat("Loading hotspots configuration from", config_file, "\n")
+mutations <- read.csv(config_file, stringsAsFactors = FALSE)
+
+# Rename columns to match expected format in the rest of the script
+colnames(mutations) <- c("Gene", "Hotspot", "Chromosome", "Start", "End", "Strand")
+
+# Ensure correct data types
+mutations$Chromosome <- as.character(mutations$Chromosome)
+mutations$Start <- as.integer(mutations$Start)
+mutations$End <- as.integer(mutations$End)
+mutations$Strand <- as.character(mutations$Strand)
+
+cat("Loaded", nrow(mutations), "hotspot configurations\n")
 
 # Function to find GATK VCF header row
 find_CHROM_row_header <- function(file_path) {
@@ -63,17 +61,93 @@ find_CHROM_row_header <- function(file_path) {
   return(NULL)
 }
 
-# Function to search GATK VCF for variants at specific position
-find_GATK_variant <- function(file_path, chrom_val, pos_val) {
+# Function to search GATK VCF for variants in a genomic region
+# Note: VCF uses 1-based coordinates, BAM/BED uses 0-based
+find_GATK_variant <- function(file_path, chrom_val, start_pos, end_pos) {
   skip <- find_CHROM_row_header(file_path)
-  if (is.null(skip)) return(NULL)
-  
+  if (is.null(skip)) {
+    cat("    ⚠️  Could not find VCF header in file\n")
+    return(NULL)
+  }
+
   skip <- skip - 1
-  df <- read.table(file_path, skip = skip, header = TRUE, sep = "\t", stringsAsFactors = FALSE)
-  
+
+  # Try to read VCF with better error handling
+  df <- tryCatch({
+    read.table(file_path, skip = skip, header = TRUE, sep = "\t",
+               stringsAsFactors = FALSE, comment.char = "", quote = "")
+  }, error = function(e) {
+    cat("    ⚠️  Error reading VCF file:", e$message, "\n")
+    return(NULL)
+  })
+
+  if (is.null(df) || nrow(df) == 0) {
+    cat("    ⚠️  VCF file is empty or could not be read\n")
+    return(NULL)
+  }
+
+  # Debug: show column names
+  cat("    VCF columns:", paste(head(colnames(df), 8), collapse=", "), "...\n")
+  cat("    Total variants in VCF:", nrow(df), "\n")
+
   # Filter for variants in the region
-  filtered_rows <- df[df$X.CHROM == chrom_val & df$POS >= pos_val & df$POS <= pos_val + 2, ]
-  
+  # Add ±1 buffer to account for potential 0-based vs 1-based coordinate differences
+  # VCF is 1-based, pysamstats output might be 0-based
+  search_start <- start_pos - 1
+  search_end <- end_pos + 1
+
+  cat("    Searching GATK VCF: chr", chrom_val, ":", search_start, "-", search_end, "\n", sep="")
+
+  # Try both with and without "chr" prefix for chromosome matching
+  chrom_variants <- c(as.character(chrom_val), paste0("chr", chrom_val))
+
+  # Handle different possible column names for chromosome
+  chrom_col <- NULL
+  if ("X.CHROM" %in% colnames(df)) {
+    chrom_col <- "X.CHROM"
+  } else if ("CHROM" %in% colnames(df)) {
+    chrom_col <- "CHROM"
+  } else if ("#CHROM" %in% colnames(df)) {
+    chrom_col <- "#CHROM"
+  } else {
+    # Take first column as chromosome
+    chrom_col <- colnames(df)[1]
+    cat("    ⚠️  Using column", chrom_col, "as chromosome\n")
+  }
+
+  # Filter for variants
+  filtered_rows <- df[df[[chrom_col]] %in% chrom_variants &
+                      df$POS >= search_start &
+                      df$POS <= search_end, ]
+
+  if (nrow(filtered_rows) > 0) {
+    cat("    ✓ Found", nrow(filtered_rows), "GATK variant(s) in region\n")
+    # Show the variants found
+    for (i in 1:nrow(filtered_rows)) {
+      cat("      - Pos:", filtered_rows$POS[i],
+          "Ref:", filtered_rows$REF[i],
+          "Alt:", filtered_rows$ALT[i], "\n")
+    }
+  } else {
+    cat("    ✗ No GATK variants found in region\n")
+    # Debug: show what chromosomes are in the VCF
+    unique_chroms <- unique(df[[chrom_col]])
+    if (length(unique_chroms) > 0) {
+      cat("    VCF chromosomes:", paste(head(unique_chroms, 5), collapse=", "),
+          ifelse(length(unique_chroms) > 5, "...", ""), "\n")
+    }
+    # Show nearby variants for debugging
+    nearby <- df[df[[chrom_col]] %in% chrom_variants &
+                 df$POS >= (start_pos - 100) &
+                 df$POS <= (end_pos + 100), ]
+    if (nrow(nearby) > 0) {
+      cat("    Nearby variants (±100bp):\n")
+      for (i in 1:min(3, nrow(nearby))) {
+        cat("      - Pos:", nearby$POS[i], "Ref:", nearby$REF[i], "Alt:", nearby$ALT[i], "\n")
+      }
+    }
+  }
+
   return(if (nrow(filtered_rows) > 0) filtered_rows else NULL)
 }
 
@@ -100,18 +174,26 @@ get_alternative_base <- function(data_row, ref_base) {
 # Function to process a single hotspot file with strand-specific logic
 process_hotspot_file <- function(file_path, mutations_df, gatk_file, output_dir) {
   file_name <- basename(file_path)
-  
+
   # Skip if not TSV or CSV file
   if (!grepl("\\.(tsv|csv)$", file_name, ignore.case = TRUE)) return(NULL)
-  
-  # Read the data
-  data <- read.table(file_path, header = TRUE, sep = "\t", stringsAsFactors = FALSE)
-  if (nrow(data) <= 1) return(NULL)  # Skip files with no data
-  
+
+  # Read the data with error handling
+  data <- tryCatch({
+    read.table(file_path, header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+  }, error = function(e) {
+    warning(paste("Could not read file", file_name, ":", e$message))
+    return(NULL)
+  })
+
+  if (is.null(data) || nrow(data) <= 1) return(NULL)  # Skip files with no data
+
   # Extract gene and hotspot from filename
   extracted_info <- sub(".*_([^_]+_[^_]+)\\.(tsv|csv)$", "\\1", file_name)
   gene <- sub("_.*", "", extracted_info)
   hotspot <- sub(".*_", "", extracted_info)
+
+  cat("Processing:", gene, hotspot, "...\n")
   
   # Get mutation information
   mutation_info <- mutations_df[mutations_df$Gene == gene & mutations_df$Hotspot == hotspot, ]
@@ -127,29 +209,34 @@ process_hotspot_file <- function(file_path, mutations_df, gatk_file, output_dir)
   
   # Initialize new_base column
   data$new_base <- ""
-  
+
   # Process each row to identify variants
   variant_found <- FALSE
+  variant_position <- NA
+  alt_base_found <- ""
+
   for (row in 1:nrow(data)) {
     # Check for significant mismatches (>5% mismatch rate)
-    if (data$mismatches_pp[row] > 0 && 
+    if (data$mismatches_pp[row] > 0 &&
         (data$mismatches_pp[row] / data$matches_pp[row]) >= 0.05) {
-      
+
       ref_base <- data$ref[row]
       alt_base <- get_alternative_base(data[row, ], ref_base)
       data$new_base[row] <- alt_base
       variant_found <- TRUE
+      variant_position <- data$pos[row]
+      alt_base_found <- paste0(ref_base, ">", alt_base)
     } else {
       data$new_base[row] <- data$ref[row]
     }
   }
-  
+
   if (!variant_found) return(NULL)  # Skip if no variants found
   
   # Collect bases and handle strand-specific processing
   bases_list <- character()
   percentage <- 0
-  
+
   # Process bases based on strand orientation
   if (strand == "+") {
     # Plus strand: process bases in forward direction (IKZF1)
@@ -165,15 +252,18 @@ process_hotspot_file <- function(file_path, mutations_df, gatk_file, output_dir)
         bases_list <- c(bases_list, data$ref[k])
       }
     }
-    
+
     # Plus strand: use bases directly
     bases_string <- paste(bases_list, collapse = "")
-    
+
+    # Convert U (RNA) to T (DNA) if present - handle mixed RNA/DNA sequences
+    bases_string <- gsub("U", "T", bases_string, ignore.case = TRUE)
+
   } else {
     # Minus strand: reverse complement processing (all other genes)
     # Reverse the data order first
     data_reversed <- data[nrow(data):1, ]
-    
+
     for (k in 1:nrow(data_reversed)) {
       if (data_reversed$new_base[k] %in% c("A", "C", "T", "G") && data_reversed$reads_pp[k] >= 50) {
         bases_list <- c(bases_list, data_reversed$new_base[k])
@@ -186,23 +276,80 @@ process_hotspot_file <- function(file_path, mutations_df, gatk_file, output_dir)
         bases_list <- c(bases_list, data_reversed$ref[k])
       }
     }
-    
+
     # Minus strand: reverse complement the sequence
     bases_string <- paste(bases_list, collapse = "")
-    bases_string <- as.character(complement(DNAString(bases_string)))
+
+    # Convert U (RNA) to T (DNA) if present - handle mixed RNA/DNA sequences
+    bases_string <- gsub("U", "T", bases_string, ignore.case = TRUE)
+
+    # Error handling for DNAString conversion
+    tryCatch({
+      bases_string <- as.character(complement(DNAString(bases_string)))
+    }, error = function(e) {
+      cat("⚠️  Error in complement for", gene, hotspot, ":", e$message, "\n")
+      cat("    Sequence:", bases_string, "\n")
+      # Try to clean the sequence - keep only valid DNA bases
+      bases_string <<- gsub("[^ACGTacgt]", "N", bases_string)
+      cat("    Cleaned sequence:", bases_string, "\n")
+      bases_string <<- as.character(complement(DNAString(bases_string)))
+    })
   }
   
-  # Translate to amino acid
-  if (nchar(bases_string) %% 3 == 0 && nchar(bases_string) > 0) {
-    tryCatch({
-      new_amino_acid <- as.character(GENETIC_CODE[[bases_string]])
-      if (is.na(new_amino_acid)) new_amino_acid <- "Unknown"
-    }, error = function(e) {
-      new_amino_acid <- "Invalid"
-    })
-  } else {
-    new_amino_acid <- "Invalid_Length"
-  }
+  # Translate to amino acid with improved error handling
+  new_amino_acid <- tryCatch({
+    seq_len <- nchar(bases_string)
+
+    if (seq_len %% 3 == 0 && seq_len > 0) {
+      # Perfect codon length - translate directly
+      aa <- as.character(GENETIC_CODE[[bases_string]])
+      if (is.na(aa)) {
+        "Unknown"
+      } else {
+        aa
+      }
+    } else if (seq_len == 4) {
+      # Common case: 4 bases - try to extract the middle 3 bases (most likely the actual codon)
+      cat("⚠️  Sequence length is 4bp for", gene, hotspot, "- extracting middle codon\n")
+      # Try position 1-3 (drop last base)
+      codon1 <- substr(bases_string, 1, 3)
+      aa1 <- as.character(GENETIC_CODE[[codon1]])
+      # Try position 2-4 (drop first base)
+      codon2 <- substr(bases_string, 2, 4)
+      aa2 <- as.character(GENETIC_CODE[[codon2]])
+
+      # Prefer the one that gives a valid amino acid
+      if (!is.na(aa1)) {
+        cat("    Using bases 1-3:", codon1, "->", aa1, "\n")
+        bases_string <<- codon1  # Update for output
+        aa1
+      } else if (!is.na(aa2)) {
+        cat("    Using bases 2-4:", codon2, "->", aa2, "\n")
+        bases_string <<- codon2  # Update for output
+        aa2
+      } else {
+        paste0("Invalid_4bp_", codon1, "/", codon2)
+      }
+    } else if (seq_len > 3) {
+      # Other lengths > 3: try to extract first 3 bases
+      cat("⚠️  Sequence length is", seq_len, "bp for", gene, hotspot, "- extracting first codon\n")
+      codon <- substr(bases_string, 1, 3)
+      aa <- as.character(GENETIC_CODE[[codon]])
+      if (!is.na(aa)) {
+        cat("    Using first 3 bases:", codon, "->", aa, "\n")
+        bases_string <<- codon  # Update for output
+        aa
+      } else {
+        paste0("Invalid_Length_", seq_len, "_", codon)
+      }
+    } else {
+      paste0("Invalid_Length_", seq_len)
+    }
+  }, error = function(e) {
+    cat("⚠️  Translation error for", gene, hotspot, ":", e$message, "\n")
+    cat("    Sequence:", bases_string, "(length:", nchar(bases_string), ")\n")
+    "Translation_Error"
+  })
   
   # Save results if significant variant found
   if (percentage > 0) {
@@ -222,14 +369,18 @@ process_hotspot_file <- function(file_path, mutations_df, gatk_file, output_dir)
     write.table(selected_columns, file.path(output_dir, paste0(extracted_info, "_with_bases.tsv")), 
                 sep = "\t", row.names = FALSE, quote = FALSE)
     
-    # Save summary result
+    # Save summary result with enhanced information
     result <- data.frame(
       Gene = gene,
-      Hotspot = hotspot, 
+      Hotspot = hotspot,
       Chromosome = chromosome,
       Start = start,
       End = end,
       Strand = strand,
+      Variant = alt_base_found,
+      Variant_Position = variant_position,
+      Sequence = bases_string,
+      Sequence_Length = nchar(bases_string),
       New_Aminoacid = new_amino_acid,
       Percentage = percentage,
       stringsAsFactors = FALSE
@@ -237,18 +388,22 @@ process_hotspot_file <- function(file_path, mutations_df, gatk_file, output_dir)
     
     write.csv(result, file.path(output_dir, output_file), row.names = FALSE)
     
-    # Search for GATK variant information
-    gatk_result <- find_GATK_variant(gatk_file, chromosome, start)
+    # Search for GATK variant information in the entire hotspot region
+    cat("  Searching GATK VCF for", gene, hotspot, "in region chr", chromosome, ":", start, "-", end, "\n", sep="")
+    gatk_result <- find_GATK_variant(gatk_file, chromosome, start, end)
     if (!is.null(gatk_result)) {
-      write.table(gatk_result, file.path(output_dir, paste0(extracted_info, "_gatk_result.tsv")), 
+      write.table(gatk_result, file.path(output_dir, paste0(extracted_info, "_gatk_result.tsv")),
                   sep = "\t", quote = FALSE, row.names = FALSE)
     } else {
-      writeLines(paste("No GATK variant found for chromosome", chromosome, "at position", start),
+      writeLines(paste("No GATK variant found for chromosome", chromosome, "in region", start, "-", end),
                 file.path(output_dir, paste0(extracted_info, "_gatk_result.tsv")))
     }
     
-    cat("✅ Processed", gene, hotspot, paste0("(", strand, " strand)"), 
-        "- New AA:", new_amino_acid, "- Percentage:", round(percentage, 2), "%\n")
+    # Enhanced output with sequence and variant information
+    cat("✅ Processed", gene, hotspot, paste0("(", strand, " strand)"), "\n")
+    cat("    Variant:", alt_base_found, "at position", variant_position, "\n")
+    cat("    Sequence:", bases_string, "(length:", nchar(bases_string), "bp)\n")
+    cat("    New AA:", new_amino_acid, "- Percentage:", round(percentage, 2), "%\n")
     
     return(result)
   }
@@ -268,9 +423,14 @@ dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
 file_list <- list.files(pysamstats_directory, pattern = "\\.(tsv|csv)$", full.names = TRUE)
 cat("Found", length(file_list), "files to process\n")
 
-# Process files (can be parallelized for better performance)
+# Process files with error handling (can be parallelized for better performance)
 results_list <- lapply(file_list, function(file) {
-  process_hotspot_file(file, mutations, gatk_file, output_dir)
+  tryCatch({
+    process_hotspot_file(file, mutations, gatk_file, output_dir)
+  }, error = function(e) {
+    cat("❌ Error processing", basename(file), ":", e$message, "\n")
+    return(NULL)
+  })
 })
 
 # Filter out NULL results

@@ -111,6 +111,26 @@ build_container() {
     print_info "Container size: $(du -h $CONTAINER | cut -f1)"
 }
 
+# Create conda environment overlay (one-time)
+create_overlay() {
+    print_info "Creating conda environment overlay..."
+
+    # Create overlay directory for conda environments
+    mkdir -p .singularity_overlay/upper .singularity_overlay/work
+
+    print_info "Creating IntegrateALL conda environment (this takes ~10-20 minutes)..."
+
+    $SINGULARITY_CMD exec \
+        --overlay .singularity_overlay \
+        --bind "$(pwd):/IntegrateALL" \
+        --pwd /IntegrateALL \
+        "$CONTAINER" \
+        bash -c "source /opt/conda/etc/profile.d/conda.sh && \
+                 mamba env create -n integrateall -f /IntegrateALL/environment.yaml -y"
+
+    print_info "Conda environment created successfully!"
+}
+
 # Run setup
 run_setup() {
     print_info "Starting IntegrateALL setup (this may take 1-3 hours)..."
@@ -118,7 +138,13 @@ run_setup() {
 
     mkdir -p refs
 
+    # Check if conda environment exists
+    if [ ! -d ".singularity_overlay" ]; then
+        create_overlay
+    fi
+
     $SINGULARITY_CMD exec \
+        --overlay .singularity_overlay \
         --bind "$(pwd)/refs:/IntegrateALL/refs" \
         --bind "$(pwd)/config.yaml:/IntegrateALL/config.yaml" \
         --bind "$(pwd):/IntegrateALL" \
@@ -141,9 +167,15 @@ run_analysis() {
         exit 1
     fi
 
+    # Check if conda environment exists
+    if [ ! -d ".singularity_overlay" ]; then
+        create_overlay
+    fi
+
     mkdir -p data/samples output
 
     $SINGULARITY_CMD exec \
+        --overlay .singularity_overlay \
         --bind "$(pwd)/data:/IntegrateALL/data" \
         --bind "$(pwd)/refs:/IntegrateALL/refs" \
         --bind "$(pwd):/IntegrateALL" \
@@ -166,17 +198,30 @@ run_interactive() {
     print_info "Conda environment 'integrateall' will be activated."
     print_info "Type 'exit' to leave the container."
 
-    $SINGULARITY_CMD shell \
+    # Check if conda environment exists
+    if [ ! -d ".singularity_overlay" ]; then
+        create_overlay
+    fi
+
+    $SINGULARITY_CMD exec \
+        --overlay .singularity_overlay \
         --bind "$(pwd):/IntegrateALL" \
         --pwd /IntegrateALL \
-        "$CONTAINER"
+        "$CONTAINER" \
+        bash --init-file <(echo "source /opt/conda/etc/profile.d/conda.sh && conda activate integrateall && echo 'IntegrateALL environment activated. Type exit to leave container.'")
 }
 
 # Run dry-run test
 run_test() {
     print_info "Running dry-run to test configuration..."
 
+    # Check if conda environment exists
+    if [ ! -d ".singularity_overlay" ]; then
+        create_overlay
+    fi
+
     $SINGULARITY_CMD exec \
+        --overlay .singularity_overlay \
         --bind "$(pwd):/IntegrateALL" \
         --pwd /IntegrateALL \
         "$CONTAINER" \

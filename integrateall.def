@@ -26,10 +26,15 @@ From: ubuntu:22.04
                          integrateall.sif \
                          snakemake --cores 8 --use-conda
 
-%environment
-    export PATH=/opt/conda/bin:$PATH
-    export CONDA_PREFIX=/opt/conda/envs/integrateall
-    export LC_ALL=C
+%files
+    environment.yaml /IntegrateALL/environment.yaml
+    Snakefile /IntegrateALL/Snakefile
+    Snakefile.cluster /IntegrateALL/Snakefile.cluster
+    setup.smk /IntegrateALL/setup.smk
+    config.yaml /IntegrateALL/config.yaml
+    scripts /IntegrateALL/scripts
+    envs /IntegrateALL/envs
+    data/annotation /IntegrateALL/data/annotation
 
 %post
     # Update and install system dependencies
@@ -61,31 +66,29 @@ From: ubuntu:22.04
     # Initialize conda for bash
     conda init bash
 
-%files
-    environment.yaml /IntegrateALL/environment.yaml
-    Snakefile /IntegrateALL/Snakefile
-    Snakefile.cluster /IntegrateALL/Snakefile.cluster
-    setup.smk /IntegrateALL/setup.smk
-    config.yaml /IntegrateALL/config.yaml
-    scripts /IntegrateALL/scripts
-    envs /IntegrateALL/envs
-    data/annotation /IntegrateALL/data/annotation
+    # Clean up
+    conda clean --all -y
+
+%environment
+    export PATH=/opt/conda/bin:$PATH
+    export LC_ALL=C
 
 %runscript
     #!/bin/bash
     # Activate conda environment and run command
+    # Note: The integrateall conda environment is created via overlay filesystem
+    # using the run_singularity.sh wrapper script
     source /opt/conda/etc/profile.d/conda.sh
 
-    # Create environment if it doesn't exist
-    if [ ! -d "/opt/conda/envs/integrateall" ]; then
-        echo "Creating IntegrateALL conda environment..."
-        mamba env create -n integrateall -f /IntegrateALL/environment.yaml
+    if [ -d "/opt/conda/envs/integrateall" ]; then
+        conda activate integrateall
     fi
 
-    conda activate integrateall
     exec "$@"
 
 %startscript
     #!/bin/bash
     source /opt/conda/etc/profile.d/conda.sh
-    conda activate integrateall
+    if [ -d "/opt/conda/envs/integrateall" ]; then
+        conda activate integrateall
+    fi

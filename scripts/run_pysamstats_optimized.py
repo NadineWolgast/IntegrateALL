@@ -12,84 +12,67 @@ import pandas as pd
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 
-# Load mutations from external file for better maintainability  
-# Format: (gene, hotspot, chromosome, start, end, strand)
-# Strand information from GTF: + = plus strand, - = minus strand
-# IMPORTANT: These are the exact coordinates from the original working script
-MUTATIONS_DATA = [
-    # ZEB2 gene (Chr2, minus strand)
-    ("ZEB2", "H1038", "2", 144389981, 144389984, "-"),
-    ("ZEB2", "Q1072", "2", 144389879, 144389882, "-"),
-    
-    # KRAS gene (Chr12, minus strand)
-    ("KRAS", "G12", "12", 25245348, 25245351, "-"),
-    ("KRAS", "G13", "12", 25245345, 25245348, "-"),
-    ("KRAS", "Q16", "12", 25227340, 25227343, "-"),
-    ("KRAS", "A146", "12", 25225625, 25225628, "-"),
-    
-    # NRAS gene (Chr1, minus strand)
-    ("NRAS", "G12", "1", 114716124, 114716127, "-"),
-    ("NRAS", "G13", "1", 114716121, 114716124, "-"),
-    ("NRAS", "Q61", "1", 114713906, 114713909, "-"),
-    ("NRAS", "A146", "1", 114709580, 114709583, "-"),
-    
-    # FLT3 gene (Chr13, minus strand)
-    ("FLT3", "P857", "13", 28015671, 28015674, "-"),
-    ("FLT3", "V843", "13", 28018478, 28018481, "-"),
-    ("FLT3", "Y842", "13", 28018481, 28018484, "-"),
-    ("FLT3", "N841", "13", 28018484, 28018487, "-"),
-    ("FLT3", "D839", "13", 28018490, 28018493, "-"),
-    ("FLT3", "M837", "13", 28018496, 28018499, "-"),
-    ("FLT3", "I836", "13", 28018499, 28018502, "-"),
-    ("FLT3", "D835", "13", 28018502, 28018505, "-"),
-    ("FLT3", "R834", "13", 28018505, 28018508, "-"),
-    ("FLT3", "A680", "13", 28028190, 28028193, "-"),
-    ("FLT3", "N676", "13", 28028202, 28028205, "-"),
-    ("FLT3", "A627", "13", 28033947, 28033950, "-"),
-    ("FLT3", "K623", "13", 28033959, 28033962, "-"),
-    ("FLT3", "Y599", "13", 28034121, 28034124, "-"),
-    ("FLT3", "R595", "13", 28034133, 28034136, "-"),
-    ("FLT3", "V592", "13", 28034142, 28034145, "-"),
-    ("FLT3", "Y589", "13", 28034151, 28034154, "-"),
-    ("FLT3", "N587", "13", 28034157, 28034160, "-"),
-    ("FLT3", "G583", "13", 28034169, 28034172, "-"),
-    ("FLT3", "Q580", "13", 28034178, 28034181, "-"),
-    ("FLT3", "V579", "13", 28034181, 28034184, "-"),
-    ("FLT3", "Q577", "13", 28034187, 28034190, "-"),
-    ("FLT3", "L576", "13", 28034190, 28034193, "-"),
-    ("FLT3", "E573", "13", 28034199, 28034202, "-"),
-    ("FLT3", "Y572", "13", 28034202, 28034205, "-"),
-    ("FLT3", "V491", "13", 28035618, 28035621, "-"),
-    ("FLT3", "S446", "13", 28036014, 28036017, "-"),
-    
-    # PAX5 gene (Chr9, minus strand)
-    ("PAX5", "P80R", "9", 37015166, 37015169, "-"),
-    
-    # IKZF1 gene (Chr7, plus strand) - Only plus strand gene!
-    ("IKZF1", "N159Y", "7", 50382592, 50382595, "+")  # Originally handled with -u flag (plus strand)
-]
+# Path to hotspots configuration file (relative to script location)
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+HOTSPOTS_CONFIG = os.path.join(os.path.dirname(SCRIPT_DIR), "config", "hotspots_config.csv")
+
+
+def load_hotspots_config(config_file=HOTSPOTS_CONFIG):
+    """
+    Load hotspots configuration from CSV file.
+
+    Returns:
+        list: List of tuples (gene, hotspot, chromosome, start, end, strand)
+    """
+    if not os.path.exists(config_file):
+        raise FileNotFoundError(f"Hotspots config file not found: {config_file}")
+
+    df = pd.read_csv(config_file)
+
+    # Convert DataFrame to list of tuples for compatibility with existing code
+    mutations_data = []
+    for _, row in df.iterrows():
+        mutations_data.append((
+            row['gene'],
+            row['hotspot'],
+            str(row['chromosome']),  # Ensure chromosome is string
+            int(row['start']),
+            int(row['end']),
+            row['strand']
+        ))
+
+    return mutations_data
 
 
 def process_single_mutation(mutation_data, bam_file, fasta_file, sample_id, output_dir):
     """Process a single mutation hotspot with strand-specific handling."""
     gene, hotspot, chromosome, start, end, strand = mutation_data
-    
+
     output_file = os.path.join(output_dir, f"{sample_id}_{gene}_{hotspot}.tsv")
-    
+
     try:
+        # CRITICAL FIX: Convert 1-based coordinates (config) to 0-based (pysamstats/BAM)
+        # Config format: start=1-based inclusive, end=1-based exclusive (like VCF ranges)
+        # pysamstats expects: start=0-based inclusive, end=0-based exclusive (like Python range)
+        # Example NRAS G13 codon (1-based): 114716122, 114716123, 114716124
+        #   Config: start=114716122, end=114716125 (1-based, end exclusive)
+        #   pysamstats: start=114716121, end=114716124 (0-based, end exclusive)
+        start_0based = start - 1  # Convert 1-based inclusive to 0-based inclusive
+        end_0based = end - 1      # Convert 1-based exclusive to 0-based exclusive
+
         # Open files once per mutation (still more efficient than before)
         with pysam.AlignmentFile(bam_file) as mybam, pysam.Fastafile(fasta_file) as myfasta:
             
             # Strand-specific parameters for pysamstats
             # Plus strand genes (like IKZF1) need different handling than minus strand genes
             if strand == "+":
-                # Plus strand (IKZF1) - originally used -u flag 
+                # Plus strand (IKZF1) - originally used -u flag
                 # -u flag typically means "unique mapping" or special read handling
                 variations = pysamstats.load_variation(
-                    mybam, myfasta, 
-                    chrom=chromosome, 
-                    start=start, 
-                    end=end, 
+                    mybam, myfasta,
+                    chrom=chromosome,
+                    start=start_0based,
+                    end=end_0based,
                     truncate=True,
                     max_depth=8000,  # Lower depth threshold for plus strand
                     min_mapq=1,      # Minimum mapping quality (equivalent to -u behavior)
@@ -98,10 +81,10 @@ def process_single_mutation(mutation_data, bam_file, fasta_file, sample_id, outp
             else:  # strand == "-"
                 # Minus strand genes (majority of our genes)
                 variations = pysamstats.load_variation(
-                    mybam, myfasta, 
-                    chrom=chromosome, 
-                    start=start, 
-                    end=end, 
+                    mybam, myfasta,
+                    chrom=chromosome,
+                    start=start_0based,
+                    end=end_0based,
                     truncate=True,
                     max_depth=1000000,  # Higher depth for minus strand
                     min_mapq=0,         # More permissive mapping quality
@@ -115,9 +98,14 @@ def process_single_mutation(mutation_data, bam_file, fasta_file, sample_id, outp
                        "mismatches\tmismatches_pp\tdeletions\tdeletions_pp\t"
                        "insertions\tinsertions_pp\tA\tA_pp\tC\tC_pp\tT\tT_pp\t"
                        "G\tG_pp\tN\tN_pp\n")
-                
-                # Write data rows
+
+                # Write data rows with 1-based position conversion
                 for entry in variations:
+                    # Convert to list for modification
+                    entry = list(entry)
+                    # CRITICAL FIX: Convert pos from 0-based to 1-based for VCF/HGVS compatibility
+                    # entry[1] is the 'pos' column (0-indexed in array, but column 2 in output)
+                    entry[1] = int(entry[1]) + 1
                     # Clean and convert data efficiently
                     clean_entry = [str(val).replace("b'", "").replace("'", "") for val in entry]
                     f.write('\t'.join(clean_entry) + '\n')
@@ -134,7 +122,7 @@ def process_single_mutation(mutation_data, bam_file, fasta_file, sample_id, outp
 def run_pysamstats_batch(bam_file, fasta_file, sample_id, output_dir, threads=4):
     """
     Run pysamstats for all mutations in batch with parallel processing.
-    
+
     Args:
         bam_file: Path to BAM file
         fasta_file: Path to reference FASTA
@@ -142,28 +130,32 @@ def run_pysamstats_batch(bam_file, fasta_file, sample_id, output_dir, threads=4)
         output_dir: Output directory for results
         threads: Number of threads for parallel processing
     """
-    
-    print(f"📊 Processing {len(MUTATIONS_DATA)} hotspot mutations for {sample_id}")
+
+    # Load hotspots configuration
+    print(f"📋 Loading hotspots configuration from {HOTSPOTS_CONFIG}")
+    mutations_data = load_hotspots_config()
+
+    print(f"📊 Processing {len(mutations_data)} hotspot mutations for {sample_id}")
     print(f"Using {threads} threads for parallel processing")
-    
+
     # Create output directory
     os.makedirs(output_dir, exist_ok=True)
-    
+
     # Process mutations in parallel
     process_func = partial(
-        process_single_mutation, 
-        bam_file=bam_file, 
-        fasta_file=fasta_file, 
-        sample_id=sample_id, 
+        process_single_mutation,
+        bam_file=bam_file,
+        fasta_file=fasta_file,
+        sample_id=sample_id,
         output_dir=output_dir
     )
-    
+
     success_count = 0
     with ThreadPoolExecutor(max_workers=threads) as executor:
-        results = list(executor.map(process_func, MUTATIONS_DATA))
+        results = list(executor.map(process_func, mutations_data))
         success_count = sum(results)
-    
-    print(f"✅ Successfully processed {success_count}/{len(MUTATIONS_DATA)} mutations")
+
+    print(f"✅ Successfully processed {success_count}/{len(mutations_data)} mutations")
     
     # Create special IKZF1 output for compatibility (as expected by the rule)
     ikzf1_source = os.path.join(output_dir, f"{sample_id}_IKZF1_N159Y.tsv")

@@ -232,7 +232,29 @@ process_hotspot_file <- function(file_path, mutations_df, gatk_file, output_dir)
   }
 
   if (!variant_found) return(NULL)  # Skip if no variants found
-  
+
+  # CRITICAL: Use the exact codon coordinates from the config file
+  # The config contains start and end positions (1-based) that define the codon
+  # Extract only rows that match these exact positions
+
+  # For 3-base codon: positions should be start, start+1, start+2 (1-based)
+  # But config end is exclusive, so codon positions are: start to end-1
+  codon_positions <- seq(start, end - 1)
+
+  # Filter data to only include rows with positions in the codon
+  codon_data <- data[data$pos %in% codon_positions, ]
+
+  # Verify we have exactly 3 bases
+  if (nrow(codon_data) != 3) {
+    cat("⚠️  Warning: Expected 3 bases in codon, found", nrow(codon_data), "\n")
+    cat("    Config start:", start, "end:", end, "\n")
+    cat("    Expected positions:", paste(codon_positions, collapse=", "), "\n")
+    cat("    Found positions:", paste(codon_data$pos, collapse=", "), "\n")
+    # Continue anyway, but this might produce wrong results
+  }
+
+  cat("    Codon window (1-based positions):", paste(codon_data$pos, collapse=", "), "\n")
+
   # Collect bases and handle strand-specific processing
   bases_list <- character()
   percentage <- 0
@@ -240,16 +262,22 @@ process_hotspot_file <- function(file_path, mutations_df, gatk_file, output_dir)
   # Process bases based on strand orientation
   if (strand == "+") {
     # Plus strand: process bases in forward direction (IKZF1)
-    for (k in 1:nrow(data)) {
-      if (data$new_base[k] %in% c("A", "C", "T", "G") && data$reads_pp[k] >= 50) {
-        bases_list <- c(bases_list, data$new_base[k])
-        # Calculate percentage for the alternative base
-        col_name <- paste0(data$new_base[k], "_pp")
-        if (col_name %in% colnames(data)) {
-          percentage <- data[[col_name]][k] * 100 / data$reads_pp[k]
+    for (k in 1:nrow(codon_data)) {
+      if (codon_data$new_base[k] %in% c("A", "C", "T", "G") && codon_data$reads_pp[k] >= 50) {
+        bases_list <- c(bases_list, codon_data$new_base[k])
+        # Calculate VAF ONLY for variant positions (ref != new_base)
+        if (codon_data$ref[k] != codon_data$new_base[k]) {
+          ref_col <- paste0(codon_data$ref[k], "_pp")
+          alt_col <- paste0(codon_data$new_base[k], "_pp")
+          if (ref_col %in% colnames(codon_data) && alt_col %in% colnames(codon_data)) {
+            ref_count <- codon_data[[ref_col]][k]
+            alt_count <- codon_data[[alt_col]][k]
+            # VAF = alternative / (reference + alternative) * 100
+            percentage <- alt_count * 100 / (ref_count + alt_count)
+          }
         }
       } else {
-        bases_list <- c(bases_list, data$ref[k])
+        bases_list <- c(bases_list, codon_data$ref[k])
       }
     }
 
@@ -261,19 +289,25 @@ process_hotspot_file <- function(file_path, mutations_df, gatk_file, output_dir)
 
   } else {
     # Minus strand: reverse complement processing (all other genes)
-    # Reverse the data order first
-    data_reversed <- data[nrow(data):1, ]
+    # Reverse the codon data order
+    codon_data_reversed <- codon_data[nrow(codon_data):1, ]
 
-    for (k in 1:nrow(data_reversed)) {
-      if (data_reversed$new_base[k] %in% c("A", "C", "T", "G") && data_reversed$reads_pp[k] >= 50) {
-        bases_list <- c(bases_list, data_reversed$new_base[k])
-        # Calculate percentage for the alternative base
-        col_name <- paste0(data_reversed$new_base[k], "_pp")
-        if (col_name %in% colnames(data_reversed)) {
-          percentage <- data_reversed[[col_name]][k] * 100 / data_reversed$reads_pp[k]
+    for (k in 1:nrow(codon_data_reversed)) {
+      if (codon_data_reversed$new_base[k] %in% c("A", "C", "T", "G") && codon_data_reversed$reads_pp[k] >= 50) {
+        bases_list <- c(bases_list, codon_data_reversed$new_base[k])
+        # Calculate VAF ONLY for variant positions (ref != new_base)
+        if (codon_data_reversed$ref[k] != codon_data_reversed$new_base[k]) {
+          ref_col <- paste0(codon_data_reversed$ref[k], "_pp")
+          alt_col <- paste0(codon_data_reversed$new_base[k], "_pp")
+          if (ref_col %in% colnames(codon_data_reversed) && alt_col %in% colnames(codon_data_reversed)) {
+            ref_count <- codon_data_reversed[[ref_col]][k]
+            alt_count <- codon_data_reversed[[alt_col]][k]
+            # VAF = alternative / (reference + alternative) * 100
+            percentage <- alt_count * 100 / (ref_count + alt_count)
+          }
         }
       } else {
-        bases_list <- c(bases_list, data_reversed$ref[k])
+        bases_list <- c(bases_list, codon_data_reversed$ref[k])
       }
     }
 
@@ -300,50 +334,34 @@ process_hotspot_file <- function(file_path, mutations_df, gatk_file, output_dir)
   new_amino_acid <- tryCatch({
     seq_len <- nchar(bases_string)
 
-    if (seq_len %% 3 == 0 && seq_len > 0) {
+    if (seq_len == 3) {
       # Perfect codon length - translate directly
       aa <- as.character(GENETIC_CODE[[bases_string]])
       if (is.na(aa)) {
+        cat("⚠️  Unknown codon:", bases_string, "\n")
         "Unknown"
       } else {
         aa
       }
-    } else if (seq_len == 4) {
-      # Common case: 4 bases - try to extract the middle 3 bases (most likely the actual codon)
-      cat("⚠️  Sequence length is 4bp for", gene, hotspot, "- extracting middle codon\n")
-      # Try position 1-3 (drop last base)
-      codon1 <- substr(bases_string, 1, 3)
-      aa1 <- as.character(GENETIC_CODE[[codon1]])
-      # Try position 2-4 (drop first base)
-      codon2 <- substr(bases_string, 2, 4)
-      aa2 <- as.character(GENETIC_CODE[[codon2]])
-
-      # Prefer the one that gives a valid amino acid
-      if (!is.na(aa1)) {
-        cat("    Using bases 1-3:", codon1, "->", aa1, "\n")
-        bases_string <<- codon1  # Update for output
-        aa1
-      } else if (!is.na(aa2)) {
-        cat("    Using bases 2-4:", codon2, "->", aa2, "\n")
-        bases_string <<- codon2  # Update for output
-        aa2
-      } else {
-        paste0("Invalid_4bp_", codon1, "/", codon2)
-      }
-    } else if (seq_len > 3) {
-      # Other lengths > 3: try to extract first 3 bases
-      cat("⚠️  Sequence length is", seq_len, "bp for", gene, hotspot, "- extracting first codon\n")
-      codon <- substr(bases_string, 1, 3)
-      aa <- as.character(GENETIC_CODE[[codon]])
-      if (!is.na(aa)) {
-        cat("    Using first 3 bases:", codon, "->", aa, "\n")
-        bases_string <<- codon  # Update for output
-        aa
-      } else {
-        paste0("Invalid_Length_", seq_len, "_", codon)
-      }
     } else {
-      paste0("Invalid_Length_", seq_len)
+      # Unexpected length - this should not happen with the new codon extraction logic
+      cat("⚠️  Unexpected sequence length", seq_len, "bp for", gene, hotspot, "\n")
+      cat("    Sequence:", bases_string, "\n")
+
+      if (seq_len > 3) {
+        # Try to extract 3 bases from the middle/start
+        codon <- substr(bases_string, 1, 3)
+        aa <- as.character(GENETIC_CODE[[codon]])
+        if (!is.na(aa)) {
+          cat("    Using first 3 bases:", codon, "->", aa, "\n")
+          bases_string <<- codon  # Update for output
+          aa
+        } else {
+          paste0("Invalid_Length_", seq_len)
+        }
+      } else {
+        paste0("TooShort_", seq_len, "bp")
+      }
     }
   }, error = function(e) {
     cat("⚠️  Translation error for", gene, hotspot, ":", e$message, "\n")

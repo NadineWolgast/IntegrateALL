@@ -446,7 +446,7 @@ def generate_report(sample_id, prediction_file, fusioncatcher_file, arriba_file,
         {star_segments}
         
         <h1 id="section6">Pysamstats Hotspots</h1>
-        <h2>Analyzed 34 positions with the following results:</h2>
+        <h2>Analyzed 46 positions with the following results:</h2>
         {hotspot_table}
         
         <h1 id="section7">RNASeq-CNV Plot</h1>

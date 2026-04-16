@@ -63,7 +63,7 @@ SUBTYPE_RULES = {
             'required_columns': ['ALLCatchR', 'Confidence', 'ZEB2_H1038R'],
             'required_values': {'ZEB2_H1038R': True},
             'confidence_policy': 'restricted',
-            'allowed_confidence': ['high-confidence', 'candidate confidence']
+            'allowed_confidence': ['high-confidence', '']
         },
         'fusion_rules': {
             'required_columns': ['ALLCatchR', 'fusion'],
@@ -383,7 +383,7 @@ class ClassificationProcessor:
         try:
             fc_df = pd.read_csv(fusioncatcher_file, sep='\t', skiprows=1, header=None)
             if not fc_df.empty and len(fc_df.columns) >= 6:
-                logger.info("🔍 FusionCatcher: Processing {len(fc_df)} fusion candidates...")
+                logger.info("🔍 FusionCatcher: Processing {len(fc_df)} fusion s...")
                 for _, row in fc_df.iterrows():
                     gene1, gene2, spanning_reads = row[0], row[1], row[5]
                     logger.info("   Checking fusion: gene1::gene2")
@@ -419,7 +419,7 @@ class ClassificationProcessor:
         try:
             arriba_df = pd.read_csv(arriba_file, sep='\t', skiprows=1, header=None)
             if not arriba_df.empty and len(arriba_df.columns) >= 2:
-                logger.info("🔍 Arriba: Processing {len(arriba_df)} fusion candidates...")
+                logger.info("🔍 Arriba: Processing {len(arriba_df)} fusion s...")
                 for _, row in arriba_df.iterrows():
                     original_gene1, original_gene2 = row[0], row[1]
                     gene1, gene2 = original_gene1, original_gene2

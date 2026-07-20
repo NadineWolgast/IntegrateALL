@@ -40,7 +40,7 @@ def calculate_tpm_and_cpm(reads_per_gene_file, tpm_output, cpm_output, cds_lengt
         # Fill missing CDS lengths with median
         median_length = merged_data['cds_length'].median()
         merged_data = merged_data.copy()  # Avoid pandas chained assignment warning
-        merged_data['cds_length'].fillna(median_length, inplace=True)
+        merged_data['cds_length'] = merged_data['cds_length'].fillna(median_length)  # Avoid chained assignment (breaks under pandas Copy-on-Write, see issue #4)
         
         print(f"Using median CDS length ({median_length:.0f}) for {merged_data['cds_length'].isna().sum()} missing entries")
         
